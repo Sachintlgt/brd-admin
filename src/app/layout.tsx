@@ -1,34 +1,18 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "./context/AuthContext";
-import { PropertiesProvider } from "./context/PropertiesContext";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import './globals.css';
+import Providers from '@/app/providers/providers'; 
 
-export const metadata: Metadata = {
-  title: "Property Admin Panel",
-  description: "Admin panel for managing properties",
+export const metadata = {
+  title: 'My App',
+  description: '...',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} antialiased`}
-      >
-        <AuthProvider>
-          <PropertiesProvider>
-            {children}
-          </PropertiesProvider>
-        </AuthProvider>
+      <body>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
