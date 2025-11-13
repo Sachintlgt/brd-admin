@@ -1,49 +1,69 @@
-// src/app/(auth)/forgot-password/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Mail, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import FormInput from '@/components/ui/FormInput';
+import { forgotPasswordSchema, type ForgotPasswordFormValues } from '@/validations/forgot-password.validation';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
 
 export default function ForgotPassword() {
   const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
   const mutation = useForgotPassword();
-  const isLoading = mutation.isPending;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+  const [successMessage, setSuccessMessage] = React.useState('');
 
-    if (!email.trim()) {
-      setError('Please enter your registered email address.');
-      return;
-    }
 
-    mutation.mutate(
-      { email: email.trim() },
-      {
-        onSuccess: () => {
-          setSuccess(
-            "If that email exists in our system, we've sent password reset instructions. Please check your inbox."
-          );
-          setEmail('');
-        },
-        onError: (err) => {
-        // err is typed as AxiosError<{ message?: string }>
-        const axiosMessage = err.response?.data?.message;
-        const message = axiosMessage || err.message || 'Failed to send reset email. Please try again later.';
-        setError(message);
-      },
+  const {
+    register,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
+  });
+
+  const isLoading = mutation.isPending || isSubmitting;
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
+    try {
+      await mutation.mutateAsync(
+        { email: data.email },
+        {
+          onSuccess: () => {
+            reset();
+          },
+        }
+      );
+    } catch (err: any) {
+      const validationErrors = err?.response?.data?.errors;
+      const serverMessage = err?.response?.data?.message || err?.message || 'Failed to send reset email. Please try again later.';
+
+      if (validationErrors && typeof validationErrors === 'object') {
+        Object.keys(validationErrors).forEach((field) => {
+          setError(field as keyof ForgotPasswordFormValues, {
+            type: 'server',
+            message: validationErrors[field],
+          } as any);
+        });
+      } else {
+        setError('email', { type: 'server', message: serverMessage });
       }
-    );
+    }
   };
+
+  useEffect(() => {
+    if (mutation.isSuccess) {
+      setSuccessMessage(
+        "If that email exists in our system, we've sent password reset instructions. Please check your inbox."
+      );
+      reset();
+    }
+  }, [mutation.isSuccess]);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -54,7 +74,6 @@ export default function ForgotPassword() {
 
       <div className="relative z-10 w-full max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          
           {/* Left Section */}
           <div className="flex flex-col justify-center space-y-8">
             <div className="flex flex-col items-start mb-4">
@@ -78,42 +97,34 @@ export default function ForgotPassword() {
 
           {/* Right Section - Form */}
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {error && (
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+              {/* Server-level banner: same logic as login — shown when email has server error */}
+              {errors.email && errors.email.type === 'server' && (
                 <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-start space-x-3 animate-in fade-in duration-300">
                   <AlertCircle className="h-5 w-5 text-red-300 mt-0.5 shrink-0" />
-                  <p className="text-red-100 text-sm">{error}</p>
+                  <p className="text-red-100 text-sm">{errors.email.message}</p>
                 </div>
               )}
 
-              {success && (
+              {successMessage && (
                 <div className="bg-green-500/10 border border-green-500/40 rounded-xl p-4 flex items-start space-x-3 animate-in fade-in duration-300">
                   <CheckCircle className="h-5 w-5 text-green-300 mt-0.5 shrink-0" />
-                  <p className="text-green-100 text-sm">{success}</p>
+                  <p className="text-green-100 text-sm">{successMessage}</p>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-blue-100">
-                  Email address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-blue-300" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/20 text-white placeholder-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 sm:text-sm"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-              </div>
+              <FormInput
+                id="email"
+                label="Email address"
+                placeholder="you@example.com"
+                icon={<Mail className="h-5 w-5 text-blue-300" />}
+                inputProps={{
+                  type: 'email',
+                  autoComplete: 'email',
+                  ...register('email'),
+                }}
+                error={errors.email}
+              />
 
               <div className="pt-4">
                 <button
