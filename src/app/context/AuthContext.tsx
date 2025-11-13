@@ -1,8 +1,10 @@
+// src/contexts/AuthContext.tsx
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation'; // 👈 import router for redirection
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { User } from '@/services/authService';
+import { AUTH_KEYS, clearAuthStorage } from '@/lib/auth';
 
 type AuthContextType = {
   user: User | null;
@@ -10,7 +12,7 @@ type AuthContextType = {
   isLoading: boolean;
   setAuthFromToken: (token: string, user?: User) => void;
   clearAuth: () => void;
-  logout: () => void; // 👈 new function
+  logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,11 +23,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
     try {
-      const rawUser = localStorage.getItem('user');
+      const rawUser = localStorage.getItem(AUTH_KEYS.USER);
       if (rawUser) {
-        const parsed = JSON.parse(rawUser) as User;
-        setUser(parsed);
+        setUser(JSON.parse(rawUser) as User);
       }
     } catch (err) {
       console.error('Failed to parse user from localStorage', err);
@@ -38,37 +43,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const setAuthFromToken = (token: string, userObj?: User) => {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('accessToken', token);
-    if (userObj) {
-      localStorage.setItem('user', JSON.stringify(userObj));
-      setUser(userObj);
+    try {
+      localStorage.setItem(AUTH_KEYS.ACCESS_TOKEN, token);
+      if (userObj) {
+        localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(userObj));
+        setUser(userObj);
+      }
+      localStorage.setItem(AUTH_KEYS.LOGOUT_SIGNAL, String(Date.now())); 
+    } catch (e) {
+      console.error('setAuthFromToken error', e);
     }
   };
 
   const clearAuth = () => {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    setUser(null);
+    try {
+      localStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(AUTH_KEYS.USER);
+      setUser(null);
+    } catch (e) {
+      console.error('clearAuth error', e);
+    }
   };
 
-  // ✅ logout: clear auth and redirect to /login
   const logout = () => {
-    clearAuth();
-    router.replace('/login'); // redirect user
+    if (typeof window === 'undefined') return;
+    try {
+      clearAuthStorage();
+      router.replace('/login');
+    } catch (e) {
+      console.error('logout error', e);
+      clearAuth();
+      router.replace('/login');
+    }
   };
 
-  // Sync across tabs
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'accessToken' || e.key === 'user') {
-        const raw = localStorage.getItem('user');
-        setUser(raw ? JSON.parse(raw) : null);
+      const key = e.key;
+      if (!key) return;
+
+      try {
+        if (key === AUTH_KEYS.LOGOUT_SIGNAL) {
+          setUser(null);
+          router.replace('/login');
+          return;
+        }
+
+        if (key === AUTH_KEYS.USER || key === AUTH_KEYS.ACCESS_TOKEN) {
+          const raw = localStorage.getItem(AUTH_KEYS.USER);
+          setUser(raw ? JSON.parse(raw) : null);
+        }
+      } catch (err) {
+        console.error('onStorage handler error', err);
       }
     };
+
+    const onInTabLogout = () => {
+      setUser(null);
+      router.replace('/login');
+    };
+
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+    window.addEventListener('app:logout', onInTabLogout);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('app:logout', onInTabLogout);
+    };
+  }, [router]);
 
   return (
     <AuthContext.Provider
@@ -78,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         setAuthFromToken,
         clearAuth,
-        logout, // 👈 added here
+        logout,
       }}
     >
       {children}
