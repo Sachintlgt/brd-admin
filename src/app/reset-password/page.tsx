@@ -4,7 +4,7 @@ import {Lock,Eye,EyeOff,AlertCircle,CheckCircle,ArrowLeft,} from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import FormInput from '@/components/ui/FormInput';
+import FormInput from '@/components/ui/authFormInput';
 import { resetPasswordSchema, type ResetPasswordFormValues } from '@/validations/reset-password.validation';
 import { useResetPassword } from '@/hooks/useResetPassword';
 

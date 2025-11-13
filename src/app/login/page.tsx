@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Building2, Lock, AlertCircle, User } from "lucide-react";
 
-import FormInput from "@/components/ui/FormInput";
+import FormInput from "@/components/ui/authFormInput";
 import { loginSchema, type LoginFormValues } from "@/validations/auth.validation";
 import { useLogin } from "@/hooks/useLogin";
 import { useAuth } from "../context/AuthContext";

@@ -5,7 +5,7 @@ import { Mail, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import FormInput from '@/components/ui/FormInput';
+import FormInput from '@/components/ui/authFormInput';
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from '@/validations/forgot-password.validation';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
 
