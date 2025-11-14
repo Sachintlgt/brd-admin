@@ -30,6 +30,47 @@ const FILE_SIZE_LIMITS = {
   icon: 2 * 1024 * 1024, // 2 MB
 };
 
+// Pricing Detail Schema
+const pricingDetailSchema = z.object({
+  label: z.string().min(1, 'Label is required'),
+  price: z.coerce.number().gt(0, 'Price must be greater than 0'),
+  type: z.enum(['ONE_TIME', 'PHASE']),
+  phaseName: z.string().optional(),
+  description: z.string().optional(),
+  effectiveFrom: z.string().optional(),
+  effectiveTo: z.string().optional(),
+});
+
+// Share Detail Schema
+const shareDetailSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  shareCount: z.coerce
+    .number()
+    .int('Share count must be an integer')
+    .min(1, 'Share count must be at least 1')
+    .optional()
+    .or(z.literal('')),
+  amount: z.coerce.number().gt(0, 'Amount must be greater than 0').optional().or(z.literal('')),
+});
+
+// Maintenance Template Schema
+const maintenanceTemplateSchema = z.object({
+  chargeType: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY', 'ONE_TIME']),
+  amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
+  description: z.string().optional(),
+  dueDay: z.coerce
+    .number()
+    .int('Due day must be an integer')
+    .min(1, 'Due day must be between 1-31')
+    .max(31, 'Due day must be between 1-31')
+    .optional()
+    .or(z.literal('')),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
+
 export const propertySchema = z
   .object({
     name: z
@@ -99,6 +140,10 @@ export const propertySchema = z
     videoFiles: z.array(z.instanceof(File)).optional(),
     documentFiles: z.array(z.instanceof(File)).optional(),
     iconFiles: z.array(z.instanceof(File)).optional(),
+
+    pricingDetails: z.array(pricingDetailSchema).optional().default([]),
+    shareDetails: z.array(shareDetailSchema).optional().default([]),
+    maintenanceTemplates: z.array(maintenanceTemplateSchema).optional().default([]),
   })
   .superRefine((data, ctx) => {
     // availableShares <= totalShares
@@ -219,6 +264,151 @@ export const propertySchema = z
           code: z.ZodIssueCode.custom,
           message: 'Amenity icons count must match amenity names count',
           path: ['amenityIcons'],
+        });
+      }
+    }
+    // Validate Pricing Details
+    /* ────────────────────────  PRICING DETAILS  ──────────────────────── */
+    if (data.pricingDetails && data.pricingDetails.length > 0) {
+      const pricingErrors: string[] = [];
+
+      data.pricingDetails.forEach((pricing, idx) => {
+        // PHASE type validations
+        if (pricing.type === 'PHASE') {
+          if (!pricing.phaseName?.trim()) {
+            pricingErrors.push(`Pricing #${idx + 1}: Phase name is required`);
+          }
+          if (!pricing.effectiveFrom) {
+            pricingErrors.push(`Pricing #${idx + 1}: Effective from date is required`);
+          }
+          if (!pricing.effectiveTo) {
+            pricingErrors.push(`Pricing #${idx + 1}: Effective to date is required`);
+          }
+
+          // date format & range
+          if (pricing.effectiveFrom && pricing.effectiveTo) {
+            const from = new Date(pricing.effectiveFrom);
+            const to = new Date(pricing.effectiveTo);
+
+            if (Number.isNaN(from.getTime())) {
+              pricingErrors.push(`Pricing #${idx + 1}: Invalid effectiveFrom date`);
+            }
+            if (Number.isNaN(to.getTime())) {
+              pricingErrors.push(`Pricing #${idx + 1}: Invalid effectiveTo date`);
+            }
+            if (!Number.isNaN(from.getTime()) && !Number.isNaN(to.getTime()) && to <= from) {
+              pricingErrors.push(`Pricing #${idx + 1}: End date must be after start date`);
+            }
+          }
+        }
+      });
+
+      // ---- phase overlap detection ----
+      const phases = data.pricingDetails
+        .map((p, i) => ({ ...p, idx: i }))
+        .filter((p) => p.type === 'PHASE' && p.effectiveFrom && p.effectiveTo);
+
+      for (let i = 0; i < phases.length; i++) {
+        for (let j = i + 1; j < phases.length; j++) {
+          const a = phases[i],
+            b = phases[j];
+          const s1 = new Date(a.effectiveFrom!),
+            e1 = new Date(a.effectiveTo!);
+          const s2 = new Date(b.effectiveFrom!),
+            e2 = new Date(b.effectiveTo!);
+
+          if ((s1 <= e2 && e1 >= s2) || (s2 <= e1 && e2 >= s1)) {
+            const l1 = a.label || `Phase ${a.idx + 1}`;
+            const l2 = b.label || `Phase ${b.idx + 1}`;
+            pricingErrors.push(`Phase overlap between "${l1}" and "${l2}"`);
+          }
+        }
+      }
+
+      if (pricingErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: pricingErrors.join('\n'),
+          path: ['pricingDetails'],
+        });
+      }
+    }
+
+    /* ────────────────────────  SHARE DETAILS  ──────────────────────── */
+    if (data.shareDetails && data.shareDetails.length > 0) {
+      const shareErrors: string[] = [];
+
+      data.shareDetails.forEach((detail, idx) => {
+        if (!detail.title?.trim()) {
+          shareErrors.push(`Share detail #${idx + 1}: Title is required`);
+        }
+        if (
+          detail.shareCount != null &&
+          detail.shareCount !== '' &&
+          Number(detail.shareCount) < 1
+        ) {
+          shareErrors.push(`Share detail #${idx + 1}: Share count must be ≥ 1`);
+        }
+        if (detail.amount != null && detail.amount !== '' && Number(detail.amount) <= 0) {
+          shareErrors.push(`Share detail #${idx + 1}: Amount must be > 0`);
+        }
+      });
+
+      if (shareErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: shareErrors.join('\n'),
+          path: ['shareDetails'],
+        });
+      }
+    }
+
+    /* ────────────────────────  MAINTENANCE TEMPLATES  ──────────────────────── */
+    if (data.maintenanceTemplates && data.maintenanceTemplates.length > 0) {
+      const maintErrors: string[] = [];
+
+      data.maintenanceTemplates.forEach((tpl, idx) => {
+        const validTypes = ['MONTHLY', 'QUARTERLY', 'YEARLY', 'ONE_TIME'] as const;
+        if (!validTypes.includes(tpl.chargeType as any)) {
+          maintErrors.push(
+            `Maintenance #${idx + 1}: Invalid charge type – must be MONTHLY, QUARTERLY, YEARLY or ONE_TIME`,
+          );
+        }
+
+        const recurring = ['MONTHLY', 'QUARTERLY', 'YEARLY'] as const;
+        if (recurring.includes(tpl.chargeType as any)) {
+          if (!tpl.dueDay) {
+            maintErrors.push(`Maintenance #${idx + 1}: Due day is required for ${tpl.chargeType}`);
+          } else {
+            const day = Number(tpl.dueDay);
+            if (day < 1 || day > 31) {
+              maintErrors.push(`Maintenance #${idx + 1}: Due day must be 1‑31`);
+            }
+          }
+        }
+
+        // start / end date range
+        if (tpl.startDate && tpl.endDate) {
+          const start = new Date(tpl.startDate);
+          const end = new Date(tpl.endDate);
+
+          if (Number.isNaN(start.getTime())) {
+            maintErrors.push(`Maintenance #${idx + 1}: Invalid start date`);
+          }
+          if (Number.isNaN(end.getTime())) {
+            maintErrors.push(`Maintenance #${idx + 1}: Invalid end date`);
+          }
+          if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end <= start) {
+            maintErrors.push(`Maintenance #${idx + 1}: End date must be after start date`);
+          }
+        }
+      });
+
+      if (maintErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: maintErrors.join('\n'),
+          path: ['maintenanceTemplates'],
         });
       }
     }

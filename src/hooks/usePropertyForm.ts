@@ -47,6 +47,9 @@ export const usePropertyForm = (routerParam?: any) => {
       videoFiles: [],
       documentFiles: [],
       iconFiles: [],
+      pricingDetails: [],
+      shareDetails: [],
+      maintenanceTemplates: [],
     },
   });
 
@@ -157,10 +160,50 @@ export const usePropertyForm = (routerParam?: any) => {
     }
   };
 
+  // Helper function to convert datetime-local to ISO format
+  const convertToISO = (dateString?: string) => {
+    if (!dateString) return undefined;
+    try {
+      return new Date(dateString).toISOString();
+    } catch {
+      return undefined;
+    }
+  };
+
   const onSubmit = async (data: PropertyFormValues) => {
     try {
       setSubmitError(null);
       setSubmitSuccess(null);
+
+      //  Process pricing details - convert dates to ISO format
+      const processedPricingDetails = (data.pricingDetails || []).map((pricing) => ({
+        label: pricing.label,
+        price: Number(pricing.price),
+        type: pricing.type,
+        phaseName: pricing.phaseName || undefined,
+        description: pricing.description || undefined,
+        effectiveFrom: convertToISO(pricing.effectiveFrom),
+        effectiveTo: convertToISO(pricing.effectiveTo),
+      }));
+
+      //  Process share details - convert string numbers to actual numbers
+      const processedShareDetails = (data.shareDetails || []).map((detail) => ({
+        title: detail.title,
+        description: detail.description || undefined,
+        shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
+        amount: detail.amount ? Number(detail.amount) : undefined,
+      }));
+
+      //  Process maintenance templates - convert dates and numbers
+      const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map((template) => ({
+        chargeType: template.chargeType,
+        amount: Number(template.amount),
+        description: template.description || undefined,
+        dueDay: template.dueDay ? Number(template.dueDay) : undefined,
+        startDate: convertToISO(template.startDate),
+        endDate: convertToISO(template.endDate),
+        isActive: template.isActive ?? true,
+      }));
 
       // Prepare payload with actual files
       const payload = {
@@ -180,6 +223,10 @@ export const usePropertyForm = (routerParam?: any) => {
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
         amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
         documents: documentFiles.length > 0 ? documentFiles : undefined,
+        pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
+        shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
+        maintenanceTemplates:
+          processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
       };
 
       // Call API service

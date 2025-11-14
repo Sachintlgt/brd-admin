@@ -6,7 +6,7 @@ import FullScreenLoader from '@/components/FullScreenLoader';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
-  title: 'My App',
+  title: 'BRD Associates',
   description: '...',
 };
 
