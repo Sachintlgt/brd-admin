@@ -17,13 +17,18 @@ export const useLogin = () => {
       return await authService.login(vars);
     },
     onSuccess: (response) => {
-      const token = response.data.accessToken;
+      // Backend has already set the cookies (accessToken and userData)
+      // Just update the user state in context
       const user = response.data.user;
-      auth.setAuthFromToken(token, user);
+      auth.setUser(user);
+
+      // Optionally refresh user from cookie to ensure sync
+      auth.refreshUser();
+
       router.push('/dashboard');
     },
     onError: (err: any) => {
-      // you can handle global side-effects here if needed
+      // Handle global side-effects here if needed
       console.error('Login error', err);
     },
   });

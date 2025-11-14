@@ -1,23 +1,90 @@
 // src/lib/auth.ts
+
+/**
+ * Get a cookie value by name
+ */
+export function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+
+  return null;
+}
+
+/**
+ * Get user data from cookie
+ */
+export function getUserFromCookie() {
+  const userDataString = getCookie('userData');
+
+  if (userDataString) {
+    try {
+      return JSON.parse(decodeURIComponent(userDataString));
+    } catch (error) {
+      console.error('Failed to parse user data from cookie:', error);
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Check if user is authenticated (has accessToken cookie)
+ */
+export function isAuthenticated(): boolean {
+  return getCookie('accessToken') !== null;
+}
+
+/**
+ * Clear auth cookies by setting them to expire
+ * Note: The backend /auth/logout endpoint should also clear these
+ */
+export function clearAuthCookies() {
+  if (typeof document === 'undefined') return;
+
+  // Set cookies to expire in the past
+  document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+  document.cookie = 'userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+
+  // Trigger logout event for cross-tab sync
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('app:logout'));
+    localStorage.setItem('LOGOUT_SIGNAL', String(Date.now()));
+  }
+}
+
+/**
+ * Legacy support - kept for backwards compatibility
+ * But these are no longer used with cookie-based auth
+ */
 export const AUTH_KEYS = {
   ACCESS_TOKEN: 'accessToken',
   USER: 'user',
-  LOGOUT_SIGNAL: 'logout', // localStorage key to trigger storage events
+  LOGOUT_SIGNAL: 'LOGOUT_SIGNAL',
 };
 
-// Clears tokens & notifies other contexts
+/**
+ * Clear auth storage (legacy localStorage + cookies)
+ * Use this during migration period if you still have localStorage data
+ */
 export function clearAuthStorage() {
-  try {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(AUTH_KEYS.USER);
-    // write a timestamp to trigger storage events in other tabs
-    localStorage.setItem(AUTH_KEYS.LOGOUT_SIGNAL, String(Date.now()));
-    // also dispatch an in-tab event so same-tab listeners can respond
-    window.dispatchEvent(new Event('app:logout'));
-  } catch (e) {
-    // swallow errors
-    // eslint-disable-next-line no-console
-    console.error('clearAuthStorage error', e);
+  // Clear cookies
+  clearAuthCookies();
+
+  // Clear any legacy localStorage data
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(AUTH_KEYS.USER);
+      localStorage.setItem(AUTH_KEYS.LOGOUT_SIGNAL, String(Date.now()));
+    } catch (e) {
+      console.error('Error clearing localStorage:', e);
+    }
   }
 }

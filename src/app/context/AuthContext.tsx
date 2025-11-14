@@ -4,15 +4,15 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService, User } from '@/services/authService';
-import { AUTH_KEYS, clearAuthStorage } from '@/lib/auth';
+import { getUserFromCookie, clearAuthStorage, AUTH_KEYS } from '@/lib/auth';
 
 type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  setAuthFromToken: (token: string, user?: User) => void;
-  clearAuth: () => void;
-  logout: () => void;
+  setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
+  refreshUser: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,18 +22,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Load user from cookie on mount
   useEffect(() => {
     if (typeof window === 'undefined') {
       setIsLoading(false);
       return;
     }
+
     try {
-      const rawUser = localStorage.getItem(AUTH_KEYS.USER);
-      if (rawUser) {
-        setUser(JSON.parse(rawUser) as User);
+      const cookieUser = getUserFromCookie();
+      if (cookieUser) {
+        setUser(cookieUser);
       }
     } catch (err) {
-      console.error('Failed to parse user from localStorage', err);
+      console.error('Failed to load user from cookie', err);
     } finally {
       setIsLoading(false);
     }
@@ -41,43 +43,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isAuthenticated = Boolean(user);
 
-  const setAuthFromToken = (token: string, userObj?: User) => {
+  // Refresh user data from cookie
+  const refreshUser = () => {
     if (typeof window === 'undefined') return;
+
     try {
-      localStorage.setItem(AUTH_KEYS.ACCESS_TOKEN, token);
-      if (userObj) {
-        localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(userObj));
-        setUser(userObj);
-      }
-      localStorage.setItem(AUTH_KEYS.LOGOUT_SIGNAL, String(Date.now()));
-    } catch (e) {
-      console.error('setAuthFromToken error', e);
+      const cookieUser = getUserFromCookie();
+      setUser(cookieUser);
+    } catch (err) {
+      console.error('Failed to refresh user from cookie', err);
     }
   };
 
-  const clearAuth = () => {
+  // Logout function
+  const logout = async () => {
     if (typeof window === 'undefined') return;
-    try {
-      localStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(AUTH_KEYS.USER);
-      setUser(null);
-    } catch (e) {
-      console.error('clearAuth error', e);
-    }
-  };
 
-  const logout = () => {
-    if (typeof window === 'undefined') return;
     try {
+      // Call backend logout endpoint to clear cookies
+      await authService.logout();
+    } catch (err) {
+      console.error('Logout API call failed', err);
+    } finally {
+      // Clear auth storage (cookies + legacy localStorage)
       clearAuthStorage();
-      router.replace('/login');
-    } catch (e) {
-      console.error('logout error', e);
-      clearAuth();
+      setUser(null);
       router.replace('/login');
     }
   };
 
+  // Listen for cross-tab logout events
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -86,15 +81,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!key) return;
 
       try {
+        // Handle cross-tab logout
         if (key === AUTH_KEYS.LOGOUT_SIGNAL) {
           setUser(null);
           router.replace('/login');
-          return;
-        }
-
-        if (key === AUTH_KEYS.USER || key === AUTH_KEYS.ACCESS_TOKEN) {
-          const raw = localStorage.getItem(AUTH_KEYS.USER);
-          setUser(raw ? JSON.parse(raw) : null);
         }
       } catch (err) {
         console.error('onStorage handler error', err);
@@ -106,17 +96,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.replace('/login');
     };
 
+    // Listen for cookie changes (when login happens in another tab)
+    const checkCookieChanges = () => {
+      const cookieUser = getUserFromCookie();
+
+      // If cookie user exists but state user doesn't, update state
+      if (cookieUser && !user) {
+        setUser(cookieUser);
+      }
+      // If cookie user doesn't exist but state user does, clear state
+      else if (!cookieUser && user) {
+        setUser(null);
+      }
+      // If both exist but are different, update state
+      else if (cookieUser && user && cookieUser.id !== user.id) {
+        setUser(cookieUser);
+      }
+    };
+
+    // Check for cookie changes periodically (for cross-tab sync)
+    const cookieCheckInterval = setInterval(checkCookieChanges, 1000);
+
     window.addEventListener('storage', onStorage);
     window.addEventListener('app:logout', onInTabLogout);
 
     return () => {
+      clearInterval(cookieCheckInterval);
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('app:logout', onInTabLogout);
     };
-  }, [router]);
+  }, [router, user]);
 
   /**
-   *  AUTO REFRESH TOKEN EVERY 30 MINUTES
+   * AUTO REFRESH TOKEN EVERY 30 MINUTES
+   * Backend will update the cookie automatically
    */
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -127,14 +140,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.log('🔄 Refreshing token...');
 
           const res = await authService.refreshToken();
-          const newToken = res.data.accessToken;
           const newUser = res.data.user;
 
-          setAuthFromToken(newToken, newUser);
-          console.log(' Token refreshed successfully');
+          // Update user state with fresh data
+          setUser(newUser);
+          console.log('✅ Token refreshed successfully');
         } catch (err) {
-          console.error(' Token refresh failed', err);
-          logout(); // logout if refresh failed
+          console.error('❌ Token refresh failed', err);
+          await logout(); // logout if refresh failed
         }
       },
       30 * 60 * 1000,
@@ -149,9 +162,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         isAuthenticated,
         isLoading,
-        setAuthFromToken,
-        clearAuth,
+        setUser,
         logout,
+        refreshUser,
       }}
     >
       {children}
