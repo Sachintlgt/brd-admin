@@ -4,10 +4,7 @@
  */
 
 import { api } from '@/lib/api';
-import {
-  PropertyListResponse,
-  PropertyListFilters,
-} from '@/types/property-list';
+import { PropertyListResponse, PropertyListFilters } from '@/types/property-list';
 
 export const propertyListService = {
   /**
@@ -99,7 +96,10 @@ export const propertyListService = {
    * Toggle property active status
    * PATCH /properties/:id/toggle-active
    */
-  toggleActiveProperty: async (id: string, isActive: boolean): Promise<{ success: boolean; data: any }> => {
+  toggleActiveProperty: async (
+    id: string,
+    isActive: boolean,
+  ): Promise<{ success: boolean; data: any }> => {
     try {
       const { data } = await api.patch(`/properties/${id}/toggle-active`, {
         isActive,
@@ -121,7 +121,10 @@ export const propertyListService = {
    * Toggle property featured status
    * PATCH /properties/:id/toggle-featured
    */
-  toggleFeaturedProperty: async (id: string, isFeatured: boolean): Promise<{ success: boolean; data: any }> => {
+  toggleFeaturedProperty: async (
+    id: string,
+    isFeatured: boolean,
+  ): Promise<{ success: boolean; data: any }> => {
     try {
       const { data } = await api.patch(`/properties/${id}/toggle-featured`, {
         isFeatured,

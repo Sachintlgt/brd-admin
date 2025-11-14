@@ -9,11 +9,7 @@ export type ForgotPasswordVars = { email: string };
 export type ForgotPasswordError = AxiosError<{ message?: string }>;
 
 export const useForgotPassword = () => {
-  return useMutation<
-    ForgotPasswordResponse,  
-    ForgotPasswordError,    
-    ForgotPasswordVars       
-  >({
+  return useMutation<ForgotPasswordResponse, ForgotPasswordError, ForgotPasswordVars>({
     mutationFn: async ({ email }) => {
       // call the actual service method
       return forgotPasswordService.forgotPassword(email);

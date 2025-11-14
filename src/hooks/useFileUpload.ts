@@ -1,4 +1,4 @@
-import { useDropzone } from "react-dropzone";
+import { useDropzone } from 'react-dropzone';
 
 const IMAGE_MAX = 20;
 const VIDEO_MAX = 5;
@@ -24,10 +24,7 @@ export const useFileUpload = (props: any) => {
     if (toAdd.length === 0) return;
     const next = [...imageFiles, ...toAdd];
     setImageFiles(next);
-    setValue("propertyImages", [
-      ...getValues("propertyImages"),
-      ...toAdd.map((f) => f.name),
-    ]);
+    setValue('propertyImages', [...getValues('propertyImages'), ...toAdd.map((f) => f.name)]);
   };
 
   const onVideosDrop = (accepted: File[]) => {
@@ -36,8 +33,8 @@ export const useFileUpload = (props: any) => {
     if (toAdd.length === 0) return;
     const next = [...videoFiles, ...toAdd];
     setVideoFiles(next);
-    setValue("propertyVideos", [
-      ...(getValues("propertyVideos") || []),
+    setValue('propertyVideos', [
+      ...(getValues('propertyVideos') || []),
       ...toAdd.map((f) => f.name),
     ]);
   };
@@ -48,62 +45,71 @@ export const useFileUpload = (props: any) => {
     if (toAdd.length === 0) return;
     const next = [...documentFiles, ...toAdd];
     setDocumentFiles(next);
-    setValue("documents", [
-      ...(getValues("documents") || []),
-      ...toAdd.map((f) => f.name),
-    ]);
+    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)]);
   };
 
   const onIconsDrop = (accepted: File[]) => {
     const next = [...iconFiles, ...accepted];
     setIconFiles(next);
-    setValue("amenityIcons", [
-      ...(getValues("amenityIcons") || []),
+    setValue('amenityIcons', [
+      ...(getValues('amenityIcons') || []),
       ...accepted.map((f) => f.name),
     ]);
   };
 
   const imageDropzone = useDropzone({
     onDrop: onImagesDrop,
-    accept: { "image/*": [] },
+    accept: { 'image/*': [] },
     multiple: true,
   });
 
   const videoDropzone = useDropzone({
     onDrop: onVideosDrop,
-    accept: { "video/*": [] },
+    accept: { 'video/*': [] },
     multiple: true,
   });
 
   const documentDropzone = useDropzone({
     onDrop: onDocumentsDrop,
-    accept: { "application/*": [] },
+    accept: { 'application/*': [] },
     multiple: true,
   });
 
   const iconDropzone = useDropzone({
     onDrop: onIconsDrop,
-    accept: { "image/*": [] },
+    accept: { 'image/*': [] },
     multiple: true,
   });
 
-  const removeFile = (idx: number, type: "image" | "video" | "document" | "icon") => {
+  const removeFile = (idx: number, type: 'image' | 'video' | 'document' | 'icon') => {
     switch (type) {
-      case "image":
+      case 'image':
         setImageFiles(imageFiles.filter((_: File, i: number) => i !== idx));
-        setValue("propertyImages", getValues("propertyImages").filter((_: string, i: number) => i !== idx));
+        setValue(
+          'propertyImages',
+          getValues('propertyImages').filter((_: string, i: number) => i !== idx),
+        );
         break;
-      case "video":
+      case 'video':
         setVideoFiles(videoFiles.filter((_: File, i: number) => i !== idx));
-        setValue("propertyVideos", (getValues("propertyVideos") || []).filter((_: string, i: number) => i !== idx));
+        setValue(
+          'propertyVideos',
+          (getValues('propertyVideos') || []).filter((_: string, i: number) => i !== idx),
+        );
         break;
-      case "document":
+      case 'document':
         setDocumentFiles(documentFiles.filter((_: File, i: number) => i !== idx));
-        setValue("documents", (getValues("documents") || []).filter((_: string, i: number) => i !== idx));
+        setValue(
+          'documents',
+          (getValues('documents') || []).filter((_: string, i: number) => i !== idx),
+        );
         break;
-      case "icon":
+      case 'icon':
         setIconFiles(iconFiles.filter((_: File, i: number) => i !== idx));
-        setValue("amenityIcons", (getValues("amenityIcons") || []).filter((_: string, i: number) => i !== idx));
+        setValue(
+          'amenityIcons',
+          (getValues('amenityIcons') || []).filter((_: string, i: number) => i !== idx),
+        );
         break;
     }
   };

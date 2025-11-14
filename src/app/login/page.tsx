@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Eye, EyeOff, Building2, Lock, AlertCircle, User } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Eye, EyeOff, Building2, Lock, AlertCircle, User } from 'lucide-react';
 
-import FormInput from "@/components/ui/authFormInput";
-import { loginSchema, type LoginFormValues } from "@/validations/auth.validation";
-import { useLogin } from "@/hooks/useLogin";
-import { useAuth } from "../context/AuthContext";
+import FormInput from '@/components/ui/authFormInput';
+import { loginSchema, type LoginFormValues } from '@/validations/auth.validation';
+import { useLogin } from '@/hooks/useLogin';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -18,7 +18,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace("/dashboard");
+      router.replace('/dashboard');
     }
   }, [isAuthLoading, isAuthenticated, router]);
 
@@ -31,8 +31,8 @@ export default function Login() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -42,25 +42,25 @@ export default function Login() {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const payload = {
-      username: data.email,
-      password: data.password,
-      ...(data.role && { role: data.role }), // only include role if it exists
-    };
-    await loginMutation.mutateAsync(payload);
+        username: data.email,
+        password: data.password,
+        ...(data.role && { role: data.role }), // only include role if it exists
+      };
+      await loginMutation.mutateAsync(payload);
     } catch (err: any) {
       const serverMessage =
-        err?.response?.data?.message || err?.message || "Invalid credentials. Please try again.";
+        err?.response?.data?.message || err?.message || 'Invalid credentials. Please try again.';
 
       const validationErrors = err?.response?.data?.errors;
-      if (validationErrors && typeof validationErrors === "object") {
+      if (validationErrors && typeof validationErrors === 'object') {
         Object.keys(validationErrors).forEach((field) => {
           setError(field as keyof LoginFormValues, {
-            type: "server",
+            type: 'server',
             message: validationErrors[field],
           });
         });
       } else {
-        setError("email", { type: "server", message: serverMessage });
+        setError('email', { type: 'server', message: serverMessage });
       }
     }
   };
@@ -87,8 +87,8 @@ export default function Login() {
           <p className="mt-2 text-lg text-blue-200">Sign in to your account</p>
 
           <p className="mt-6 text-sm text-blue-100/80 max-w-xs">
-            Securely access your professional workspace to manage projects, clients,
-            and internal resources.
+            Securely access your professional workspace to manage projects, clients, and internal
+            resources.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function Login() {
               <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 {/* top-level server error: if you prefer a top-level banner, show it here.
                     Currently server errors map to email field, but you can show one here too. */}
-                {errors.email && errors.email.type === "server" && (
+                {errors.email && errors.email.type === 'server' && (
                   <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-start space-x-3 animate-in fade-in duration-300">
                     <AlertCircle className="h-5 w-5 text-red-300 mt-0.5 shrink-0" />
                     <p className="text-red-100 text-sm">{errors.email.message}</p>
@@ -122,8 +122,8 @@ export default function Login() {
                   placeholder="Enter your email"
                   icon={<User className="h-5 w-5 text-blue-300" />}
                   inputProps={{
-                    ...register("email"),
-                    autoComplete: "username",
+                    ...register('email'),
+                    autoComplete: 'username',
                   }}
                   error={errors.email}
                 />
@@ -134,9 +134,9 @@ export default function Login() {
                   placeholder="Enter your password"
                   icon={<Lock className="h-5 w-5 text-blue-300" />}
                   inputProps={{
-                    ...register("password"),
-                    type: showPassword ? "text" : "password",
-                    autoComplete: "current-password",
+                    ...register('password'),
+                    type: showPassword ? 'text' : 'password',
+                    autoComplete: 'current-password',
                   }}
                   right={
                     <button
@@ -155,7 +155,10 @@ export default function Login() {
                 />
 
                 <div className="flex justify-end text-sm">
-                  <a href="/forgot-password" className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200">
+                  <a
+                    href="/forgot-password"
+                    className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
+                  >
                     Forgot password?
                   </a>
                 </div>
@@ -181,7 +184,9 @@ export default function Login() {
                 </div>
 
                 <div className="text-center pt-4">
-                  <p className="text-blue-200 text-xs">Secure access to your professional workspace</p>
+                  <p className="text-blue-200 text-xs">
+                    Secure access to your professional workspace
+                  </p>
                 </div>
               </form>
             </div>

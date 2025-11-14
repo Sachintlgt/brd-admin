@@ -87,7 +87,7 @@ export const propertyService = {
       // ✅ only NEW logic: detect and rethrow permission error
       if (err?.isPermissionError || err?.response?.status === 403) {
         const permissionError: any = new Error(
-          err?.message || 'You do not have sufficient permissions.'
+          err?.message || 'You do not have sufficient permissions.',
         );
         permissionError.isPermissionError = true;
         permissionError.status = 403;

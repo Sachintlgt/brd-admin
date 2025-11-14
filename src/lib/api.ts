@@ -21,9 +21,7 @@ api.interceptors.request.use(
         const existing = (config.headers ?? {}) as Record<string, string>;
 
         const contentType =
-          existing['Content-Type'] ??
-          existing['content-type'] ??
-          'application/json';
+          existing['Content-Type'] ?? existing['content-type'] ?? 'application/json';
 
         const merged: Record<string, string> = {
           ...existing,
@@ -39,7 +37,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 api.interceptors.response.use(
@@ -68,7 +66,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

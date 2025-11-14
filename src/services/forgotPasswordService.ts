@@ -1,7 +1,7 @@
 // src/services/forgotPasswordService.ts
 import { api } from '@/lib/api';
 
-export type ForgotPasswordResponse = { success: boolean; message?: string  };
+export type ForgotPasswordResponse = { success: boolean; message?: string };
 
 export const forgotPasswordService = {
   forgotPassword: async (email: string): Promise<ForgotPasswordResponse> => {

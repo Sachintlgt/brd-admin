@@ -55,37 +55,39 @@ export const PropertiesProvider = ({ children }: { children: ReactNode }) => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    setProperties(prev => [...prev, newProperty]);
+    setProperties((prev) => [...prev, newProperty]);
   };
 
   const updateProperty = (id: string, updates: Partial<Property>) => {
-    setProperties(prev =>
-      prev.map(p => p.id === id ? { ...p, ...updates, updatedAt: new Date() } : p)
+    setProperties((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...updates, updatedAt: new Date() } : p)),
     );
   };
 
   const deleteProperty = (id: string) => {
-    setProperties(prev => prev.filter(p => p.id !== id));
+    setProperties((prev) => prev.filter((p) => p.id !== id));
   };
 
   const toggleActive = (id: string) => {
-    updateProperty(id, { isActive: !properties.find(p => p.id === id)?.isActive });
+    updateProperty(id, { isActive: !properties.find((p) => p.id === id)?.isActive });
   };
 
   const toggleFeatured = (id: string) => {
-    updateProperty(id, { isFeatured: !properties.find(p => p.id === id)?.isFeatured });
+    updateProperty(id, { isFeatured: !properties.find((p) => p.id === id)?.isFeatured });
   };
 
   return (
-    <PropertiesContext.Provider value={{
-      properties,
-      staff,
-      addProperty,
-      updateProperty,
-      deleteProperty,
-      toggleActive,
-      toggleFeatured,
-    }}>
+    <PropertiesContext.Provider
+      value={{
+        properties,
+        staff,
+        addProperty,
+        updateProperty,
+        deleteProperty,
+        toggleActive,
+        toggleFeatured,
+      }}
+    >
       {children}
     </PropertiesContext.Provider>
   );

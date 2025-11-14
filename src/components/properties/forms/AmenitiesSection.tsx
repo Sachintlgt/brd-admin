@@ -1,5 +1,5 @@
-import FormInput from "../../ui/propertiesFormInput";
-import FileUploadZone from "../FileUploadZone";
+import FormInput from '../../ui/propertiesFormInput';
+import FileUploadZone from '../FileUploadZone';
 
 interface AmenitiesSectionProps {
   register: any;
@@ -28,14 +28,14 @@ export default function AmenitiesSection({
           id="amenityNames"
           label="Amenity Names (comma-separated)"
           placeholder="Pool, Gym, Parking"
-          inputProps={register("amenityNames")}
+          inputProps={register('amenityNames')}
           error={errors.amenityNames}
         />
         <FileUploadZone
           label="Amenity Icons (optional, must match amenityNames count)"
           dropzone={iconDropzone}
           files={iconFiles}
-          onRemove={(idx) => removeAt(idx, iconFiles, setIconFiles, "amenityIcons")}
+          onRemove={(idx) => removeAt(idx, iconFiles, setIconFiles, 'amenityIcons')}
           error={errors.amenityIcons}
         />
       </div>

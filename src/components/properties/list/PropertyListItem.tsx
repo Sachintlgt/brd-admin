@@ -35,18 +35,14 @@ export default function PropertyListItemRow({
           <div className="flex-1 min-w-0">
             {/* Name and Featured Star */}
             <div className="flex items-center space-x-2">
-              <h3 className="text-lg font-medium text-gray-900 truncate">
-                {property.name}
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 truncate">{property.name}</h3>
               {property.isFeatured && (
                 <Star className="h-5 w-5 text-yellow-400 fill-current shrink-0" />
               )}
             </div>
 
             {/* Location */}
-            <p className="text-sm text-gray-500 truncate">
-              {property.location}
-            </p>
+            <p className="text-sm text-gray-500 truncate">{property.location}</p>
 
             {/* Stats Row */}
             <div className="flex items-center space-x-4 mt-2 flex-wrap">
@@ -65,9 +61,7 @@ export default function PropertyListItemRow({
               {/* Status Badge */}
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${
-                  property.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                  property.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}
               >
                 {property.isActive ? 'Active' : 'Inactive'}

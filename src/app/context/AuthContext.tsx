@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { User } from '@/services/authService';
+import { authService, User } from '@/services/authService';
 import { AUTH_KEYS, clearAuthStorage } from '@/lib/auth';
 
 type AuthContextType = {
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(userObj));
         setUser(userObj);
       }
-      localStorage.setItem(AUTH_KEYS.LOGOUT_SIGNAL, String(Date.now())); 
+      localStorage.setItem(AUTH_KEYS.LOGOUT_SIGNAL, String(Date.now()));
     } catch (e) {
       console.error('setAuthFromToken error', e);
     }
@@ -114,6 +114,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       window.removeEventListener('app:logout', onInTabLogout);
     };
   }, [router]);
+
+  /**
+   *  AUTO REFRESH TOKEN EVERY 30 MINUTES
+   */
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(
+      async () => {
+        try {
+          console.log('🔄 Refreshing token...');
+
+          const res = await authService.refreshToken();
+          const newToken = res.data.accessToken;
+          const newUser = res.data.user;
+
+          setAuthFromToken(newToken, newUser);
+          console.log(' Token refreshed successfully');
+        } catch (err) {
+          console.error(' Token refresh failed', err);
+          logout(); // logout if refresh failed
+        }
+      },
+      30 * 60 * 1000,
+    ); // 30 minutes
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   return (
     <AuthContext.Provider

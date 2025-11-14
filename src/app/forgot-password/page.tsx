@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import FormInput from '@/components/ui/authFormInput';
-import { forgotPasswordSchema, type ForgotPasswordFormValues } from '@/validations/forgot-password.validation';
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormValues,
+} from '@/validations/forgot-password.validation';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
 
 export default function ForgotPassword() {
@@ -14,7 +17,6 @@ export default function ForgotPassword() {
   const mutation = useForgotPassword();
 
   const [successMessage, setSuccessMessage] = React.useState('');
-
 
   const {
     register,
@@ -37,18 +39,24 @@ export default function ForgotPassword() {
           onSuccess: () => {
             reset();
           },
-        }
+        },
       );
     } catch (err: any) {
       const validationErrors = err?.response?.data?.errors;
-      const serverMessage = err?.response?.data?.message || err?.message || 'Failed to send reset email. Please try again later.';
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to send reset email. Please try again later.';
 
       if (validationErrors && typeof validationErrors === 'object') {
         Object.keys(validationErrors).forEach((field) => {
-          setError(field as keyof ForgotPasswordFormValues, {
-            type: 'server',
-            message: validationErrors[field],
-          } as any);
+          setError(
+            field as keyof ForgotPasswordFormValues,
+            {
+              type: 'server',
+              message: validationErrors[field],
+            } as any,
+          );
         });
       } else {
         setError('email', { type: 'server', message: serverMessage });
@@ -59,7 +67,7 @@ export default function ForgotPassword() {
   useEffect(() => {
     if (mutation.isSuccess) {
       setSuccessMessage(
-        "If that email exists in our system, we've sent password reset instructions. Please check your inbox."
+        "If that email exists in our system, we've sent password reset instructions. Please check your inbox.",
       );
       reset();
     }
@@ -85,12 +93,15 @@ export default function ForgotPassword() {
 
             <div className="space-y-4">
               <h2 className="text-4xl font-bold text-white leading-tight">Forgot your password?</h2>
-              <p className="text-blue-200 text-lg">Enter your email and we&apos;ll send a reset link.</p>
+              <p className="text-blue-200 text-lg">
+                Enter your email and we&apos;ll send a reset link.
+              </p>
             </div>
 
             <div className="pt-8">
               <p className="text-blue-100 text-sm leading-relaxed">
-                We&apos;ll help you regain access to your account. Enter your registered email address and we&apos;ll send you a secure link to reset your password.
+                We&apos;ll help you regain access to your account. Enter your registered email
+                address and we&apos;ll send you a secure link to reset your password.
               </p>
             </div>
           </div>
@@ -157,7 +168,9 @@ export default function ForgotPassword() {
                 </button>
               </div>
 
-              <p className="text-center text-blue-200 text-xs pt-4">We will never share your email. The link expires for security.</p>
+              <p className="text-center text-blue-200 text-xs pt-4">
+                We will never share your email. The link expires for security.
+              </p>
             </form>
           </div>
         </div>

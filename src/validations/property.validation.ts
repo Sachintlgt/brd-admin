@@ -3,7 +3,13 @@ import { z } from 'zod';
 
 // MIME types for file validation
 const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const ALLOWED_VIDEO_MIMES = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+const ALLOWED_VIDEO_MIMES = [
+  'video/mp4',
+  'video/mpeg',
+  'video/quicktime',
+  'video/x-msvideo',
+  'video/webm',
+];
 const ALLOWED_DOCUMENT_MIMES = [
   'application/pdf',
   'application/msword',
@@ -26,39 +32,48 @@ const FILE_SIZE_LIMITS = {
 
 export const propertySchema = z
   .object({
-    name: z.string().min(3, { message: 'Property name must be at least 3 characters' }).max(200, { message: 'Property name cannot exceed 200 characters' }),
-    location: z.string().min(3, { message: 'Location must be at least 3 characters' }).max(200, { message: 'Location cannot exceed 200 characters' }),
-    description: z.string().max(2000, { message: 'Description cannot exceed 2000 characters' }).optional(),
+    name: z
+      .string()
+      .min(3, { message: 'Property name must be at least 3 characters' })
+      .max(200, { message: 'Property name cannot exceed 200 characters' }),
+    location: z
+      .string()
+      .min(3, { message: 'Location must be at least 3 characters' })
+      .max(200, { message: 'Location cannot exceed 200 characters' }),
+    description: z
+      .string()
+      .max(2000, { message: 'Description cannot exceed 2000 characters' })
+      .optional(),
 
-    totalShares: z
-      .coerce.number()
+    totalShares: z.coerce
+      .number()
       .refine((n) => !Number.isNaN(n), { message: 'Total shares must be a number' })
       .int({ message: 'Total shares must be an integer' })
       .min(1, { message: 'Total shares must be at least 1' })
       .max(1000000, { message: 'Total shares cannot exceed 1,000,000' }),
 
-    availableShares: z
-      .coerce.number()
+    availableShares: z.coerce
+      .number()
       .refine((n) => !Number.isNaN(n), { message: 'Available shares must be a number' })
       .int({ message: 'Available shares must be an integer' })
       .min(0, { message: 'Available shares must be ≥ 0' })
       .max(1000000, { message: 'Available shares cannot exceed 1,000,000' }),
 
-    pricePerShare: z
-      .coerce.number()
+    pricePerShare: z.coerce
+      .number()
       .refine((n) => !Number.isNaN(n), { message: 'Price per share must be a number' })
       .min(0, { message: 'Price per share must be ≥ 0' })
       .max(100000000, { message: 'Price per share cannot exceed 100,000,000' }),
 
-    appreciationRate: z
-      .coerce.number()
+    appreciationRate: z.coerce
+      .number()
       .refine((n) => !Number.isNaN(n), { message: 'Appreciation rate must be a number' })
       .min(0, { message: 'Appreciation rate must be ≥ 0' })
       .max(100, { message: 'Appreciation rate cannot exceed 100%' })
       .optional(),
 
-    maxBookingDays: z
-      .coerce.number()
+    maxBookingDays: z.coerce
+      .number()
       .refine((n) => !Number.isNaN(n), { message: 'Max booking days must be a number' })
       .int({ message: 'Max booking days must be an integer' })
       .min(1, { message: 'Max booking days must be at least 1' })
@@ -71,7 +86,10 @@ export const propertySchema = z
     amenityNames: z.string().optional(),
     documentNames: z.string().optional(),
 
-    propertyImages: z.array(z.string()).min(1, { message: 'At least 1 image is required' }).max(20, { message: 'Maximum 20 images allowed' }),
+    propertyImages: z
+      .array(z.string())
+      .min(1, { message: 'At least 1 image is required' })
+      .max(20, { message: 'Maximum 20 images allowed' }),
     propertyVideos: z.array(z.string()).max(5, { message: 'Maximum 5 videos allowed' }).optional(),
     amenityIcons: z.array(z.string()).optional(),
     documents: z.array(z.string()).max(10, { message: 'Maximum 10 documents allowed' }).optional(),

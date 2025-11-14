@@ -19,7 +19,7 @@ export default function Dashboard() {
     },
     {
       name: 'Active Properties',
-      value: properties.filter(p => p.isActive).length,
+      value: properties.filter((p) => p.isActive).length,
       icon: CheckCircle,
       color: 'bg-green-500',
       change: '+8%',
@@ -27,7 +27,7 @@ export default function Dashboard() {
     },
     {
       name: 'Featured Properties',
-      value: properties.filter(p => p.isFeatured).length,
+      value: properties.filter((p) => p.isFeatured).length,
       icon: Star,
       color: 'bg-yellow-500',
       change: '+23%',
@@ -47,7 +47,9 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">Welcome back! Here&apos;s an overview of your properties.</p>
+        <p className="mt-2 text-gray-600">
+          Welcome back! Here&apos;s an overview of your properties.
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -110,7 +112,10 @@ export default function Dashboard() {
         </div>
         <div className="space-y-4">
           {properties.slice(0, 5).map((property) => (
-            <div key={property.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+            <div
+              key={property.id}
+              className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+            >
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                   <Building2 className="h-6 w-6 text-gray-600" />
@@ -121,11 +126,11 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  property.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    property.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}
+                >
                   {property.isActive ? 'Active' : 'Inactive'}
                 </span>
                 <Link
@@ -141,7 +146,9 @@ export default function Dashboard() {
             <div className="text-center py-8">
               <Building2 className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No properties yet</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by adding your first property.</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by adding your first property.
+              </p>
               <div className="mt-6">
                 <Link
                   href="/properties/add"

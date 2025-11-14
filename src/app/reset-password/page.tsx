@@ -1,11 +1,14 @@
 'use client';
 import React, { useEffect } from 'react';
-import {Lock,Eye,EyeOff,AlertCircle,CheckCircle,ArrowLeft,} from 'lucide-react';
+import { Lock, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import FormInput from '@/components/ui/authFormInput';
-import { resetPasswordSchema, type ResetPasswordFormValues } from '@/validations/reset-password.validation';
+import {
+  resetPasswordSchema,
+  type ResetPasswordFormValues,
+} from '@/validations/reset-password.validation';
 import { useResetPassword } from '@/hooks/useResetPassword';
 
 export default function ResetPasswordClient() {
@@ -56,18 +59,24 @@ export default function ResetPasswordClient() {
             reset({ token: data.token, newPassword: '', confirmPassword: '' });
             setTimeout(() => router.push('/login'), 1600);
           },
-        }
+        },
       );
     } catch (err: any) {
       const validationErrors = err?.response?.data?.errors;
-      const serverMessage = err?.response?.data?.message || err?.message || 'Failed to reset password. The token might be expired or invalid.';
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to reset password. The token might be expired or invalid.';
 
       if (validationErrors && typeof validationErrors === 'object') {
         Object.keys(validationErrors).forEach((field) => {
-          setError(field as keyof ResetPasswordFormValues, {
-            type: 'server',
-            message: validationErrors[field],
-          } as any);
+          setError(
+            field as keyof ResetPasswordFormValues,
+            {
+              type: 'server',
+              message: validationErrors[field],
+            } as any,
+          );
         });
       } else {
         setError('token' as any, { type: 'server', message: serverMessage } as any);
@@ -103,7 +112,8 @@ export default function ResetPasswordClient() {
 
             <div className="pt-8">
               <p className="text-blue-100 text-sm leading-relaxed">
-                Secure your account with a strong password. Must include uppercase, lowercase, number, and special character.
+                Secure your account with a strong password. Must include uppercase, lowercase,
+                number, and special character.
               </p>
             </div>
           </div>
@@ -144,13 +154,18 @@ export default function ResetPasswordClient() {
                     onClick={() => setShowPassword((s) => !s)}
                     className="hover:scale-110 transition-transform duration-200"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5 text-blue-300" /> : <Eye className="h-5 w-5 text-blue-300" />}
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-blue-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-blue-300" />
+                    )}
                   </button>
                 }
                 error={errors.newPassword as any}
               />
               <p className="text-xs text-blue-200 -mt-1">
-                Must be at least 8 characters and include uppercase, lowercase, number, and special character.
+                Must be at least 8 characters and include uppercase, lowercase, number, and special
+                character.
               </p>
 
               <FormInput
@@ -168,7 +183,11 @@ export default function ResetPasswordClient() {
                     onClick={() => setShowConfirmPassword((s) => !s)}
                     className="hover:scale-110 transition-transform duration-200"
                   >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5 text-blue-300" /> : <Eye className="h-5 w-5 text-blue-300" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5 text-blue-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-blue-300" />
+                    )}
                   </button>
                 }
                 error={errors.confirmPassword as any}
@@ -205,7 +224,9 @@ export default function ResetPasswordClient() {
                 </button>
               </div>
 
-              <p className="text-center text-blue-200 text-xs pt-4">Your password will be encrypted and kept secure.</p>
+              <p className="text-center text-blue-200 text-xs pt-4">
+                Your password will be encrypted and kept secure.
+              </p>
             </form>
           </div>
         </div>

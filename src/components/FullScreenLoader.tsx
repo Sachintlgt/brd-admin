@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 export default function FullScreenLoader() {
   return (
@@ -14,8 +14,7 @@ export default function FullScreenLoader() {
             aria-hidden
             className="absolute inset-0 rounded-full blur-2xl opacity-40 animate-pulse"
             style={{
-              background:
-                "radial-gradient(closest-side, rgba(99,102,241,0.25), transparent 60%)",
+              background: 'radial-gradient(closest-side, rgba(99,102,241,0.25), transparent 60%)',
             }}
           />
           <div className="rounded-full bg-white/6 backdrop-blur p-4 flex items-center justify-center shadow-lg">
@@ -27,13 +26,7 @@ export default function FullScreenLoader() {
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden
             >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="rgba(255,255,255,0.08)"
-                strokeWidth="4"
-              />
+              <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
               <path
                 d="M22 12a10 10 0 00-10-10"
                 stroke="white"
@@ -50,8 +43,8 @@ export default function FullScreenLoader() {
         <div className="text-center">
           <h3 className="text-2xl font-semibold text-white">Loading…</h3>
           <p className="mt-1 text-sm text-slate-200/80 max-w-md">
-            Preparing the app — this should only take a moment. If it takes
-            longer than expected try refreshing.
+            Preparing the app — this should only take a moment. If it takes longer than expected try
+            refreshing.
           </p>
         </div>
 
@@ -71,12 +64,7 @@ export default function FullScreenLoader() {
           }
           .animate-[shimmer_1.6s_infinite] {
             animation: shimmer 1.6s infinite;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              rgba(255, 255, 255, 0.08),
-              transparent
-            );
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
           }
         `}</style>
       </div>

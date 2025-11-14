@@ -1,5 +1,5 @@
-import { Upload, X } from "lucide-react";
-import { formatFileSize } from "../../utils/fileValidation";
+import { Upload, X } from 'lucide-react';
+import { formatFileSize } from '../../utils/fileValidation';
 
 interface FileUploadZoneProps {
   label: string;
@@ -18,20 +18,18 @@ export default function FileUploadZone({
 }: FileUploadZoneProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
       <div
         {...dropzone.getRootProps()}
         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 ${
           error
-            ? "border-red-300 bg-red-50 hover:border-red-400"
-            : "border-gray-300 hover:border-blue-400 hover:bg-blue-50"
+            ? 'border-red-300 bg-red-50 hover:border-red-400'
+            : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
         }`}
       >
         <input {...dropzone.getInputProps()} />
-        <Upload className={`mx-auto h-8 w-8 ${error ? "text-red-400" : "text-gray-400"}`} />
-        <p className={`mt-2 text-sm ${error ? "text-red-600" : "text-gray-600"}`}>
+        <Upload className={`mx-auto h-8 w-8 ${error ? 'text-red-400' : 'text-gray-400'}`} />
+        <p className={`mt-2 text-sm ${error ? 'text-red-600' : 'text-gray-600'}`}>
           Drop files here or click to upload
         </p>
       </div>

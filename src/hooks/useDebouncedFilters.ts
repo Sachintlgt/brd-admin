@@ -8,10 +8,7 @@ import { PropertyFilterState } from '@/types/property-list';
  * Prevents excessive API calls when filters are being updated frequently
  * (especially useful for search input and price range changes)
  */
-export const useDebouncedFilters = (
-  filters: PropertyFilterState,
-  delay: number = 600
-) => {
+export const useDebouncedFilters = (filters: PropertyFilterState, delay: number = 600) => {
   const [debouncedFilters, setDebouncedFilters] = useState<PropertyFilterState>(filters);
 
   useEffect(() => {

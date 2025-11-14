@@ -1,8 +1,8 @@
-import { PropertyFormValues } from "../validations/property.validation";
+import { PropertyFormValues } from '../validations/property.validation';
 
 export const mapFormToProperty = (values: PropertyFormValues) => {
-  const amenityNames = (values.amenityNames ?? "")
-    .split(",")
+  const amenityNames = (values.amenityNames ?? '')
+    .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 

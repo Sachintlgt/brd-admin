@@ -11,7 +11,7 @@ export default function StatusSection({ register, errors }: StatusSectionProps) 
         <label className="flex items-center">
           <input
             type="checkbox"
-            {...register("isActive")}
+            {...register('isActive')}
             className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
           <span className="ml-3 text-sm text-gray-700">Active Property</span>
@@ -19,7 +19,7 @@ export default function StatusSection({ register, errors }: StatusSectionProps) 
         <label className="flex items-center">
           <input
             type="checkbox"
-            {...register("isFeatured")}
+            {...register('isFeatured')}
             className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
           <span className="ml-3 text-sm text-gray-700">Featured Property</span>

@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import DashboardLayout from "../../components/DashboardLayout";
-import PropertyFilters from "../../components/properties/list/PropertyFilters";
-import PropertyListContent from "../../components/properties/list/PropertyListContent";
-import PropertyPagination from "../../components/properties/list/PropertyPagination";
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { Plus } from 'lucide-react';
+import DashboardLayout from '../../components/DashboardLayout';
+import PropertyFilters from '../../components/properties/list/PropertyFilters';
+import PropertyListContent from '../../components/properties/list/PropertyListContent';
+import PropertyPagination from '../../components/properties/list/PropertyPagination';
 import {
   usePropertiesList,
   useDeleteProperty,
   useToggleActive,
   useToggleFeatured,
-} from "../../hooks/usePropertiesList";
-import { useDebouncedFilters } from "../../hooks/useDebouncedFilters";
-import { PropertyFilterState } from "../../types/property-list";
+} from '../../hooks/usePropertiesList';
+import { useDebouncedFilters } from '../../hooks/useDebouncedFilters';
+import { PropertyFilterState } from '../../types/property-list';
 
 const DEFAULT_FILTERS: PropertyFilterState = {
-  searchTerm: "",
-  statusFilter: "all",
-  featuredFilter: "all",
+  searchTerm: '',
+  statusFilter: 'all',
+  featuredFilter: 'all',
   page: 1,
   limit: 10,
-  sortBy: "createdAt",
-  sortOrder: "desc",
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
 };
 
 export default function Properties() {
   const [filters, setFilters] = useState<PropertyFilterState>(DEFAULT_FILTERS);
-  
+
   // Debounce filters to prevent excessive API calls (especially for search)
   // Uses 600ms delay which is appropriate for user input
   const debouncedFilters = useDebouncedFilters(filters, 600);
@@ -40,9 +40,13 @@ export default function Properties() {
     limit: debouncedFilters.limit,
     search: debouncedFilters.searchTerm || undefined,
     isActive:
-      debouncedFilters.statusFilter === "all" ? undefined : debouncedFilters.statusFilter === "active",
+      debouncedFilters.statusFilter === 'all'
+        ? undefined
+        : debouncedFilters.statusFilter === 'active',
     isFeatured:
-      debouncedFilters.featuredFilter === "all" ? undefined : debouncedFilters.featuredFilter === "featured",
+      debouncedFilters.featuredFilter === 'all'
+        ? undefined
+        : debouncedFilters.featuredFilter === 'featured',
     sortBy: debouncedFilters.sortBy,
     sortOrder: debouncedFilters.sortOrder,
     location: debouncedFilters.location || undefined,
@@ -84,15 +88,15 @@ export default function Properties() {
   // Check if any filters are applied
   const hasFiltersApplied = useMemo(() => {
     return (
-      filters.searchTerm !== "" ||
-      filters.statusFilter !== "all" ||
-      filters.featuredFilter !== "all" ||
+      filters.searchTerm !== '' ||
+      filters.statusFilter !== 'all' ||
+      filters.featuredFilter !== 'all' ||
       filters.location !== undefined ||
       filters.minPrice !== undefined ||
       filters.maxPrice !== undefined ||
       filters.staffId !== undefined ||
-      filters.sortBy !== "createdAt" ||
-      filters.sortOrder !== "desc"
+      filters.sortBy !== 'createdAt' ||
+      filters.sortOrder !== 'desc'
     );
   }, [filters]);
 
@@ -117,12 +121,12 @@ export default function Properties() {
       page,
     }));
     // Scroll to top
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handle delete
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this property?")) {
+    if (confirm('Are you sure you want to delete this property?')) {
       deletePropertyMutation.mutate(id);
     }
   };

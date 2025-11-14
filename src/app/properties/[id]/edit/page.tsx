@@ -15,9 +15,14 @@ export default function EditProperty() {
   const { id } = useParams();
   const { properties, updateProperty, staff } = useProperties();
   const router = useRouter();
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<PropertyFormData>();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<PropertyFormData>();
 
-  const property = properties.find(p => p.id === id);
+  const property = properties.find((p) => p.id === id);
 
   useEffect(() => {
     if (property) {
@@ -93,9 +98,7 @@ export default function EditProperty() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
               <input
                 {...register('location', { required: 'Location is required' })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
@@ -111,9 +114,7 @@ export default function EditProperty() {
           </div>
 
           <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               {...register('description')}
               rows={4}
@@ -168,9 +169,7 @@ export default function EditProperty() {
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Additional Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Assigned Staff
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Staff</label>
               <select
                 {...register('assignedStaff')}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"

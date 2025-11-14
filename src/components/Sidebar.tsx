@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {LayoutDashboard,Building2,Users,Settings,LogOut,Menu,X} from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Settings, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../app/context/AuthContext';
 
 interface SidebarProps {
@@ -38,11 +38,13 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
       </div>
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        className={`
         fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out
         lg:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      `}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 bg-linear-to-r from-blue-600 to-indigo-600">
@@ -55,16 +57,19 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              const isActive =
+                pathname === item.href ||
+                (item.href !== '/dashboard' && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={`
                     flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200
-                    ${isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}
                   onClick={() => setIsMobileMenuOpen(false)}

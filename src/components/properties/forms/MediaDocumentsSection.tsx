@@ -1,5 +1,5 @@
-import FileUploadZone from "../FileUploadZone";
-import FormInput from "../../ui/propertiesFormInput";
+import FileUploadZone from '../FileUploadZone';
+import FormInput from '../../ui/propertiesFormInput';
 
 interface MediaDocumentsSectionProps {
   register: any;
@@ -34,29 +34,27 @@ export default function MediaDocumentsSection({
 }: MediaDocumentsSectionProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">
-        Media & Documents
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-6">Media & Documents</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FileUploadZone
           label="Property Images (max 20) *"
           dropzone={imageDropzone}
           files={imageFiles}
-          onRemove={(idx) => removeAt(idx, imageFiles, setImageFiles, "propertyImages")}
+          onRemove={(idx) => removeAt(idx, imageFiles, setImageFiles, 'propertyImages')}
           error={errors.propertyImages}
         />
         <FileUploadZone
           label="Property Videos (max 5)"
           dropzone={videoDropzone}
           files={videoFiles}
-          onRemove={(idx) => removeAt(idx, videoFiles, setVideoFiles, "propertyVideos")}
+          onRemove={(idx) => removeAt(idx, videoFiles, setVideoFiles, 'propertyVideos')}
           error={errors.propertyVideos}
         />
         <FileUploadZone
           label="Documents (max 10)"
           dropzone={documentDropzone}
           files={documentFiles}
-          onRemove={(idx) => removeAt(idx, documentFiles, setDocumentFiles, "documents")}
+          onRemove={(idx) => removeAt(idx, documentFiles, setDocumentFiles, 'documents')}
           error={errors.documents}
         />
       </div>
@@ -66,7 +64,7 @@ export default function MediaDocumentsSection({
           id="documentNames"
           label="Document Names (comma-separated)"
           placeholder="e.g., Sale Deed, NOC, Tax Receipt"
-          inputProps={register("documentNames")}
+          inputProps={register('documentNames')}
           error={errors.documentNames}
         />
       </div>

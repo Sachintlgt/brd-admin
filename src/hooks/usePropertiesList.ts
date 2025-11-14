@@ -43,19 +43,16 @@ export const useDeleteProperty = () => {
     mutationFn: (id: string) => propertyListService.deleteProperty(id),
     onMutate: (id: string) => {
       // Optimistic update
-      queryClient.setQueriesData(
-        { queryKey: propertyQueryKeys.lists() },
-        (oldData: any) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            data: {
-              ...oldData.data,
-              properties: oldData.data.properties.filter((p: PropertyListItem) => p.id !== id),
-            },
-          };
-        }
-      );
+      queryClient.setQueriesData({ queryKey: propertyQueryKeys.lists() }, (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          data: {
+            ...oldData.data,
+            properties: oldData.data.properties.filter((p: PropertyListItem) => p.id !== id),
+          },
+        };
+      });
     },
     onSuccess: () => {
       toast.success('Property deleted successfully');

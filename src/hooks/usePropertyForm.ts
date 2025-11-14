@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { useForm, Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useDropzone } from "react-dropzone";
-import { useRouter } from "next/navigation";
-import {
-  propertySchema,
-  type PropertyFormValues,
-} from "../validations/property.validation";
-import { propertyService } from "../services/propertyService";
+import { useState } from 'react';
+import { useForm, Resolver } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useDropzone } from 'react-dropzone';
+import { useRouter } from 'next/navigation';
+import { propertySchema, type PropertyFormValues } from '../validations/property.validation';
+import { propertyService } from '../services/propertyService';
 
 const IMAGE_MAX = 20;
 const VIDEO_MAX = 5;
@@ -19,9 +16,7 @@ export const usePropertyForm = (routerParam?: any) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
-  const typedResolver = zodResolver(
-    propertySchema
-  ) as unknown as Resolver<PropertyFormValues>;
+  const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
 
   const {
     register,
@@ -32,9 +27,9 @@ export const usePropertyForm = (routerParam?: any) => {
   } = useForm<PropertyFormValues>({
     resolver: typedResolver,
     defaultValues: {
-      name: "",
-      location: "",
-      description: "",
+      name: '',
+      location: '',
+      description: '',
       totalShares: 0,
       availableShares: 0,
       pricePerShare: 0,
@@ -42,8 +37,8 @@ export const usePropertyForm = (routerParam?: any) => {
       maxBookingDays: 0,
       isActive: true,
       isFeatured: false,
-      amenityNames: "",
-      documentNames: "",
+      amenityNames: '',
+      documentNames: '',
       propertyImages: [],
       propertyVideos: [],
       amenityIcons: [],
@@ -68,11 +63,8 @@ export const usePropertyForm = (routerParam?: any) => {
     if (toAdd.length === 0) return;
     const next = [...imageFiles, ...toAdd];
     setImageFiles(next);
-    setValue("propertyImages", [
-      ...getValues("propertyImages"),
-      ...toAdd.map((f) => f.name),
-    ]);
-    setValue("imageFiles", next);
+    setValue('propertyImages', [...getValues('propertyImages'), ...toAdd.map((f) => f.name)]);
+    setValue('imageFiles', next);
   };
 
   const onVideosDrop = (accepted: File[]) => {
@@ -81,11 +73,11 @@ export const usePropertyForm = (routerParam?: any) => {
     if (toAdd.length === 0) return;
     const next = [...videoFiles, ...toAdd];
     setVideoFiles(next);
-    setValue("propertyVideos", [
-      ...(getValues("propertyVideos") || []),
+    setValue('propertyVideos', [
+      ...(getValues('propertyVideos') || []),
       ...toAdd.map((f) => f.name),
     ]);
-    setValue("videoFiles", next);
+    setValue('videoFiles', next);
   };
 
   const onDocumentsDrop = (accepted: File[]) => {
@@ -94,11 +86,8 @@ export const usePropertyForm = (routerParam?: any) => {
     if (toAdd.length === 0) return;
     const next = [...documentFiles, ...toAdd];
     setDocumentFiles(next);
-    setValue("documents", [
-      ...(getValues("documents") || []),
-      ...toAdd.map((f) => f.name),
-    ]);
-    setValue("documentFiles", next);
+    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)]);
+    setValue('documentFiles', next);
   };
 
   const onIconsDrop = (accepted: File[]) => {
@@ -107,45 +96,39 @@ export const usePropertyForm = (routerParam?: any) => {
     if (toAdd.length === 0) return;
     const next = [...iconFiles, ...toAdd];
     setIconFiles(next);
-    setValue("amenityIcons", [
-      ...(getValues("amenityIcons") || []),
-      ...toAdd.map((f) => f.name),
-    ]);
-    setValue("iconFiles", next);
+    setValue('amenityIcons', [...(getValues('amenityIcons') || []), ...toAdd.map((f) => f.name)]);
+    setValue('iconFiles', next);
   };
 
   // Dropzones
   const imageDropzone = useDropzone({
     onDrop: onImagesDrop,
-    accept: { "image/*": [] },
+    accept: { 'image/*': [] },
     multiple: true,
   });
 
   const videoDropzone = useDropzone({
     onDrop: onVideosDrop,
-    accept: { "video/*": [] },
+    accept: { 'video/*': [] },
     multiple: true,
   });
 
   const documentDropzone = useDropzone({
     onDrop: onDocumentsDrop,
     accept: {
-      "application/pdf": [".pdf"],
-      "application/msword": [".doc"],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        [".docx"],
-      "application/vnd.ms-excel": [".xls"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-        ".xlsx",
-      ],
-      "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/vnd.ms-excel': ['.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
     },
     multiple: true,
   });
 
   const iconDropzone = useDropzone({
     onDrop: onIconsDrop,
-    accept: { "image/*": [".jpg", ".jpeg", ".png", ".svg", ".webp"] },
+    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.svg', '.webp'] },
     multiple: true,
   });
 
@@ -154,7 +137,7 @@ export const usePropertyForm = (routerParam?: any) => {
     idx: number,
     files: File[],
     setFiles: (f: File[]) => void,
-    formKey: keyof PropertyFormValues
+    formKey: keyof PropertyFormValues,
   ) => {
     const newFiles = files.filter((_, i) => i !== idx);
     setFiles(newFiles);
@@ -163,14 +146,14 @@ export const usePropertyForm = (routerParam?: any) => {
     setValue(formKey, newNames);
 
     // Also update the file objects in form state
-    if (formKey === "propertyImages") {
-      setValue("imageFiles", newFiles);
-    } else if (formKey === "propertyVideos") {
-      setValue("videoFiles", newFiles);
-    } else if (formKey === "documents") {
-      setValue("documentFiles", newFiles);
-    } else if (formKey === "amenityIcons") {
-      setValue("iconFiles", newFiles);
+    if (formKey === 'propertyImages') {
+      setValue('imageFiles', newFiles);
+    } else if (formKey === 'propertyVideos') {
+      setValue('videoFiles', newFiles);
+    } else if (formKey === 'documents') {
+      setValue('documentFiles', newFiles);
+    } else if (formKey === 'amenityIcons') {
+      setValue('iconFiles', newFiles);
     }
   };
 
@@ -203,25 +186,22 @@ export const usePropertyForm = (routerParam?: any) => {
       const response = await propertyService.createProperty(payload);
 
       if (response.success) {
-        setSubmitSuccess(response.message || "Property created successfully!");
+        setSubmitSuccess(response.message || 'Property created successfully!');
         // Redirect after a short delay
         setTimeout(() => {
-          router.push("/properties");
+          router.push('/properties');
         }, 1500);
       }
     } catch (err: any) {
       if (err?.isPermissionError) {
-        setSubmitError(
-          err.message || "You do not have sufficient permissions."
-        );
-        console.error("Permission error:", err);
+        setSubmitError(err.message || 'You do not have sufficient permissions.');
+        console.error('Permission error:', err);
         return;
       }
 
-      const errorMessage =
-        err?.message || "Failed to create property. Please try again.";
+      const errorMessage = err?.message || 'Failed to create property. Please try again.';
       setSubmitError(errorMessage);
-      console.error("Error adding property:", err);
+      console.error('Error adding property:', err);
     }
   };
 

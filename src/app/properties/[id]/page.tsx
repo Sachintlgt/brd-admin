@@ -4,7 +4,18 @@ import { useParams } from 'next/navigation';
 import { useProperties } from '../../context/PropertiesContext';
 import Link from 'next/link';
 import DashboardLayout from '../../../components/DashboardLayout';
-import { Calendar, MapPin, DollarSign, FileText, Star, Edit, ArrowLeft, Image as ImageIcon, Video, File } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  DollarSign,
+  FileText,
+  Star,
+  Edit,
+  ArrowLeft,
+  Image as ImageIcon,
+  Video,
+  File,
+} from 'lucide-react';
 import { useState } from 'react';
 
 export default function PropertyDetail() {
@@ -12,7 +23,7 @@ export default function PropertyDetail() {
   const { properties, staff } = useProperties();
   const [activeTab, setActiveTab] = useState('overview');
 
-  const property = properties.find(p => p.id === id);
+  const property = properties.find((p) => p.id === id);
 
   if (!property) {
     return (
@@ -25,7 +36,7 @@ export default function PropertyDetail() {
     );
   }
 
-  const assignedStaff = staff.find(s => s.id === property.assignedStaff);
+  const assignedStaff = staff.find((s) => s.id === property.assignedStaff);
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: FileText },
@@ -54,11 +65,11 @@ export default function PropertyDetail() {
                   <MapPin className="h-4 w-4 mr-1" />
                   {property.location}
                 </div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  property.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    property.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}
+                >
                   {property.isActive ? 'Active' : 'Inactive'}
                 </span>
                 {property.isFeatured && (
@@ -119,19 +130,27 @@ export default function PropertyDetail() {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Description</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{property.description || 'No description provided'}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {property.description || 'No description provided'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Assigned Staff</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{assignedStaff?.name || 'Not assigned'}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {assignedStaff?.name || 'Not assigned'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">One Time Pricing</dt>
-                  <dd className="mt-1 text-sm text-gray-900">${property.oneTimePricing.toLocaleString()}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    ${property.oneTimePricing.toLocaleString()}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Maintenance Charges</dt>
-                  <dd className="mt-1 text-sm text-gray-900">${property.maintenanceCharges.toLocaleString()}/month</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    ${property.maintenanceCharges.toLocaleString()}/month
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -154,7 +173,9 @@ export default function PropertyDetail() {
 
             {property.purchasedSharesDetails && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Purchased Shares Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Purchased Shares Details
+                </h3>
                 <p className="text-sm text-gray-700">{property.purchasedSharesDetails}</p>
               </div>
             )}
@@ -169,7 +190,9 @@ export default function PropertyDetail() {
                   <DollarSign className="h-8 w-8 text-green-600" />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">One Time Price</p>
-                    <p className="text-2xl font-bold text-gray-900">${property.oneTimePricing.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${property.oneTimePricing.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -178,7 +201,9 @@ export default function PropertyDetail() {
                   <DollarSign className="h-8 w-8 text-blue-600" />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">Maintenance</p>
-                    <p className="text-2xl font-bold text-gray-900">${property.maintenanceCharges.toLocaleString()}/mo</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${property.maintenanceCharges.toLocaleString()}/mo
+                    </p>
                   </div>
                 </div>
               </div>
@@ -187,7 +212,9 @@ export default function PropertyDetail() {
                   <DollarSign className="h-8 w-8 text-purple-600" />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">Appreciation</p>
-                    <p className="text-2xl font-bold text-gray-900">${property.appreciationPrice.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${property.appreciationPrice.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -198,9 +225,14 @@ export default function PropertyDetail() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Phase-wise Pricing</h3>
                 <div className="space-y-3">
                   {property.phaseWisePricing.map((phase, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                    >
                       <span className="font-medium text-gray-900">{phase.phase}</span>
-                      <span className="text-lg font-semibold text-gray-900">${phase.price.toLocaleString()}</span>
+                      <span className="text-lg font-semibold text-gray-900">
+                        ${phase.price.toLocaleString()}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -219,7 +251,10 @@ export default function PropertyDetail() {
               {property.photos.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {property.photos.map((photo, index) => (
-                    <div key={index} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                    <div
+                      key={index}
+                      className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center"
+                    >
                       <ImageIcon className="h-8 w-8 text-gray-400" />
                       <span className="text-xs text-gray-500 mt-2">{photo}</span>
                     </div>
@@ -238,7 +273,10 @@ export default function PropertyDetail() {
               {property.videos.length > 0 ? (
                 <div className="space-y-3">
                   {property.videos.map((video, index) => (
-                    <div key={index} className="flex items-center p-4 border border-gray-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center p-4 border border-gray-200 rounded-lg"
+                    >
                       <Video className="h-6 w-6 text-gray-400 mr-3" />
                       <span className="text-sm text-gray-900">{video}</span>
                     </div>
@@ -260,7 +298,10 @@ export default function PropertyDetail() {
             {property.legalDocuments.length > 0 ? (
               <div className="space-y-3">
                 {property.legalDocuments.map((doc, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                  >
                     <div className="flex items-center">
                       <File className="h-6 w-6 text-gray-400 mr-3" />
                       <span className="text-sm text-gray-900">{doc}</span>

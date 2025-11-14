@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, AlertCircle, CheckCircle } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 
-import DashboardLayout from "../../../components/DashboardLayout";
-import { usePropertyForm } from "../../../hooks/usePropertyForm";
-import BasicInformationSection from "../../../components/properties/forms/BasicInformationSection";
-import SharesPricingSection from "../../../components/properties/forms/SharesPricingSection";
-import MediaDocumentsSection from "../../../components/properties/forms/MediaDocumentsSection";
-import AmenitiesSection from "../../../components/properties/forms/AmenitiesSection";
-import StatusSection from "../../../components/properties/forms/StatusSection";
+import DashboardLayout from '../../../components/DashboardLayout';
+import { usePropertyForm } from '../../../hooks/usePropertyForm';
+import BasicInformationSection from '../../../components/properties/forms/BasicInformationSection';
+import SharesPricingSection from '../../../components/properties/forms/SharesPricingSection';
+import MediaDocumentsSection from '../../../components/properties/forms/MediaDocumentsSection';
+import AmenitiesSection from '../../../components/properties/forms/AmenitiesSection';
+import StatusSection from '../../../components/properties/forms/StatusSection';
 
 export default function AddProperty() {
   const router = useRouter();
@@ -51,15 +51,9 @@ export default function AddProperty() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <BasicInformationSection 
-          register={formProps.register}
-          errors={formProps.errors}
-        />
-        <SharesPricingSection 
-          register={formProps.register}
-          errors={formProps.errors}
-        />
-        <MediaDocumentsSection 
+        <BasicInformationSection register={formProps.register} errors={formProps.errors} />
+        <SharesPricingSection register={formProps.register} errors={formProps.errors} />
+        <MediaDocumentsSection
           register={formProps.register}
           errors={formProps.errors}
           setValue={formProps.setValue}
@@ -75,7 +69,7 @@ export default function AddProperty() {
           documentDropzone={formProps.documentDropzone}
           removeAt={formProps.removeAt}
         />
-        <AmenitiesSection 
+        <AmenitiesSection
           register={formProps.register}
           errors={formProps.errors}
           iconDropzone={formProps.iconDropzone}
@@ -85,10 +79,7 @@ export default function AddProperty() {
           getValues={formProps.getValues}
           removeAt={formProps.removeAt}
         />
-        <StatusSection 
-          register={formProps.register}
-          errors={formProps.errors}
-        />
+        <StatusSection register={formProps.register} errors={formProps.errors} />
 
         <div className="flex justify-end space-x-4">
           <Link

@@ -29,9 +29,7 @@ export default function PropertyActions({
         onClick={onToggleActive}
         disabled={isLoading}
         className={`p-2 rounded-lg transition-colors duration-200 ${
-          isActive
-            ? 'text-green-600 hover:bg-green-50'
-            : 'text-gray-400 hover:bg-gray-50'
+          isActive ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-50'
         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         title={isActive ? 'Deactivate' : 'Activate'}
       >
@@ -43,9 +41,7 @@ export default function PropertyActions({
         onClick={onToggleFeatured}
         disabled={isLoading}
         className={`p-2 rounded-lg transition-colors duration-200 ${
-          isFeatured
-            ? 'text-yellow-400 hover:bg-yellow-50'
-            : 'text-gray-400 hover:bg-gray-50'
+          isFeatured ? 'text-yellow-400 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-50'
         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         title={isFeatured ? 'Remove from featured' : 'Mark as featured'}
       >

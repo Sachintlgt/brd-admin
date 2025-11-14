@@ -19,7 +19,14 @@ export interface PropertyListFilters {
 }
 
 // Sort Options
-export type SortField = 'createdAt' | 'updatedAt' | 'name' | 'location' | 'pricePerShare' | 'totalShares' | 'availableShares';
+export type SortField =
+  | 'createdAt'
+  | 'updatedAt'
+  | 'name'
+  | 'location'
+  | 'pricePerShare'
+  | 'totalShares'
+  | 'availableShares';
 export type SortOrder = 'asc' | 'desc';
 
 // Property List Item (returned from API)
