@@ -6,6 +6,7 @@ interface PricingDetailsSectionProps {
   errors: any;
   setValue: any;
   getValues: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function PricingDetailsSection({
@@ -13,6 +14,7 @@ export default function PricingDetailsSection({
   errors,
   setValue,
   getValues,
+  onRemoveExisting,
 }: PricingDetailsSectionProps) {
   const [pricingDetails, setPricingDetails] = useState(getValues('pricingDetails') || []);
 
@@ -32,6 +34,14 @@ export default function PricingDetailsSection({
   };
 
   const removePricing = (index: number) => {
+    const pricing = pricingDetails[index];
+
+    // If it has an ID, it's an existing record
+    if (pricing.id && onRemoveExisting) {
+      onRemoveExisting(pricing.id);
+    }
+
+    // Remove from local state
     const updated = pricingDetails.filter((_: any, i: number) => i !== index);
     setPricingDetails(updated);
     setValue('pricingDetails', updated);

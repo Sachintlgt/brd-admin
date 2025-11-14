@@ -1,20 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import { propertySchema, type PropertyFormValues } from '../validations/property.validation';
-import { propertyService } from '../services/propertyService';
+import { propertyService, UpdatePropertyPayload } from '../services/propertyService';
 
 const IMAGE_MAX = 20;
 const VIDEO_MAX = 5;
 const DOC_MAX = 10;
 const ICON_MAX = 20;
 
-export const usePropertyForm = (routerParam?: any) => {
+export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const router = routerParam || useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialData, setInitialData] = useState<any>(null);
+  const [imageIdsToDelete, setImageIdsToDelete] = useState<string[]>([]);
+  const [amenityIdsToDelete, setAmenityIdsToDelete] = useState<string[]>([]);
+  const [documentIdsToDelete, setDocumentIdsToDelete] = useState<string[]>([]);
+  const [pricingIdsToDelete, setPricingIdsToDelete] = useState<string[]>([]);
+  const [shareDetailIdsToDelete, setShareDetailIdsToDelete] = useState<string[]>([]);
+  const [maintenanceTemplateIdsToDelete, setMaintenanceTemplateIdsToDelete] = useState<string[]>(
+    [],
+  );
+
+  // File states
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+  const [iconFiles, setIconFiles] = useState<File[]>([]);
+
+  const [existingImages, setExistingImages] = useState<any[]>([]);
+  const [existingVideos, setExistingVideos] = useState<any[]>([]);
+  const [existingDocuments, setExistingDocuments] = useState<any[]>([]);
+  const [existingAmenities, setExistingAmenities] = useState<any[]>([]);
 
   const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
 
@@ -23,6 +44,7 @@ export const usePropertyForm = (routerParam?: any) => {
     handleSubmit,
     setValue,
     getValues,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<PropertyFormValues>({
     resolver: typedResolver,
@@ -52,12 +74,6 @@ export const usePropertyForm = (routerParam?: any) => {
       maintenanceTemplates: [],
     },
   });
-
-  // File states
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
-  const [iconFiles, setIconFiles] = useState<File[]>([]);
 
   // File upload handlers
   const onImagesDrop = (accepted: File[]) => {
@@ -170,13 +186,114 @@ export const usePropertyForm = (routerParam?: any) => {
     }
   };
 
+  const removeExistingImage = (id: string) => {
+    setImageIdsToDelete((prev) => [...prev, id]);
+    setExistingImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  const removeExistingVideo = (id: string) => {
+    setExistingImages((prev) => [...prev, id]); // Videos are in images table
+    setExistingVideos((prev) => prev.filter((vid) => vid.id !== id));
+  };
+
+  const removeExistingDocument = (id: string) => {
+    setDocumentIdsToDelete((prev) => [...prev, id]);
+    setExistingDocuments((prev) => prev.filter((doc) => doc.id !== id));
+  };
+
+  const removeExistingAmenity = (id: string) => {
+    setAmenityIdsToDelete((prev) => [...prev, id]);
+    setExistingAmenities((prev) => prev.filter((amenity) => amenity.id !== id));
+  };
+
+  const removeExistingPricing = (id: string) => {
+    setPricingIdsToDelete((prev) => [...prev, id]);
+    const currentPricingDetails = getValues('pricingDetails') || [];
+    setValue(
+      'pricingDetails',
+      currentPricingDetails.filter((p: any) => p.id !== id),
+    );
+  };
+
+  const removeExistingShareDetail = (id: string) => {
+    setShareDetailIdsToDelete((prev) => [...prev, id]);
+    const currentShareDetails = getValues('shareDetails') || [];
+    setValue(
+      'shareDetails',
+      currentShareDetails.filter((s: any) => s.id !== id),
+    );
+  };
+
+  const removeExistingMaintenanceTemplate = (id: string) => {
+    setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]);
+    const currentTemplates = getValues('maintenanceTemplates') || [];
+    setValue(
+      'maintenanceTemplates',
+      currentTemplates.filter((t: any) => t.id !== id),
+    );
+  };
+
+  // Load property data for edit mode
+  useEffect(() => {
+    if (propertyId) {
+      setIsLoading(true);
+      propertyService
+        .getPropertyById(propertyId)
+        .then((response) => {
+          const property = response.data;
+          setInitialData(property);
+
+          // Set basic fields
+          reset({
+            name: property.name,
+            location: property.location,
+            description: property.description || '',
+            totalShares: property.totalShares,
+            availableShares: property.availableShares,
+            pricePerShare: property.pricePerShare,
+            appreciationRate: property.appreciationRate || 0,
+            maxBookingDays: property.maxBookingDays || 0,
+            isActive: property.isActive,
+            isFeatured: property.isFeatured,
+            amenityNames: property.amenities?.map((a: any) => a.name).join(', ') || '',
+            documentNames: property.documents?.map((d: any) => d.name).join(', ') || '',
+            propertyImages: [],
+            propertyVideos: [],
+            amenityIcons: [],
+            documents: [],
+            imageFiles: [],
+            videoFiles: [],
+            documentFiles: [],
+            iconFiles: [],
+            pricingDetails: property.pricings || [],
+            shareDetails: property.shareDetails || [],
+            maintenanceTemplates: property.maintenanceTemplates || [],
+          });
+
+          // Set existing media
+          const images = property.images?.filter((img: any) => img.type === 'image') || [];
+          const videos = property.images?.filter((img: any) => img.type === 'video') || [];
+          setExistingImages(images);
+          setExistingVideos(videos);
+          setExistingDocuments(property.documents || []);
+          setExistingAmenities(property.amenities || []);
+
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setSubmitError(err?.message || 'Failed to load property');
+          setIsLoading(false);
+        });
+    }
+  }, [propertyId, reset]);
+
   const onSubmit = async (data: PropertyFormValues) => {
     try {
       setSubmitError(null);
       setSubmitSuccess(null);
 
-      //  Process pricing details - convert dates to ISO format
-      const processedPricingDetails = (data.pricingDetails || []).map((pricing) => ({
+      const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => ({
+        id: pricing.id, // Include ID if exists
         label: pricing.label,
         price: Number(pricing.price),
         type: pricing.type,
@@ -186,58 +303,101 @@ export const usePropertyForm = (routerParam?: any) => {
         effectiveTo: convertToISO(pricing.effectiveTo),
       }));
 
-      //  Process share details - convert string numbers to actual numbers
-      const processedShareDetails = (data.shareDetails || []).map((detail) => ({
+      const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
+        id: detail.id, // Include ID if exists
         title: detail.title,
         description: detail.description || undefined,
         shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
         amount: detail.amount ? Number(detail.amount) : undefined,
       }));
 
-      //  Process maintenance templates - convert dates and numbers
-      const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map((template) => ({
-        chargeType: template.chargeType,
-        amount: Number(template.amount),
-        description: template.description || undefined,
-        dueDay: template.dueDay ? Number(template.dueDay) : undefined,
-        startDate: convertToISO(template.startDate),
-        endDate: convertToISO(template.endDate),
-        isActive: template.isActive ?? true,
-      }));
+      const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
+        (template: any) => ({
+          id: template.id, // Include ID if exists
+          chargeType: template.chargeType,
+          amount: Number(template.amount),
+          description: template.description || undefined,
+          dueDay: template.dueDay ? Number(template.dueDay) : undefined,
+          startDate: convertToISO(template.startDate),
+          endDate: convertToISO(template.endDate),
+          isActive: template.isActive ?? true,
+        }),
+      );
 
-      // Prepare payload with actual files
-      const payload = {
-        name: data.name,
-        location: data.location,
-        description: data.description || undefined,
-        totalShares: data.totalShares,
-        availableShares: data.availableShares,
-        pricePerShare: data.pricePerShare,
-        appreciationRate: data.appreciationRate || undefined,
-        maxBookingDays: data.maxBookingDays || undefined,
-        isActive: data.isActive,
-        isFeatured: data.isFeatured,
-        amenityNames: data.amenityNames || undefined,
-        documentNames: data.documentNames || undefined,
-        propertyImages: imageFiles,
-        propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
-        amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
-        documents: documentFiles.length > 0 ? documentFiles : undefined,
-        pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
-        shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
-        maintenanceTemplates:
-          processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
-      };
+      if (propertyId) {
+        // UPDATE MODE
+        const payload: UpdatePropertyPayload = {
+          name: data.name,
+          location: data.location,
+          description: data.description || undefined,
+          totalShares: data.totalShares,
+          availableShares: data.availableShares,
+          pricePerShare: data.pricePerShare,
+          appreciationRate: data.appreciationRate || undefined,
+          maxBookingDays: data.maxBookingDays || undefined,
+          isActive: data.isActive,
+          isFeatured: data.isFeatured,
+          amenityNames: data.amenityNames || undefined,
+          documentNames: data.documentNames || undefined,
+          imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
+          amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
+          documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,
+          pricingIdsToDelete: pricingIdsToDelete.length > 0 ? pricingIdsToDelete : undefined,
+          shareDetailIdsToDelete:
+            shareDetailIdsToDelete.length > 0 ? shareDetailIdsToDelete : undefined,
+          maintenanceTemplateIdsToDelete:
+            maintenanceTemplateIdsToDelete.length > 0 ? maintenanceTemplateIdsToDelete : undefined,
+          propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
+          propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
+          amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
+          documents: documentFiles.length > 0 ? documentFiles : undefined,
+          pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
+          shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
+          maintenanceTemplates:
+            processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+        };
 
-      // Call API service
-      const response = await propertyService.createProperty(payload);
+        const response = await propertyService.updateProperty(propertyId, payload);
 
-      if (response.success) {
-        setSubmitSuccess(response.message || 'Property created successfully!');
-        // Redirect after a short delay
-        setTimeout(() => {
-          router.push('/properties');
-        }, 1500);
+        if (response.success) {
+          setSubmitSuccess(response.message || 'Property updated successfully!');
+          setTimeout(() => {
+            router.push('/properties');
+          }, 1500);
+        }
+      } else {
+        // CREATE MODE (existing code)
+        const payload = {
+          name: data.name,
+          location: data.location,
+          description: data.description || undefined,
+          totalShares: data.totalShares,
+          availableShares: data.availableShares,
+          pricePerShare: data.pricePerShare,
+          appreciationRate: data.appreciationRate || undefined,
+          maxBookingDays: data.maxBookingDays || undefined,
+          isActive: data.isActive,
+          isFeatured: data.isFeatured,
+          amenityNames: data.amenityNames || undefined,
+          documentNames: data.documentNames || undefined,
+          propertyImages: imageFiles,
+          propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
+          amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
+          documents: documentFiles.length > 0 ? documentFiles : undefined,
+          pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
+          shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
+          maintenanceTemplates:
+            processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+        };
+
+        const response = await propertyService.createProperty(payload);
+
+        if (response.success) {
+          setSubmitSuccess(response.message || 'Property created successfully!');
+          setTimeout(() => {
+            router.push('/properties');
+          }, 1500);
+        }
       }
     } catch (err: any) {
       if (err?.isPermissionError) {
@@ -246,9 +406,10 @@ export const usePropertyForm = (routerParam?: any) => {
         return;
       }
 
-      const errorMessage = err?.message || 'Failed to create property. Please try again.';
+      const errorMessage =
+        err?.message || `Failed to ${propertyId ? 'update' : 'create'} property. Please try again.`;
       setSubmitError(errorMessage);
-      console.error('Error adding property:', err);
+      console.error(`Error ${propertyId ? 'updating' : 'adding'} property:`, err);
     }
   };
 
@@ -277,5 +438,18 @@ export const usePropertyForm = (routerParam?: any) => {
     submitSuccess,
     setSubmitError,
     setSubmitSuccess,
+    isLoading,
+    existingImages,
+    existingVideos,
+    existingDocuments,
+    existingAmenities,
+    removeExistingImage,
+    removeExistingVideo,
+    removeExistingDocument,
+    removeExistingAmenity,
+    removeExistingPricing,
+    removeExistingShareDetail,
+    removeExistingMaintenanceTemplate,
+    isEditMode: !!propertyId,
   };
 };

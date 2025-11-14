@@ -6,6 +6,7 @@ interface MaintenanceTemplatesSectionProps {
   errors: any;
   setValue: any;
   getValues: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function MaintenanceTemplatesSection({
@@ -13,6 +14,7 @@ export default function MaintenanceTemplatesSection({
   errors,
   setValue,
   getValues,
+  onRemoveExisting,
 }: MaintenanceTemplatesSectionProps) {
   const [templates, setTemplates] = useState(getValues('maintenanceTemplates') || []);
 
@@ -32,6 +34,13 @@ export default function MaintenanceTemplatesSection({
   };
 
   const removeTemplate = (index: number) => {
+    const teample = templates[index];
+
+    // If it has an ID, it's an existing record
+    if (teample.id && onRemoveExisting) {
+      onRemoveExisting(teample.id);
+    }
+
     const updated = templates.filter((_: any, i: number) => i !== index);
     setTemplates(updated);
     setValue('maintenanceTemplates', updated);

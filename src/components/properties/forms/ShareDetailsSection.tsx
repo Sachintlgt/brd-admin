@@ -6,6 +6,7 @@ interface ShareDetailsSectionProps {
   errors: any;
   setValue: any;
   getValues: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function ShareDetailsSection({
@@ -13,6 +14,7 @@ export default function ShareDetailsSection({
   errors,
   setValue,
   getValues,
+  onRemoveExisting,
 }: ShareDetailsSectionProps) {
   const [shareDetails, setShareDetails] = useState(getValues('shareDetails') || []);
 
@@ -29,6 +31,13 @@ export default function ShareDetailsSection({
   };
 
   const removeShareDetail = (index: number) => {
+    const share = shareDetails[index];
+
+    // If it has an ID, it's an existing record
+    if (share.id && onRemoveExisting) {
+      onRemoveExisting(share.id);
+    }
+
     const updated = shareDetails.filter((_: any, i: number) => i !== index);
     setShareDetails(updated);
     setValue('shareDetails', updated);
