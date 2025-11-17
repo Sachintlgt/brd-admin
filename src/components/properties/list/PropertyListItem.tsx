@@ -3,6 +3,7 @@
 import { Star } from 'lucide-react';
 import { PropertyListItem } from '@/types/property-list';
 import PropertyActions from './PropertyActions';
+import { displayCurrency } from '@/utils/currencyFormatter';
 
 interface PropertyListItemProps {
   property: PropertyListItem;
@@ -48,7 +49,7 @@ export default function PropertyListItemRow({
             <div className="flex items-center space-x-4 mt-2 flex-wrap">
               {/* Price */}
               <span className="text-sm font-medium text-gray-600">
-                ${property.pricePerShare?.toLocaleString() || 'N/A'} per share
+                {displayCurrency(property.pricePerShare) || '₹ N/A'} per share
               </span>
 
               {/* Shares Info */}

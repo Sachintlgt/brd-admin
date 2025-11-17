@@ -26,14 +26,14 @@ interface MediaDocumentsSectionProps {
   removeAt: (idx: number, files: File[], setFiles: (f: File[]) => void, formKey: any) => void;
 
   // Existing media from DB
-  existingImages: any[];
-  existingVideos: any[];
-  existingDocuments: any[];
+  existingImages?: any[];
+  existingVideos?: any[];
+  existingDocuments?: any[];
 
-  // Callbacks that push IDs into the “to-delete” arrays
-  onRemoveExistingImage: (id: string) => void;
-  onRemoveExistingVideo: (id: string) => void;
-  onRemoveExistingDocument: (id: string) => void;
+  // Callbacks that push IDs into the "to-delete" arrays
+  onRemoveExistingImage?: (id: string) => void;
+  onRemoveExistingVideo?: (id: string) => void;
+  onRemoveExistingDocument?: (id: string) => void;
 }
 
 export default function MediaDocumentsSection({
@@ -67,7 +67,7 @@ export default function MediaDocumentsSection({
       </div>
       <button
         type="button"
-        onClick={() => onRemove(item.id)}
+        onClick={() => onRemoveExistingImage?.(item.id)}
         className="ml-2 text-red-500 hover:text-red-700 shrink-0"
       >
         <X className="w-4 h-4" />
@@ -87,7 +87,7 @@ export default function MediaDocumentsSection({
         {existingImages.length > 0 && (
           <div className="mb-3 space-y-2">
             {existingImages.map((img) => (
-              <ExistingItem key={img.id} item={img} onRemove={onRemoveExistingImage} />
+              <ExistingItem key={img.id} item={img} onRemove={onRemoveExistingImage || (() => {})} />
             ))}
           </div>
         )}
@@ -109,7 +109,7 @@ export default function MediaDocumentsSection({
         {existingVideos.length > 0 && (
           <div className="mb-3 space-y-2">
             {existingVideos.map((vid) => (
-              <ExistingItem key={vid.id} item={vid} onRemove={onRemoveExistingVideo} />
+              <ExistingItem key={vid.id} item={vid} onRemove={onRemoveExistingVideo || (() => {})} />
             ))}
           </div>
         )}
@@ -130,7 +130,7 @@ export default function MediaDocumentsSection({
         {existingDocuments.length > 0 && (
           <div className="mb-3 space-y-2">
             {existingDocuments.map((doc) => (
-              <ExistingItem key={doc.id} item={doc} onRemove={onRemoveExistingDocument} />
+              <ExistingItem key={doc.id} item={doc} onRemove={onRemoveExistingDocument || (() => {})} />
             ))}
           </div>
         )}

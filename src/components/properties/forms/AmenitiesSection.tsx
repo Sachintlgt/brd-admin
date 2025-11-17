@@ -6,6 +6,8 @@ import { X } from 'lucide-react';
 interface AmenitiesSectionProps {
   register: any;
   errors: any;
+  setValue?: any;
+  getValues?: any;
 
   // Icons upload
   iconDropzone: any;
@@ -16,8 +18,8 @@ interface AmenitiesSectionProps {
   removeAt: (idx: number, files: File[], setFiles: (f: File[]) => void, formKey: any) => void;
 
   // Existing amenities from DB
-  existingAmenities: any[];
-  onRemoveExisting: (id: string) => void; // removeExistingAmenity
+  existingAmenities?: any[];
+  onRemoveExisting?: (id: string) => void; // removeExistingAmenity
 }
 
 export default function AmenitiesSection({
@@ -27,6 +29,8 @@ export default function AmenitiesSection({
   iconFiles,
   setIconFiles,
   removeAt,
+  setValue,
+  getValues,
   existingAmenities = [],
   onRemoveExisting,
 }: AmenitiesSectionProps) {
@@ -43,7 +47,7 @@ export default function AmenitiesSection({
       </div>
       <button
         type="button"
-        onClick={() => onRemoveExisting(amenity.id)}
+        onClick={() => onRemoveExisting?.(amenity.id)}
         className="ml-2 text-red-500 hover:text-red-700 shrink-0"
       >
         <X className="w-4 h-4" />

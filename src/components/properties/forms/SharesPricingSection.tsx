@@ -1,4 +1,5 @@
 import FormInput from '../../ui/propertiesFormInput';
+import CurrencyInput from '../../ui/currencyInput';
 
 interface SharesPricingSectionProps {
   register: any;
@@ -26,11 +27,10 @@ export default function SharesPricingSection({ register, errors }: SharesPricing
           inputProps={register('availableShares')}
           error={errors.availableShares}
         />
-        <FormInput
+        <CurrencyInput
           id="pricePerShare"
           label="Price per Share *"
-          type="number"
-          placeholder="0"
+          placeholder="₹ 0"
           inputProps={register('pricePerShare')}
           error={errors.pricePerShare}
         />
