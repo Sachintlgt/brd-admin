@@ -8,6 +8,7 @@ interface MediaDocumentsSectionProps {
   errors: any;
   setValue: any;
   getValues: any;
+  isSubmitting?: boolean;
 
   // NEW files
   imageFiles: File[];
@@ -55,6 +56,7 @@ export default function MediaDocumentsSection({
   onRemoveExistingImage,
   onRemoveExistingVideo,
   onRemoveExistingDocument,
+  isSubmitting,
 }: MediaDocumentsSectionProps) {
   /* --------------------------------------------------------------------- */
   /* Helper: render a single existing media item (image / video / doc)    */
@@ -99,7 +101,11 @@ export default function MediaDocumentsSection({
           files={imageFiles}
           onRemove={(idx) => removeAt(idx, imageFiles, setImageFiles, 'propertyImages')}
           error={errors.propertyImages}
+          isSubmitting={isSubmitting}
         />
+        {errors.propertyImages && (
+          <p className="mt-2 text-sm text-red-600">{errors.propertyImages.message}</p>
+        )}
       </div>
 
       {/* ---------- VIDEOS ---------- */}
@@ -120,7 +126,11 @@ export default function MediaDocumentsSection({
           files={videoFiles}
           onRemove={(idx) => removeAt(idx, videoFiles, setVideoFiles, 'propertyVideos')}
           error={errors.propertyVideos}
+          isSubmitting={isSubmitting}
         />
+        {errors.propertyVideos && (
+          <p className="mt-2 text-sm text-red-600">{errors.propertyVideos.message}</p>
+        )}
       </div>
 
       {/* ---------- DOCUMENTS ---------- */}
@@ -141,7 +151,11 @@ export default function MediaDocumentsSection({
           files={documentFiles}
           onRemove={(idx) => removeAt(idx, documentFiles, setDocumentFiles, 'documents')}
           error={errors.documents}
+          isSubmitting={isSubmitting}
         />
+        {errors.documents && (
+          <p className="mt-2 text-sm text-red-600">{errors.documents.message}</p>
+        )}
       </div>
 
       {/* Document names (comma-separated) */}

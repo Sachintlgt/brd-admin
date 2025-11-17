@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 import DashboardLayout from '../../../components/DashboardLayout';
 import { usePropertyForm } from '../../../hooks/usePropertyForm';
@@ -19,7 +20,22 @@ export default function AddProperty() {
   const router = useRouter();
   const formProps = usePropertyForm(router);
 
+  console.log('AddProperty render');
+
   const { handleSubmit, onSubmit, isSubmitting, submitError, submitSuccess } = formProps;
+
+  const sanitizeErrors = (errors: any) => {
+    return Object.fromEntries(
+      Object.entries(errors).map(([key, err]) => [key, (err as any)?.message])
+    );
+  };
+
+  useEffect(() => {
+    console.log(JSON.stringify({
+      type: 'add_page_errors',
+      errors: sanitizeErrors(formProps.errors)
+    }, null, 2));
+  }, [formProps.errors]);
 
   return (
     <DashboardLayout>
@@ -62,6 +78,7 @@ export default function AddProperty() {
           errors={formProps.errors}
           setValue={formProps.setValue}
           getValues={formProps.getValues}
+          control={formProps.control}
         />
 
         {/*  Share Details Section */}
@@ -70,6 +87,7 @@ export default function AddProperty() {
           errors={formProps.errors}
           setValue={formProps.setValue}
           getValues={formProps.getValues}
+          control={formProps.control}
         />
 
         {/* Maintenance Templates Section */}
@@ -78,6 +96,7 @@ export default function AddProperty() {
           errors={formProps.errors}
           setValue={formProps.setValue}
           getValues={formProps.getValues}
+          control={formProps.control}
         />
 
         <MediaDocumentsSection
@@ -95,6 +114,7 @@ export default function AddProperty() {
           videoDropzone={formProps.videoDropzone}
           documentDropzone={formProps.documentDropzone}
           removeAt={formProps.removeAt}
+          isSubmitting={isSubmitting}
         />
         <AmenitiesSection
           register={formProps.register}
@@ -105,6 +125,7 @@ export default function AddProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           removeAt={formProps.removeAt}
+          isSubmitting={isSubmitting}
         />
         <StatusSection register={formProps.register} errors={formProps.errors} />
 

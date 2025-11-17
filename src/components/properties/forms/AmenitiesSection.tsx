@@ -20,6 +20,9 @@ interface AmenitiesSectionProps {
   // Existing amenities from DB
   existingAmenities?: any[];
   onRemoveExisting?: (id: string) => void; // removeExistingAmenity
+
+  // Form submission
+  isSubmitting: boolean;
 }
 
 export default function AmenitiesSection({
@@ -33,6 +36,7 @@ export default function AmenitiesSection({
   getValues,
   existingAmenities = [],
   onRemoveExisting,
+  isSubmitting,
 }: AmenitiesSectionProps) {
   /* --------------------------------------------------------------------- */
   /* Helper: render a single existing amenity icon                         */
@@ -91,7 +95,11 @@ export default function AmenitiesSection({
             files={iconFiles}
             onRemove={(idx) => removeAt(idx, iconFiles, setIconFiles, 'amenityIcons')}
             error={errors.amenityIcons}
+            isSubmitting={isSubmitting}
           />
+          {errors.amenityIcons && (
+            <p className="mt-2 text-sm text-red-600">{errors.amenityIcons.message}</p>
+          )}
         </div>
       </div>
     </div>

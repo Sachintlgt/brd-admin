@@ -13,8 +13,8 @@ interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Properties', href: '/properties', icon: Building2 },
-  { name: 'Staff', href: '/staff', icon: Users },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  // { name: 'Staff', href: '/staff', icon: Users },
+  // { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: SidebarProps) {

@@ -1,4 +1,5 @@
 import FormInput from '../../ui/propertiesFormInput';
+import { useEffect } from 'react';
 
 interface BasicInformationSectionProps {
   register: any;
@@ -9,6 +10,16 @@ export default function BasicInformationSection({
   register,
   errors,
 }: BasicInformationSectionProps) {
+  useEffect(() => {
+    const sanitized = Object.fromEntries(
+      Object.entries(errors).map(([key, err]) => [key, (err as any)?.message])
+    );
+    console.log(JSON.stringify({
+      type: 'basic_info_errors',
+      errors: sanitized
+    }, null, 2));
+  }, [errors]);
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>

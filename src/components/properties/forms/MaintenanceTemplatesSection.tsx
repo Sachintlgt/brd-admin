@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useFieldArray, useWatch } from 'react-hook-form';
 import { Plus, Trash2 } from 'lucide-react';
+import CurrencyInput from '../../ui/currencyInput';
 
 interface MaintenanceTemplatesSectionProps {
   register: any;
   errors: any;
   setValue: any;
   getValues: any;
+  control: any;
   onRemoveExisting?: (id: string) => void;
 }
 
@@ -14,12 +16,22 @@ export default function MaintenanceTemplatesSection({
   errors,
   setValue,
   getValues,
+  control,
   onRemoveExisting,
 }: MaintenanceTemplatesSectionProps) {
-  const [templates, setTemplates] = useState(getValues('maintenanceTemplates') || []);
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'maintenanceTemplates',
+  });
+
+  // Watch the maintenance templates to get current values for conditional rendering
+  const watchedTemplates = useWatch({
+    control,
+    name: 'maintenanceTemplates',
+  });
 
   const addTemplate = () => {
-    const newTemplate = {
+    append({
       chargeType: 'MONTHLY',
       amount: '',
       description: '',
@@ -27,30 +39,19 @@ export default function MaintenanceTemplatesSection({
       startDate: '',
       endDate: '',
       isActive: true,
-    };
-    const updated = [...templates, newTemplate];
-    setTemplates(updated);
-    setValue('maintenanceTemplates', updated);
+    });
   };
 
   const removeTemplate = (index: number) => {
-    const teample = templates[index];
+    const template = getValues('maintenanceTemplates')[index];
 
     // If it has an ID, it's an existing record
-    if (teample.id && onRemoveExisting) {
-      onRemoveExisting(teample.id);
+    if (template?.id && onRemoveExisting) {
+      onRemoveExisting(template.id);
     }
 
-    const updated = templates.filter((_: any, i: number) => i !== index);
-    setTemplates(updated);
-    setValue('maintenanceTemplates', updated);
-  };
-
-  const updateTemplate = (index: number, field: string, value: any) => {
-    const updated = [...templates];
-    updated[index] = { ...updated[index], [field]: value };
-    setTemplates(updated);
-    setValue('maintenanceTemplates', updated);
+    // Remove from field array
+    remove(index);
   };
 
   const isRecurring = (type: string) => {
@@ -71,14 +72,14 @@ export default function MaintenanceTemplatesSection({
         </button>
       </div>
 
-      {templates.length === 0 && (
+      {fields.length === 0 && (
         <p className="py-8 text-sm text-center text-gray-500">
           No maintenance templates added. Click "Add Template" to create one.
         </p>
       )}
 
       <div className="space-y-6">
-        {templates.map((template: any, index: number) => (
+        {fields.map((field, index) => (
           <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-700">Template #{index + 1}</h3>
@@ -97,8 +98,7 @@ export default function MaintenanceTemplatesSection({
                   Charge Type *
                 </label>
                 <select
-                  value={template.chargeType}
-                  onChange={(e) => updateTemplate(index, 'chargeType', e.target.value)}
+                  {...register(`maintenanceTemplates.${index}.chargeType`)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="MONTHLY">Monthly</option>
@@ -106,20 +106,24 @@ export default function MaintenanceTemplatesSection({
                   <option value="YEARLY">Yearly</option>
                   <option value="ONE_TIME">One Time</option>
                 </select>
+                {errors.maintenanceTemplates?.[index]?.chargeType && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.maintenanceTemplates[index].chargeType.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">Amount *</label>
-                <input
-                  type="number"
-                  value={template.amount}
-                  onChange={(e) => updateTemplate(index, 'amount', e.target.value)}
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <CurrencyInput
+                  id={`maintenance-amount-${index}`}
+                  label="Amount *"
+                  placeholder="₹ 0"
+                  inputProps={register(`maintenanceTemplates.${index}.amount`)}
+                  error={errors.maintenanceTemplates?.[index]?.amount}
                 />
               </div>
 
-              {isRecurring(template.chargeType) && (
+              {isRecurring(watchedTemplates?.[index]?.chargeType || 'MONTHLY') && (
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">
                     Due Day (1-31) *
@@ -128,11 +132,15 @@ export default function MaintenanceTemplatesSection({
                     type="number"
                     min="1"
                     max="31"
-                    value={template.dueDay}
-                    onChange={(e) => updateTemplate(index, 'dueDay', e.target.value)}
+                    {...register(`maintenanceTemplates.${index}.dueDay`)}
                     placeholder="15"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                  {errors.maintenanceTemplates?.[index]?.dueDay && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.maintenanceTemplates[index].dueDay.message}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -140,62 +148,70 @@ export default function MaintenanceTemplatesSection({
                 <label className="block mb-2 text-sm font-medium text-gray-700">Start Date</label>
                 <input
                   type="datetime-local"
-                  value={template.startDate}
-                  onChange={(e) => updateTemplate(index, 'startDate', e.target.value)}
+                  {...register(`maintenanceTemplates.${index}.startDate`)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                {errors.maintenanceTemplates?.[index]?.startDate && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.maintenanceTemplates[index].startDate.message}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">End Date</label>
                 <input
                   type="datetime-local"
-                  value={template.endDate}
-                  onChange={(e) => updateTemplate(index, 'endDate', e.target.value)}
+                  {...register(`maintenanceTemplates.${index}.endDate`)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                {errors.maintenanceTemplates?.[index]?.endDate && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.maintenanceTemplates[index].endDate.message}
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
                 <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
                 <textarea
-                  value={template.description}
-                  onChange={(e) => updateTemplate(index, 'description', e.target.value)}
+                  {...register(`maintenanceTemplates.${index}.description`)}
                   rows={2}
                   placeholder="Describe this maintenance charge..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                {errors.maintenanceTemplates?.[index]?.description && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.maintenanceTemplates[index].description.message}
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={template.isActive}
-                    onChange={(e) => updateTemplate(index, 'isActive', e.target.checked)}
+                    {...register(`maintenanceTemplates.${index}.isActive`)}
                     className="text-blue-600 border-gray-300 rounded shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                   />
                   <span className="ml-2 text-sm text-gray-700">Active</span>
                 </label>
+                {errors.maintenanceTemplates?.[index]?.isActive && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.maintenanceTemplates[index].isActive.message}
+                  </p>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {errors.maintenanceTemplates && (
+      {errors.maintenanceTemplates?.root && (
         <div className="mt-4">
-          {Array.isArray(errors.maintenanceTemplates.message) ? (
-            <ul className="space-y-1 text-sm text-red-600">
-              {errors.maintenanceTemplates.message.map((msg: string, idx: number) => (
-                <li key={idx}>• {msg}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-red-600 whitespace-pre-wrap">
-              {String(errors.maintenanceTemplates.message)}
-            </p>
-          )}
+          <p className="text-sm text-red-600 whitespace-pre-wrap">
+            {String(errors.maintenanceTemplates.root.message)}
+          </p>
         </div>
       )}
     </div>

@@ -162,16 +162,16 @@ export const propertySchema = z
       data.imageFiles.forEach((file, idx) => {
         if (!ALLOWED_IMAGE_MIMES.includes(file.type)) {
           ctx.addIssue({
-            path: ['propertyImages'],
+            path: ['imageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Image ${idx + 1}: Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
-            path: ['propertyImages'],
+            path: ['imageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Image ${idx + 1}: File size exceeds 10 MB limit`,
+            message: `File size exceeds 10 MB limit`
           });
         }
       });
@@ -182,16 +182,16 @@ export const propertySchema = z
       data.videoFiles.forEach((file, idx) => {
         if (!ALLOWED_VIDEO_MIMES.includes(file.type)) {
           ctx.addIssue({
-            path: ['propertyVideos'],
+            path: ['videoFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Video ${idx + 1}: Invalid file type. Allowed: MP4, MPEG, MOV, AVI, WebM`,
+            message: `Invalid file type. Allowed: MP4, MPEG, MOV, AVI, WebM`
           });
         }
         if (file.size > FILE_SIZE_LIMITS.video) {
           ctx.addIssue({
-            path: ['propertyVideos'],
+            path: ['videoFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Video ${idx + 1}: File size exceeds 100 MB limit`,
+            message: `File size exceeds 100 MB limit`
           });
         }
       });
@@ -202,16 +202,16 @@ export const propertySchema = z
       data.documentFiles.forEach((file, idx) => {
         if (!ALLOWED_DOCUMENT_MIMES.includes(file.type)) {
           ctx.addIssue({
-            path: ['documents'],
+            path: ['documentFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Document ${idx + 1}: Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, Images`,
+            message: `Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, Images`
           });
         }
         if (file.size > FILE_SIZE_LIMITS.document) {
           ctx.addIssue({
-            path: ['documents'],
+            path: ['documentFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Document ${idx + 1}: File size exceeds 20 MB limit`,
+            message: `File size exceeds 20 MB limit`
           });
         }
       });
@@ -222,16 +222,16 @@ export const propertySchema = z
       data.iconFiles.forEach((file, idx) => {
         if (!ALLOWED_ICON_MIMES.includes(file.type)) {
           ctx.addIssue({
-            path: ['amenityIcons'],
+            path: ['iconFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Icon ${idx + 1}: Invalid file type. Allowed: JPG, PNG, SVG, WebP`,
+            message: `Invalid file type. Allowed: JPG, PNG, SVG, WebP`
           });
         }
         if (file.size > FILE_SIZE_LIMITS.icon) {
           ctx.addIssue({
-            path: ['amenityIcons'],
+            path: ['iconFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Icon ${idx + 1}: File size exceeds 2 MB limit`,
+            message: `File size exceeds 2 MB limit`
           });
         }
       });

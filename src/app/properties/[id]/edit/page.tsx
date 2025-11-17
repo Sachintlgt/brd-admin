@@ -22,6 +22,8 @@ export default function EditProperty() {
 
   const formProps = usePropertyForm(router, propertyId);
 
+  console.log('EditProperty render');
+
   const { handleSubmit, onSubmit, isSubmitting, submitError, submitSuccess, isLoading } = formProps;
 
   if (isLoading) {
@@ -74,6 +76,7 @@ export default function EditProperty() {
           errors={formProps.errors}
           setValue={formProps.setValue}
           getValues={formProps.getValues}
+          control={formProps.control}
           onRemoveExisting={formProps.removeExistingPricing}
         />
 
@@ -82,6 +85,7 @@ export default function EditProperty() {
           errors={formProps.errors}
           setValue={formProps.setValue}
           getValues={formProps.getValues}
+          control={formProps.control}
           onRemoveExisting={formProps.removeExistingShareDetail}
         />
 
@@ -90,6 +94,7 @@ export default function EditProperty() {
           errors={formProps.errors}
           setValue={formProps.setValue}
           getValues={formProps.getValues}
+          control={formProps.control}
           onRemoveExisting={formProps.removeExistingMaintenanceTemplate}
         />
 
@@ -125,6 +130,7 @@ export default function EditProperty() {
           removeAt={formProps.removeAt}
           existingAmenities={formProps.existingAmenities}
           onRemoveExisting={formProps.removeExistingAmenity}
+          isSubmitting={isSubmitting}
         />
 
         <StatusSection register={formProps.register} errors={formProps.errors} />

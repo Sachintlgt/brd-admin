@@ -54,7 +54,16 @@ export default function FormInput({
         />
         {right && <div className="absolute inset-y-0 right-0 pr-3 flex items-center">{right}</div>}
       </div>
-      {error && <p className="text-red-600 text-sm">{error.message}</p>}
+      {error && (
+        <>
+          {console.log(JSON.stringify({
+            type: 'form_input_error',
+            id: id,
+            message: error.message
+          }, null, 2))}
+          <p className="text-red-600 text-sm">{error.message}</p>
+        </>
+      )}
     </div>
   );
 }
