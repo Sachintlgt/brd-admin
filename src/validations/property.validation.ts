@@ -76,24 +76,45 @@ const highlightSchema = z.object({
   key: z.string().min(1, 'Key is required'),
   label: z.string().min(1, 'Label is required'),
   value: z.string().min(1, 'Value is required'),
+  displayOrder: z.coerce.number().int().min(0).optional(),
 });
 
 // Certificate Schema
 const certificateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
+  description: z.string().max(500, 'Description cannot exceed 500 characters').optional(),
+  displayOrder: z.coerce.number().int().min(0).optional(),
 });
 
 // Floor Plan Schema
 const floorPlanSchema = z.object({
   name: z.string().min(1, 'Name is required'),
+  description: z.string().max(500, 'Description cannot exceed 500 characters').optional(),
+  displayOrder: z.coerce.number().int().min(0).optional(),
 });
 
 // Payment Plan Schema
 const paymentPlanSchema = z.object({
   planType: z.enum(['INSTALMENT', 'BIFURCATION']),
-  name: z.string().min(1, 'Name is required'),
-  amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
   purchaseType: z.enum(['WHOLE_UNIT', 'FRACTIONAL']),
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
+  percentage: z.coerce.number().min(0).max(100).optional(),
+  milestone: z.string().optional(),
+  dueDate: z.string().optional(),
+  displayOrder: z.coerce.number().int().min(0).optional(),
+  isGSTIncluded: z.boolean().default(false),
+  gstPercentage: z.coerce.number().min(0).max(100).optional(),
+}).superRefine((data, ctx) => {
+  // If isGSTIncluded is true, gstPercentage is required
+  if (data.isGSTIncluded && (data.gstPercentage === undefined || data.gstPercentage === null)) {
+    ctx.addIssue({
+      path: ['gstPercentage'],
+      code: z.ZodIssueCode.custom,
+      message: 'GST percentage is required when GST is included',
+    });
+  }
 });
 
 export const propertySchema = z

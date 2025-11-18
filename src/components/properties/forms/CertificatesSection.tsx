@@ -29,6 +29,8 @@ interface CertificatesSectionProps {
 interface CertificateItem {
   id?: string; // for existing certificates
   name: string;
+  description?: string;
+  displayOrder?: number;
   file?: File; // for new uploads
   isExisting?: boolean;
   uniqueId: string; // stable unique identifier for React keys
@@ -37,48 +39,90 @@ interface CertificateItem {
 interface CertificateItemRowProps {
   item: CertificateItem;
   index: number;
-  onUpdate: (index: number, name: string) => void;
+  onUpdate: (index: number, field: string, value: string | number) => void;
   onRemove: (index: number) => void;
   isSubmitting: boolean;
 }
 
 const CertificateItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: CertificateItemRowProps) => (
-  <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-    <div className="shrink-0">
-      {item.isExisting ? (
-        <ImageIcon className="w-5 h-5 text-blue-600" />
-      ) : (
-        <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
-          <Plus className="w-3 h-3 text-green-600" />
+  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center space-x-3">
+        <div className="shrink-0">
+          {item.isExisting ? (
+            <ImageIcon className="w-5 h-5 text-blue-600" />
+          ) : (
+            <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+              <Plus className="w-3 h-3 text-green-600" />
+            </div>
+          )}
         </div>
-      )}
+        <h4 className="text-sm font-medium text-gray-700">
+          Certificate #{index + 1}
+        </h4>
+      </div>
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="shrink-0 text-red-600 hover:text-red-700 transition-colors"
+        title="Remove certificate"
+        disabled={isSubmitting}
+      >
+        <X className="w-4 h-4" />
+      </button>
     </div>
 
-    <div className="flex-1">
-      <input
-        type="text"
-        value={item.name}
-        onChange={(e) => onUpdate(index, e.target.value)}
-        placeholder="Enter certificate name (e.g., RERA Certificate)"
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Name *
+        </label>
+        <input
+          type="text"
+          value={item.name}
+          onChange={(e) => onUpdate(index, 'name', e.target.value)}
+          placeholder="Enter certificate name (e.g., RERA Certificate)"
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          disabled={isSubmitting}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Display Order
+        </label>
+        <input
+          type="number"
+          min="0"
+          value={item.displayOrder || ''}
+          onChange={(e) => onUpdate(index, 'displayOrder', parseInt(e.target.value) || 0)}
+          placeholder="0"
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          disabled={isSubmitting}
+        />
+      </div>
+    </div>
+
+    <div className="mt-4">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Description
+      </label>
+      <textarea
+        value={item.description || ''}
+        onChange={(e) => onUpdate(index, 'description', e.target.value)}
+        placeholder="Optional description..."
+        rows={2}
         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         disabled={isSubmitting}
+        maxLength={500}
       />
-      {item.file && (
-        <p className="text-xs text-gray-500 mt-1">
-          {item.file.name} ({formatFileSize(item.file.size)})
-        </p>
-      )}
     </div>
 
-    <button
-      type="button"
-      onClick={() => onRemove(index)}
-      className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-      title="Remove certificate"
-      disabled={isSubmitting}
-    >
-      <X className="w-4 h-4" />
-    </button>
+    {item.file && (
+      <p className="text-xs text-gray-500 mt-2">
+        File: {item.file.name} ({formatFileSize(item.file.size)})
+      </p>
+    )}
   </div>
 ));
 
@@ -110,17 +154,21 @@ export default function CertificatesSection({
         updatedItems.push({
           id: certificate.id,
           name: certificate.name,
+          description: certificate.description,
+          displayOrder: certificate.displayOrder,
           isExisting: true,
           uniqueId: certificate.id || `existing-${certificate.id}`,
         });
       });
 
-      // Add new uploaded files - preserve their names if they were entered before
+      // Add new uploaded files - preserve their data if they were entered before
       certificateImageFiles.forEach((file, index) => {
         const uniqueId = `new-file-${file.name}-${file.size}-${index}`;
         const previousItem = previousMap.get(uniqueId);
         updatedItems.push({
-          name: previousItem?.name || '', // Preserve previous name if it exists
+          name: previousItem?.name || '',
+          description: previousItem?.description || '',
+          displayOrder: previousItem?.displayOrder || 0,
           file,
           isExisting: false,
           uniqueId,
@@ -146,18 +194,18 @@ export default function CertificatesSection({
   useEffect(() => {
     const certificates = certificateItems
       .filter(item => item.name.trim() !== '' && !item.isExisting)
-      .map((item, index) => ({
+      .map((item) => ({
         name: item.name.trim(),
-        description: '', // Could be enhanced to include description field later
-        displayOrder: index + 1
+        description: item.description?.trim() || undefined,
+        displayOrder: item.displayOrder || 0
       }));
     console.log('CertificatesSection: Setting certificates to:', certificates);
     setValue?.('certificates', certificates);
   }, [certificateItems, setValue]);
 
-  const updateCertificateName = useCallback((index: number, name: string) => {
+  const updateCertificateItem = useCallback((index: number, field: string, value: string | number) => {
     setCertificateItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, name } : item
+      i === index ? { ...item, [field]: value } : item
     ));
   }, []);
 
@@ -234,11 +282,11 @@ export default function CertificatesSection({
         ) : (
           <div className="space-y-3">
             {certificateItems.map((item, index) => (
-              <CertificateItemRow 
-                key={item.uniqueId} 
-                item={item} 
-                index={index} 
-                onUpdate={updateCertificateName}
+              <CertificateItemRow
+                key={item.uniqueId}
+                item={item}
+                index={index}
+                onUpdate={updateCertificateItem}
                 onRemove={removeCertificateItem}
                 isSubmitting={isSubmitting}
               />

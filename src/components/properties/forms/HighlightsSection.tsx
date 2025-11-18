@@ -22,7 +22,7 @@ export default function HighlightsSection({
   });
 
   const addHighlight = () => {
-    append({ key: '', label: '', value: '' });
+    append({ key: '', label: '', value: '', displayOrder: 0 });
   };
 
   const removeHighlight = (index: number) => {
@@ -93,7 +93,7 @@ export default function HighlightsSection({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">Key *</label>
                 <input
@@ -135,6 +135,22 @@ export default function HighlightsSection({
                 {errors.highlights?.[index]?.value && (
                   <p className="mt-1 text-sm text-red-600">
                     {errors.highlights[index].value.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Display Order</label>
+                <input
+                  type="number"
+                  min="0"
+                  {...register(`highlights.${index}.displayOrder`)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {errors.highlights?.[index]?.displayOrder && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.highlights[index].displayOrder.message}
                   </p>
                 )}
               </div>

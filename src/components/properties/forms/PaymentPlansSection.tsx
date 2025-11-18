@@ -25,7 +25,19 @@ export default function PaymentPlansSection({
   });
 
   const addPaymentPlan = () => {
-    append({ planType: 'INSTALMENT', name: '', amount: '', purchaseType: 'WHOLE_UNIT' });
+    append({
+      planType: 'INSTALMENT',
+      purchaseType: 'WHOLE_UNIT',
+      name: '',
+      description: '',
+      amount: '',
+      percentage: '',
+      milestone: '',
+      dueDate: '',
+      displayOrder: 0,
+      isGSTIncluded: false,
+      gstPercentage: ''
+    });
   };
 
   const removePaymentPlan = (index: number) => {
@@ -103,6 +115,7 @@ export default function PaymentPlansSection({
               </button>
             </div>
 
+            {/* Basic Information */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">Plan Type *</label>
@@ -160,6 +173,123 @@ export default function PaymentPlansSection({
                   error={errors.paymentPlans?.[index]?.amount}
                 />
               </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Percentage (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  {...register(`paymentPlans.${index}.percentage`)}
+                  placeholder="0.00"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {errors.paymentPlans?.[index]?.percentage && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.paymentPlans[index].percentage.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Display Order</label>
+                <input
+                  type="number"
+                  min="0"
+                  {...register(`paymentPlans.${index}.displayOrder`)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {errors.paymentPlans?.[index]?.displayOrder && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.paymentPlans[index].displayOrder.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Milestone</label>
+                <input
+                  type="text"
+                  {...register(`paymentPlans.${index}.milestone`)}
+                  placeholder="e.g., Upon Booking"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {errors.paymentPlans?.[index]?.milestone && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.paymentPlans[index].milestone.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Due Date</label>
+                <input
+                  type="date"
+                  {...register(`paymentPlans.${index}.dueDate`)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {errors.paymentPlans?.[index]?.dueDate && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.paymentPlans[index].dueDate.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* GST Configuration */}
+            <div className="mt-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <input
+                  type="checkbox"
+                  {...register(`paymentPlans.${index}.isGSTIncluded`)}
+                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                />
+                <label className="text-sm font-medium text-gray-700">Include GST</label>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    GST Percentage {errors.paymentPlans?.[index]?.isGSTIncluded ? '*' : ''}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    {...register(`paymentPlans.${index}.gstPercentage`)}
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  {errors.paymentPlans?.[index]?.gstPercentage && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.paymentPlans[index].gstPercentage.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="mt-6">
+              <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                {...register(`paymentPlans.${index}.description`)}
+                rows={3}
+                placeholder="Optional description..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                maxLength={500}
+              />
+              {errors.paymentPlans?.[index]?.description && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.paymentPlans[index].description.message}
+                </p>
+              )}
             </div>
           </div>
         ))}

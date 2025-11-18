@@ -337,6 +337,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const removeExistingPricing = (id: string) => {
     setPricingIdsToDelete((prev) => [...prev, id]);
+    setExistingPricingDetails((prev) => prev.filter((pricing) => pricing.id !== id));
     const currentPricingDetails = getValues('pricingDetails') || [];
     setValue(
       'pricingDetails',
@@ -346,6 +347,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const removeExistingShareDetail = (id: string) => {
     setShareDetailIdsToDelete((prev) => [...prev, id]);
+    setExistingShareDetails((prev) => prev.filter((share) => share.id !== id));
     const currentShareDetails = getValues('shareDetails') || [];
     setValue(
       'shareDetails',
@@ -355,6 +357,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const removeExistingMaintenanceTemplate = (id: string) => {
     setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]);
+    setExistingMaintenanceTemplates((prev) => prev.filter((template) => template.id !== id));
     const currentTemplates = getValues('maintenanceTemplates') || [];
     setValue(
       'maintenanceTemplates',
@@ -441,6 +444,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           const property = response.data;
           setInitialData(property);
 
+
           // Set basic fields
           reset({
             name: property.name,
@@ -506,16 +510,16 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setExistingFloorPlans(property.floorPlans || []);
           
           // Set existing form array data
-          const pricings = (property.pricings || []).map((pricing: any) => ({
+          const pricings = (property.pricings || property.pricingDetails || []).map((pricing: any) => ({
             ...pricing,
             effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
             effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
           }));
           setExistingPricingDetails(pricings);
-          
+
           const shares = property.shareDetails || [];
           setExistingShareDetails(shares);
-          
+
           const templates = (property.maintenanceTemplates || []).map((template: any) => ({
             ...template,
             startDate: convertToDateTimeLocal(template.startDate),

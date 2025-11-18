@@ -286,27 +286,39 @@ export const propertyService = {
       console.log('payload.amenityIcons?.length:', payload.amenityIcons?.length);
       console.log('payload.documents?.length:', payload.documents?.length);
 
-      // Delete IDs arrays
+      // Delete IDs arrays (comma-separated UUIDs as per API spec)
       if (payload.imageIdsToDelete?.length) {
-        formData.append('imageIdsToDelete', JSON.stringify(payload.imageIdsToDelete));
+        formData.append('imageIdsToDelete', payload.imageIdsToDelete.join(','));
       }
       if (payload.amenityIdsToDelete?.length) {
-        formData.append('amenityIdsToDelete', JSON.stringify(payload.amenityIdsToDelete));
+        formData.append('amenityIdsToDelete', payload.amenityIdsToDelete.join(','));
       }
       if (payload.documentIdsToDelete?.length) {
-        formData.append('documentIdsToDelete', JSON.stringify(payload.documentIdsToDelete));
+        formData.append('documentIdsToDelete', payload.documentIdsToDelete.join(','));
       }
       if (payload.pricingIdsToDelete?.length) {
-        formData.append('pricingIdsToDelete', JSON.stringify(payload.pricingIdsToDelete));
+        formData.append('pricingIdsToDelete', payload.pricingIdsToDelete.join(','));
       }
       if (payload.shareDetailIdsToDelete?.length) {
-        formData.append('shareDetailIdsToDelete', JSON.stringify(payload.shareDetailIdsToDelete));
+        formData.append('shareDetailIdsToDelete', payload.shareDetailIdsToDelete.join(','));
       }
       if (payload.maintenanceTemplateIdsToDelete?.length) {
         formData.append(
           'maintenanceTemplateIdsToDelete',
-          JSON.stringify(payload.maintenanceTemplateIdsToDelete),
+          payload.maintenanceTemplateIdsToDelete.join(','),
         );
+      }
+      if (payload.certificateIdsToDelete?.length) {
+        formData.append('certificateIdsToDelete', payload.certificateIdsToDelete.join(','));
+      }
+      if (payload.floorPlanIdsToDelete?.length) {
+        formData.append('floorPlanIdsToDelete', payload.floorPlanIdsToDelete.join(','));
+      }
+      if (payload.paymentPlanIdsToDelete?.length) {
+        formData.append('paymentPlanIdsToDelete', payload.paymentPlanIdsToDelete.join(','));
+      }
+      if (payload.highlightIdsToDelete?.length) {
+        formData.append('highlightIdsToDelete', payload.highlightIdsToDelete.join(','));
       }
 
       // Structured data
