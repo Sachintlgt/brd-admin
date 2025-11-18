@@ -34,7 +34,9 @@ export default function HighlightsSection({
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-700 truncate">{item.label || 'Untitled'}</p>
-          <p className="text-xs text-gray-500">{item.key} • {item.value}</p>
+          <p className="text-xs text-gray-500">
+            {item.key} • {item.value}
+          </p>
         </div>
       </div>
       <button
@@ -67,7 +69,11 @@ export default function HighlightsSection({
           <p className="text-xs text-gray-600 font-medium">Existing Highlights:</p>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {existingHighlights.map((highlight) => (
-              <ExistingItem key={highlight.id} item={highlight} onRemove={onRemoveExisting || (() => {})} />
+              <ExistingItem
+                key={highlight.id}
+                item={highlight}
+                onRemove={onRemoveExisting || (() => {})}
+              />
             ))}
           </div>
         </div>

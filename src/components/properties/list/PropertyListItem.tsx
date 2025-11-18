@@ -21,13 +21,13 @@ export default function PropertyListItemRow({
   isLoading = false,
 }: PropertyListItemProps) {
   return (
-    <div className="p-6 hover:bg-gray-50 transition-colors duration-200">
+    <div className="p-6 transition-colors duration-200 hover:bg-gray-50">
       <div className="flex items-center justify-between">
         {/* Left Section: Property Info */}
-        <div className="flex items-center space-x-4 flex-1">
+        <div className="flex items-center flex-1 space-x-4">
           {/* Avatar */}
-          <div className="w-12 h-12 bg-linear-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-white font-medium text-lg">
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-linear-to-br from-blue-400 to-blue-600 shrink-0">
+            <span className="text-lg font-medium text-white">
               {property.name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -38,7 +38,7 @@ export default function PropertyListItemRow({
             <div className="flex items-center space-x-2">
               <h3 className="text-lg font-medium text-gray-900 truncate">{property.name}</h3>
               {property.isFeatured && (
-                <Star className="h-5 w-5 text-yellow-400 fill-current shrink-0" />
+                <Star className="w-5 h-5 text-yellow-400 fill-current shrink-0" />
               )}
             </div>
 
@@ -46,7 +46,7 @@ export default function PropertyListItemRow({
             <p className="text-sm text-gray-500 truncate">{property.location}</p>
 
             {/* Stats Row */}
-            <div className="flex items-center space-x-4 mt-2 flex-wrap">
+            <div className="flex flex-wrap items-center mt-2 space-x-4">
               {/* Price */}
               <span className="text-sm font-medium text-gray-600">
                 {displayCurrency(property.initialPricePerShare) || '₹ N/A'} per share

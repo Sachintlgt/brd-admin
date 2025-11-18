@@ -9,7 +9,6 @@ export default function BasicInformationSection({
   register,
   errors,
 }: BasicInformationSectionProps) {
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>

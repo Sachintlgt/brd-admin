@@ -122,9 +122,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         {
           type: err.type,
           message: err.message,
-          ref: err.ref?.name
-        }
-      ])
+          ref: err.ref?.name,
+        },
+      ]),
     );
   };
 
@@ -136,7 +136,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setFormErrors(sanitizeErrors(errors));
   }, [errorsJson]);
 
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {
     forceUpdate();
@@ -159,7 +159,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...imageFiles, ...toAdd];
     setImageFiles(next);
-    setValue('propertyImages', [...(getValues('propertyImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue(
+      'propertyImages',
+      [...(getValues('propertyImages') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('imageFiles', next, { shouldValidate: true });
   };
 
@@ -169,10 +173,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...videoFiles, ...toAdd];
     setVideoFiles(next);
-    setValue('propertyVideos', [
-      ...(getValues('propertyVideos') || []),
-      ...toAdd.map((f) => f.name),
-    ], { shouldValidate: true });
+    setValue(
+      'propertyVideos',
+      [...(getValues('propertyVideos') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('videoFiles', next, { shouldValidate: true });
   };
 
@@ -182,7 +187,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...documentFiles, ...toAdd];
     setDocumentFiles(next);
-    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)], {
+      shouldValidate: true,
+    });
     setValue('documentFiles', next, { shouldValidate: true });
   };
 
@@ -192,7 +199,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...iconFiles, ...toAdd];
     setIconFiles(next);
-    setValue('amenityIcons', [...(getValues('amenityIcons') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('amenityIcons', [...(getValues('amenityIcons') || []), ...toAdd.map((f) => f.name)], {
+      shouldValidate: true,
+    });
     setValue('iconFiles', next, { shouldValidate: true });
   };
 
@@ -202,7 +211,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...certificateImageFiles, ...toAdd];
     setCertificateImageFiles(next);
-    setValue('certificateImages', [...(getValues('certificateImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue(
+      'certificateImages',
+      [...(getValues('certificateImages') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('certificateImageFiles', next, { shouldValidate: true });
   };
 
@@ -212,7 +225,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...floorPlanImageFiles, ...toAdd];
     setFloorPlanImageFiles(next);
-    setValue('floorPlanImages', [...(getValues('floorPlanImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue(
+      'floorPlanImages',
+      [...(getValues('floorPlanImages') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('floorPlanImageFiles', next, { shouldValidate: true });
   };
 
@@ -405,8 +422,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       }, 1500);
     },
     onError: (error: any) => {
-      const message =
-        error?.message || 'Failed to create property. Please try again.';
+      const message = error?.message || 'Failed to create property. Please try again.';
       setSubmitError(message);
       toast.error(message);
     },
@@ -424,8 +440,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       }, 1500);
     },
     onError: (error: any) => {
-      const message =
-        error?.message || 'Failed to update property. Please try again.';
+      const message = error?.message || 'Failed to update property. Please try again.';
       setSubmitError(message);
       toast.error(message);
     },
@@ -496,15 +511,18 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setExistingImages(images);
           setExistingVideos(videos);
           setExistingDocuments(property.documents || []);
-          
+
           console.log('\n=== FORM LOADING DEBUG ===');
           console.log('property.amenities from API:', JSON.stringify(property.amenities, null, 2));
-          console.log('About to setExistingAmenities with:', JSON.stringify(property.amenities || [], null, 2));
-          
+          console.log(
+            'About to setExistingAmenities with:',
+            JSON.stringify(property.amenities || [], null, 2),
+          );
+
           setExistingAmenities(property.amenities || []);
           setExistingCertificates(property.certificates || []);
           setExistingFloorPlans(property.floorPlans || []);
-          
+
           // Set existing form array data
           const pricings = (property.pricings || []).map((pricing: any) => ({
             ...pricing,
@@ -512,17 +530,17 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
           }));
           setExistingPricingDetails(pricings);
-          
+
           const shares = property.shareDetails || [];
           setExistingShareDetails(shares);
-          
+
           const templates = (property.maintenanceTemplates || []).map((template: any) => ({
             ...template,
             startDate: convertToDateTimeLocal(template.startDate),
             endDate: convertToDateTimeLocal(template.endDate),
           }));
           setExistingMaintenanceTemplates(templates);
-          
+
           setExistingHighlights(property.highlights || []);
           setExistingPaymentPlans(property.paymentPlans || []);
 
@@ -553,7 +571,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
     // Combine existing pricing details (not deleted) with new ones from form
     const existingPricingNotDeleted = existingPricingDetails.filter(
-      pricing => !pricingIdsToDelete.includes(pricing.id)
+      (pricing) => !pricingIdsToDelete.includes(pricing.id),
     );
     const newPricingFromForm = (data.pricingDetails || []).map((pricing: any) => ({
       id: pricing.id, // Include ID if exists (for existing records)
@@ -569,7 +587,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
     // Combine existing share details (not deleted) with new ones from form
     const existingShareDetailsNotDeleted = existingShareDetails.filter(
-      share => !shareDetailIdsToDelete.includes(share.id)
+      (share) => !shareDetailIdsToDelete.includes(share.id),
     );
     const newShareDetailsFromForm = (data.shareDetails || []).map((detail: any) => ({
       id: detail.id, // Include ID if exists
@@ -582,21 +600,22 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
     // Combine existing maintenance templates (not deleted) with new ones from form
     const existingMaintenanceNotDeleted = existingMaintenanceTemplates.filter(
-      template => !maintenanceTemplateIdsToDelete.includes(template.id)
+      (template) => !maintenanceTemplateIdsToDelete.includes(template.id),
     );
-    const newMaintenanceFromForm = (data.maintenanceTemplates || []).map(
-      (template: any) => ({
-        id: template.id, // Include ID if exists
-        chargeType: template.chargeType,
-        amount: Number(template.amount),
-        description: template.description || undefined,
-        dueDay: template.dueDay ? Number(template.dueDay) : undefined,
-        startDate: convertToISO(template.startDate),
-        endDate: convertToISO(template.endDate),
-        isActive: template.isActive ?? true,
-      }),
-    );
-    const processedMaintenanceTemplates = [...existingMaintenanceNotDeleted, ...newMaintenanceFromForm];
+    const newMaintenanceFromForm = (data.maintenanceTemplates || []).map((template: any) => ({
+      id: template.id, // Include ID if exists
+      chargeType: template.chargeType,
+      amount: Number(template.amount),
+      description: template.description || undefined,
+      dueDay: template.dueDay ? Number(template.dueDay) : undefined,
+      startDate: convertToISO(template.startDate),
+      endDate: convertToISO(template.endDate),
+      isActive: template.isActive ?? true,
+    }));
+    const processedMaintenanceTemplates = [
+      ...existingMaintenanceNotDeleted,
+      ...newMaintenanceFromForm,
+    ];
 
     if (propertyId) {
       // UPDATE MODE - TARGETED DEBUG LOGS
@@ -605,17 +624,17 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       console.log('amenityIdsToDelete:', JSON.stringify(amenityIdsToDelete, null, 2));
       console.log('data.amenityNames:', data.amenityNames);
       console.log('iconFiles.length:', iconFiles.length);
-      
+
       console.log('\n=== PRICING DEBUG ===');
       console.log('Form data.pricingDetails:', JSON.stringify(data.pricingDetails, null, 2));
       console.log('existingPricingDetails:', JSON.stringify(existingPricingDetails, null, 2));
       console.log('pricingIdsToDelete:', JSON.stringify(pricingIdsToDelete, null, 2));
-      
+
       console.log('\n=== SHARE DETAILS DEBUG ===');
       console.log('Form data.shareDetails:', JSON.stringify(data.shareDetails, null, 2));
       console.log('existingShareDetails:', JSON.stringify(existingShareDetails, null, 2));
       console.log('shareDetailIdsToDelete:', JSON.stringify(shareDetailIdsToDelete, null, 2));
-      
+
       const payload: UpdatePropertyPayload = {
         name: data.name,
         location: data.location,
@@ -653,9 +672,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           shareDetailIdsToDelete.length > 0 ? shareDetailIdsToDelete : undefined,
         maintenanceTemplateIdsToDelete:
           maintenanceTemplateIdsToDelete.length > 0 ? maintenanceTemplateIdsToDelete : undefined,
-        certificateIdsToDelete: certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
+        certificateIdsToDelete:
+          certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
         floorPlanIdsToDelete: floorPlanIdsToDelete.length > 0 ? floorPlanIdsToDelete : undefined,
-        paymentPlanIdsToDelete: paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
+        paymentPlanIdsToDelete:
+          paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
         highlightIdsToDelete: highlightIdsToDelete.length > 0 ? highlightIdsToDelete : undefined,
         propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
@@ -669,7 +690,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
         highlights: (() => {
           const existingHighlightsNotDeleted = existingHighlights.filter(
-            highlight => !highlightIdsToDelete.includes(highlight.id)
+            (highlight) => !highlightIdsToDelete.includes(highlight.id),
           );
           const newHighlightsFromForm = data.highlights || [];
           const allHighlights = [...existingHighlightsNotDeleted, ...newHighlightsFromForm];
@@ -677,7 +698,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         })(),
         paymentPlans: (() => {
           const existingPaymentPlansNotDeleted = existingPaymentPlans.filter(
-            plan => !paymentPlanIdsToDelete.includes(plan.id)
+            (plan) => !paymentPlanIdsToDelete.includes(plan.id),
           );
           const newPaymentPlansFromForm = data.paymentPlans || [];
           const allPaymentPlans = [...existingPaymentPlansNotDeleted, ...newPaymentPlansFromForm];
@@ -685,7 +706,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         })(),
         certificates: (() => {
           const existingCertificatesNotDeleted = existingCertificates.filter(
-            cert => !certificateIdsToDelete.includes(cert.id)
+            (cert) => !certificateIdsToDelete.includes(cert.id),
           );
           const newCertificatesFromForm = data.certificates || [];
           const allCertificates = [...existingCertificatesNotDeleted, ...newCertificatesFromForm];
@@ -693,7 +714,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         })(),
         floorPlans: (() => {
           const existingFloorPlansNotDeleted = existingFloorPlans.filter(
-            plan => !floorPlanIdsToDelete.includes(plan.id)
+            (plan) => !floorPlanIdsToDelete.includes(plan.id),
           );
           const newFloorPlansFromForm = data.floorPlans || [];
           const allFloorPlans = [...existingFloorPlansNotDeleted, ...newFloorPlansFromForm];

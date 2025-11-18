@@ -61,7 +61,9 @@ export default function PricingDetailsSection({
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-700 truncate">{item.label || 'Untitled'}</p>
-          <p className="text-xs text-gray-500">₹ {item.price || '0'} • {item.type}</p>
+          <p className="text-xs text-gray-500">
+            ₹ {item.price || '0'} • {item.type}
+          </p>
         </div>
       </div>
       <button
@@ -94,7 +96,11 @@ export default function PricingDetailsSection({
           <p className="text-xs text-gray-600 font-medium">Existing Pricing:</p>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {existingPricingDetails.map((pricing) => (
-              <ExistingItem key={pricing.id} item={pricing} onRemove={onRemoveExisting || (() => {})} />
+              <ExistingItem
+                key={pricing.id}
+                item={pricing}
+                onRemove={onRemoveExisting || (() => {})}
+              />
             ))}
           </div>
         </div>
@@ -165,9 +171,7 @@ export default function PricingDetailsSection({
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Phase Name *
-                </label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Phase Name *</label>
                 <input
                   type="text"
                   {...register(`pricingDetails.${index}.phaseName`)}
@@ -198,7 +202,7 @@ export default function PricingDetailsSection({
                 )}
               </div>
 
-              {(watchedPricingDetails?.[index]?.type === 'PHASE') && (
+              {watchedPricingDetails?.[index]?.type === 'PHASE' && (
                 <>
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">

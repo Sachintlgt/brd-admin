@@ -72,10 +72,10 @@ export default function EditProperty() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <BasicInformationSection register={formProps.register} errors={formProps.errors} />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
-        <HighlightsSection 
-          register={formProps.register} 
-          errors={formProps.errors} 
-          control={formProps.control} 
+        <HighlightsSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
           existingHighlights={formProps.existingHighlights}
           onRemoveExisting={formProps.removeExistingHighlight}
         />
@@ -105,9 +105,9 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
         />
-        <PaymentPlansSection 
-          register={formProps.register} 
-          errors={formProps.errors} 
+        <PaymentPlansSection
+          register={formProps.register}
+          errors={formProps.errors}
           control={formProps.control}
           getValues={formProps.getValues}
           existingPaymentPlans={formProps.existingPaymentPlans}

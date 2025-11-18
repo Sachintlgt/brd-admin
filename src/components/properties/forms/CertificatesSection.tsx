@@ -42,45 +42,47 @@ interface CertificateItemRowProps {
   isSubmitting: boolean;
 }
 
-const CertificateItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: CertificateItemRowProps) => (
-  <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-    <div className="shrink-0">
-      {item.isExisting ? (
-        <ImageIcon className="w-5 h-5 text-blue-600" />
-      ) : (
-        <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
-          <Plus className="w-3 h-3 text-green-600" />
-        </div>
-      )}
-    </div>
+const CertificateItemRow = memo(
+  ({ item, index, onUpdate, onRemove, isSubmitting }: CertificateItemRowProps) => (
+    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="shrink-0">
+        {item.isExisting ? (
+          <ImageIcon className="w-5 h-5 text-blue-600" />
+        ) : (
+          <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+            <Plus className="w-3 h-3 text-green-600" />
+          </div>
+        )}
+      </div>
 
-    <div className="flex-1">
-      <input
-        type="text"
-        value={item.name}
-        onChange={(e) => onUpdate(index, e.target.value)}
-        placeholder="Enter certificate name (e.g., RERA Certificate)"
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      <div className="flex-1">
+        <input
+          type="text"
+          value={item.name}
+          onChange={(e) => onUpdate(index, e.target.value)}
+          placeholder="Enter certificate name (e.g., RERA Certificate)"
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          disabled={isSubmitting}
+        />
+        {item.file && (
+          <p className="text-xs text-gray-500 mt-1">
+            {item.file.name} ({formatFileSize(item.file.size)})
+          </p>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+        title="Remove certificate"
         disabled={isSubmitting}
-      />
-      {item.file && (
-        <p className="text-xs text-gray-500 mt-1">
-          {item.file.name} ({formatFileSize(item.file.size)})
-        </p>
-      )}
+      >
+        <X className="w-4 h-4" />
+      </button>
     </div>
-
-    <button
-      type="button"
-      onClick={() => onRemove(index)}
-      className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-      title="Remove certificate"
-      disabled={isSubmitting}
-    >
-      <X className="w-4 h-4" />
-    </button>
-  </div>
-));
+  ),
+);
 
 CertificateItemRow.displayName = 'CertificateItemRow';
 
@@ -101,9 +103,9 @@ export default function CertificatesSection({
 
   // Initialize certificate items when component mounts or existing certificates change
   useEffect(() => {
-    setCertificateItems(prev => {
+    setCertificateItems((prev) => {
       const updatedItems: CertificateItem[] = [];
-      const previousMap = new Map(prev.map(item => [item.uniqueId, item]));
+      const previousMap = new Map(prev.map((item) => [item.uniqueId, item]));
 
       // Add existing certificates
       existingCertificates.forEach((certificate) => {
@@ -134,8 +136,8 @@ export default function CertificatesSection({
   // Update certificateNames whenever certificateItems change
   useEffect(() => {
     const names = certificateItems
-      .filter(item => item.name.trim() !== '')
-      .map(item => item.name.trim());
+      .filter((item) => item.name.trim() !== '')
+      .map((item) => item.name.trim());
     const commaSeparatedNames = names.join(', ');
     setValue?.('certificateNames', commaSeparatedNames);
   }, [certificateItems, setValue]);
@@ -143,41 +145,47 @@ export default function CertificatesSection({
   // Update certificates array whenever certificateItems change
   useEffect(() => {
     const certificates = certificateItems
-      .filter(item => item.name.trim() !== '')
+      .filter((item) => item.name.trim() !== '')
       .map((item, index) => ({
         name: item.name.trim(),
         imageUrl: 'will-be-uploaded',
         description: '', // Could be enhanced to include description field later
-        displayOrder: index + 1
+        displayOrder: index + 1,
       }));
     setValue?.('certificates', certificates);
   }, [certificateItems, setValue]);
 
   const updateCertificateName = useCallback((index: number, name: string) => {
-    setCertificateItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, name } : item
-    ));
+    setCertificateItems((prev) => prev.map((item, i) => (i === index ? { ...item, name } : item)));
   }, []);
 
-  const removeCertificateItem = useCallback((index: number) => {
-    setCertificateItems(prev => {
-      const item = prev[index];
+  const removeCertificateItem = useCallback(
+    (index: number) => {
+      setCertificateItems((prev) => {
+        const item = prev[index];
 
-      if (item.isExisting && item.id) {
-        // Remove existing certificate
-        onRemoveExisting?.(item.id);
-      } else if (item.file) {
-        // Remove new uploaded file
-        const fileIndex = certificateImageFiles.findIndex(f => f === item.file);
-        if (fileIndex !== -1) {
-          removeAt(fileIndex, certificateImageFiles, setCertificateImageFiles, 'certificateImages');
+        if (item.isExisting && item.id) {
+          // Remove existing certificate
+          onRemoveExisting?.(item.id);
+        } else if (item.file) {
+          // Remove new uploaded file
+          const fileIndex = certificateImageFiles.findIndex((f) => f === item.file);
+          if (fileIndex !== -1) {
+            removeAt(
+              fileIndex,
+              certificateImageFiles,
+              setCertificateImageFiles,
+              'certificateImages',
+            );
+          }
         }
-      }
 
-      // Remove from local state
-      return prev.filter((_, i) => i !== index);
-    });
-  }, [certificateImageFiles, removeAt, setCertificateImageFiles, onRemoveExisting]);
+        // Remove from local state
+        return prev.filter((_, i) => i !== index);
+      });
+    },
+    [certificateImageFiles, removeAt, setCertificateImageFiles, onRemoveExisting],
+  );
 
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
@@ -212,7 +220,8 @@ export default function CertificatesSection({
 
         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-xs text-blue-800">
-            <strong>Tip:</strong> Upload certificate images first, then enter the certificate names below for each one.
+            <strong>Tip:</strong> Upload certificate images first, then enter the certificate names
+            below for each one.
           </p>
         </div>
       </div>
@@ -232,10 +241,10 @@ export default function CertificatesSection({
         ) : (
           <div className="space-y-3">
             {certificateItems.map((item, index) => (
-              <CertificateItemRow 
-                key={item.uniqueId} 
-                item={item} 
-                index={index} 
+              <CertificateItemRow
+                key={item.uniqueId}
+                item={item}
+                index={index}
                 onUpdate={updateCertificateName}
                 onRemove={removeCertificateItem}
                 isSubmitting={isSubmitting}

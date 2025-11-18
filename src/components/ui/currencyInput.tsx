@@ -47,11 +47,11 @@ export default function CurrencyInput({
       (rhfRef as MutableRefObject<HTMLInputElement | null>).current = el;
     }
   };
-  
+
   // Support both react-hook-form (via inputProps) and plain state (via value/onChange props)
   const currentValue = externalValue !== undefined ? externalValue : rhfValue;
   const handleExternalChange = externalOnChange;
-  
+
   const [displayValue, setDisplayValue] = useState<string>('');
   const [isFocused, setIsFocused] = useState(false);
 

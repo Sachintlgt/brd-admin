@@ -56,11 +56,17 @@ export default function FormInput({
       </div>
       {error && (
         <>
-          {console.log(JSON.stringify({
-            type: 'form_input_error',
-            id: id,
-            message: error.message
-          }, null, 2))}
+          {console.log(
+            JSON.stringify(
+              {
+                type: 'form_input_error',
+                id: id,
+                message: error.message,
+              },
+              null,
+              2,
+            ),
+          )}
           <p className="text-red-600 text-sm">{error.message}</p>
         </>
       )}

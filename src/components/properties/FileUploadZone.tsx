@@ -64,10 +64,7 @@ export default function FileUploadZone({
       {files.length > 0 && (
         <div className="mt-3 space-y-3">
           {files.map((file, idx) => (
-            <div
-              key={idx}
-              className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
-            >
+            <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
               <div className="flex items-center justify-between p-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-700 truncate">{file.name}</p>

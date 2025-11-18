@@ -44,7 +44,9 @@ export default function PaymentPlansSection({
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-700 truncate">{item.name || 'Untitled'}</p>
-          <p className="text-xs text-gray-500">₹ {item.amount || '0'} • {item.planType} • {item.purchaseType}</p>
+          <p className="text-xs text-gray-500">
+            ₹ {item.amount || '0'} • {item.planType} • {item.purchaseType}
+          </p>
         </div>
       </div>
       <button
@@ -121,7 +123,9 @@ export default function PaymentPlansSection({
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">Purchase Type *</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Purchase Type *
+                </label>
                 <select
                   {...register(`paymentPlans.${index}.purchaseType`)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

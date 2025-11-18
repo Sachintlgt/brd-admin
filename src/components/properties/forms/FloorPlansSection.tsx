@@ -42,45 +42,47 @@ interface FloorPlanItemRowProps {
   isSubmitting: boolean;
 }
 
-const FloorPlanItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: FloorPlanItemRowProps) => (
-  <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-    <div className="shrink-0">
-      {item.isExisting ? (
-        <ImageIcon className="w-5 h-5 text-orange-600" />
-      ) : (
-        <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
-          <Plus className="w-3 h-3 text-green-600" />
-        </div>
-      )}
-    </div>
+const FloorPlanItemRow = memo(
+  ({ item, index, onUpdate, onRemove, isSubmitting }: FloorPlanItemRowProps) => (
+    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="shrink-0">
+        {item.isExisting ? (
+          <ImageIcon className="w-5 h-5 text-orange-600" />
+        ) : (
+          <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+            <Plus className="w-3 h-3 text-green-600" />
+          </div>
+        )}
+      </div>
 
-    <div className="flex-1">
-      <input
-        type="text"
-        value={item.name}
-        onChange={(e) => onUpdate(index, e.target.value)}
-        placeholder="Enter floor plan name (e.g., 3 BHK Layout)"
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      <div className="flex-1">
+        <input
+          type="text"
+          value={item.name}
+          onChange={(e) => onUpdate(index, e.target.value)}
+          placeholder="Enter floor plan name (e.g., 3 BHK Layout)"
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          disabled={isSubmitting}
+        />
+        {item.file && (
+          <p className="text-xs text-gray-500 mt-1">
+            {item.file.name} ({formatFileSize(item.file.size)})
+          </p>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+        title="Remove floor plan"
         disabled={isSubmitting}
-      />
-      {item.file && (
-        <p className="text-xs text-gray-500 mt-1">
-          {item.file.name} ({formatFileSize(item.file.size)})
-        </p>
-      )}
+      >
+        <X className="w-4 h-4" />
+      </button>
     </div>
-
-    <button
-      type="button"
-      onClick={() => onRemove(index)}
-      className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-      title="Remove floor plan"
-      disabled={isSubmitting}
-    >
-      <X className="w-4 h-4" />
-    </button>
-  </div>
-));
+  ),
+);
 
 FloorPlanItemRow.displayName = 'FloorPlanItemRow';
 
@@ -101,9 +103,9 @@ export default function FloorPlansSection({
 
   // Initialize floor plan items when component mounts or existing floor plans change
   useEffect(() => {
-    setFloorPlanItems(prev => {
+    setFloorPlanItems((prev) => {
       const updatedItems: FloorPlanItem[] = [];
-      const previousMap = new Map(prev.map(item => [item.uniqueId, item]));
+      const previousMap = new Map(prev.map((item) => [item.uniqueId, item]));
 
       // Add existing floor plans
       existingFloorPlans.forEach((floorPlan) => {
@@ -134,8 +136,8 @@ export default function FloorPlansSection({
   // Update floorPlanNames whenever floorPlanItems change
   useEffect(() => {
     const names = floorPlanItems
-      .filter(item => item.name.trim() !== '')
-      .map(item => item.name.trim());
+      .filter((item) => item.name.trim() !== '')
+      .map((item) => item.name.trim());
     const commaSeparatedNames = names.join(', ');
     setValue?.('floorPlanNames', commaSeparatedNames);
   }, [floorPlanItems, setValue]);
@@ -143,41 +145,42 @@ export default function FloorPlansSection({
   // Update floorPlans array whenever floorPlanItems change
   useEffect(() => {
     const floorPlans = floorPlanItems
-      .filter(item => item.name.trim() !== '')
+      .filter((item) => item.name.trim() !== '')
       .map((item, index) => ({
         name: item.name.trim(),
         imageUrl: 'will-be-uploaded',
         description: '', // Could be enhanced to include description field later
-        displayOrder: index + 1
+        displayOrder: index + 1,
       }));
     setValue?.('floorPlans', floorPlans);
   }, [floorPlanItems, setValue]);
 
   const updateFloorPlanName = useCallback((index: number, name: string) => {
-    setFloorPlanItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, name } : item
-    ));
+    setFloorPlanItems((prev) => prev.map((item, i) => (i === index ? { ...item, name } : item)));
   }, []);
 
-  const removeFloorPlanItem = useCallback((index: number) => {
-    setFloorPlanItems(prev => {
-      const item = prev[index];
+  const removeFloorPlanItem = useCallback(
+    (index: number) => {
+      setFloorPlanItems((prev) => {
+        const item = prev[index];
 
-      if (item.isExisting && item.id) {
-        // Remove existing floor plan
-        onRemoveExisting?.(item.id);
-      } else if (item.file) {
-        // Remove new uploaded file
-        const fileIndex = floorPlanImageFiles.findIndex(f => f === item.file);
-        if (fileIndex !== -1) {
-          removeAt(fileIndex, floorPlanImageFiles, setFloorPlanImageFiles, 'floorPlanImages');
+        if (item.isExisting && item.id) {
+          // Remove existing floor plan
+          onRemoveExisting?.(item.id);
+        } else if (item.file) {
+          // Remove new uploaded file
+          const fileIndex = floorPlanImageFiles.findIndex((f) => f === item.file);
+          if (fileIndex !== -1) {
+            removeAt(fileIndex, floorPlanImageFiles, setFloorPlanImageFiles, 'floorPlanImages');
+          }
         }
-      }
 
-      // Remove from local state
-      return prev.filter((_, i) => i !== index);
-    });
-  }, [floorPlanImageFiles, removeAt, setFloorPlanImageFiles, onRemoveExisting]);
+        // Remove from local state
+        return prev.filter((_, i) => i !== index);
+      });
+    },
+    [floorPlanImageFiles, removeAt, setFloorPlanImageFiles, onRemoveExisting],
+  );
 
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
@@ -212,7 +215,8 @@ export default function FloorPlansSection({
 
         <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
           <p className="text-xs text-orange-800">
-            <strong>Tip:</strong> Upload floor plan images first, then enter the floor plan names below for each one.
+            <strong>Tip:</strong> Upload floor plan images first, then enter the floor plan names
+            below for each one.
           </p>
         </div>
       </div>
@@ -232,10 +236,10 @@ export default function FloorPlansSection({
         ) : (
           <div className="space-y-3">
             {floorPlanItems.map((item, index) => (
-              <FloorPlanItemRow 
-                key={item.uniqueId} 
-                item={item} 
-                index={index} 
+              <FloorPlanItemRow
+                key={item.uniqueId}
+                item={item}
+                index={index}
                 onUpdate={updateFloorPlanName}
                 onRemove={removeFloorPlanItem}
                 isSubmitting={isSubmitting}

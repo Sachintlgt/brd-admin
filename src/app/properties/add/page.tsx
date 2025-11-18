@@ -61,10 +61,14 @@ export default function AddProperty() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <BasicInformationSection register={formProps.register} errors={formProps.errors} />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
-        <HighlightsSection register={formProps.register} errors={formProps.errors} control={formProps.control} />
-        <CertificatesSection 
-          register={formProps.register} 
-          errors={formProps.errors} 
+        <HighlightsSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
+        />
+        <CertificatesSection
+          register={formProps.register}
+          errors={formProps.errors}
           certificateImageDropzone={formProps.certificateImageDropzone}
           certificateImageFiles={formProps.certificateImageFiles}
           setCertificateImageFiles={formProps.setCertificateImageFiles}
@@ -73,9 +77,9 @@ export default function AddProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
         />
-        <FloorPlansSection 
-          register={formProps.register} 
-          errors={formProps.errors} 
+        <FloorPlansSection
+          register={formProps.register}
+          errors={formProps.errors}
           floorPlanImageDropzone={formProps.floorPlanImageDropzone}
           floorPlanImageFiles={formProps.floorPlanImageFiles}
           setFloorPlanImageFiles={formProps.setFloorPlanImageFiles}
@@ -84,7 +88,11 @@ export default function AddProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
         />
-        <PaymentPlansSection register={formProps.register} errors={formProps.errors} control={formProps.control} />
+        <PaymentPlansSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
+        />
         {/*  Pricing Details Section */}
         <PricingDetailsSection
           register={formProps.register}

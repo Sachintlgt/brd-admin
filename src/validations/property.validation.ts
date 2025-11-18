@@ -122,14 +122,8 @@ export const propertySchema = z
       .int('Bathrooms must be an integer')
       .min(1, 'Bathrooms must be at least 1')
       .optional(),
-    sqft: z.coerce
-      .number()
-      .positive('Sqft must be a positive number')
-      .optional(),
-    maxOccupancy: z
-      .string()
-      .max(100, 'Max occupancy must not exceed 100 characters')
-      .optional(),
+    sqft: z.coerce.number().positive('Sqft must be a positive number').optional(),
+    maxOccupancy: z.string().max(100, 'Max occupancy must not exceed 100 characters').optional(),
 
     totalShares: z.coerce
       .number()
@@ -182,7 +176,9 @@ export const propertySchema = z
     // Dates (Optional)
     possessionDate: z
       .string()
-      .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format for possession date' })
+      .refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Invalid date format for possession date',
+      })
       .optional(),
     launchDate: z
       .string()
@@ -220,10 +216,19 @@ export const propertySchema = z
       .max(20, { message: 'Maximum 20 images allowed' })
       .optional(),
     propertyVideos: z.array(z.string()).max(5, { message: 'Maximum 5 videos allowed' }).optional(),
-    amenityIcons: z.array(z.string()).max(50, { message: 'Maximum 50 amenity icons allowed' }).optional(),
+    amenityIcons: z
+      .array(z.string())
+      .max(50, { message: 'Maximum 50 amenity icons allowed' })
+      .optional(),
     documents: z.array(z.string()).max(10, { message: 'Maximum 10 documents allowed' }).optional(),
-    certificateImages: z.array(z.string()).max(10, { message: 'Maximum 10 certificate images allowed' }).optional(),
-    floorPlanImages: z.array(z.string()).max(10, { message: 'Maximum 10 floor plan images allowed' }).optional(),
+    certificateImages: z
+      .array(z.string())
+      .max(10, { message: 'Maximum 10 certificate images allowed' })
+      .optional(),
+    floorPlanImages: z
+      .array(z.string())
+      .max(10, { message: 'Maximum 10 floor plan images allowed' })
+      .optional(),
 
     // File objects for validation
     imageFiles: z.array(z.instanceof(File)).optional(),
@@ -260,14 +265,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['imageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
             path: ['imageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 10 MB limit`
+            message: `File size exceeds 10 MB limit`,
           });
         }
       });
@@ -280,14 +285,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['videoFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: MP4, MPEG, MOV, AVI, WebM`
+            message: `Invalid file type. Allowed: MP4, MPEG, MOV, AVI, WebM`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.video) {
           ctx.addIssue({
             path: ['videoFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 100 MB limit`
+            message: `File size exceeds 100 MB limit`,
           });
         }
       });
@@ -300,14 +305,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['documentFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, Images`
+            message: `Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, Images`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.document) {
           ctx.addIssue({
             path: ['documentFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 20 MB limit`
+            message: `File size exceeds 20 MB limit`,
           });
         }
       });
@@ -320,14 +325,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['iconFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, SVG, WebP`
+            message: `Invalid file type. Allowed: JPG, PNG, SVG, WebP`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.icon) {
           ctx.addIssue({
             path: ['iconFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 2 MB limit`
+            message: `File size exceeds 2 MB limit`,
           });
         }
       });
@@ -340,14 +345,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['certificateImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
             path: ['certificateImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 10 MB limit`
+            message: `File size exceeds 10 MB limit`,
           });
         }
       });
@@ -360,14 +365,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['floorPlanImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
             path: ['floorPlanImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 10 MB limit`
+            message: `File size exceeds 10 MB limit`,
           });
         }
       });

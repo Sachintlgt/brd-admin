@@ -58,7 +58,9 @@ export default function ShareDetailsSection({
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-700 truncate">{item.title || 'Untitled'}</p>
-          <p className="text-xs text-gray-500">₹ {item.amount || '0'} • {item.shareCount || 0} shares</p>
+          <p className="text-xs text-gray-500">
+            ₹ {item.amount || '0'} • {item.shareCount || 0} shares
+          </p>
         </div>
       </div>
       <button
