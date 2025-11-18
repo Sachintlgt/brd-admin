@@ -137,14 +137,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const interval = setInterval(
       async () => {
         try {
-          console.log('🔄 Refreshing token...');
-
           const res = await authService.refreshToken();
           const newUser = res.data.user;
-
           // Update user state with fresh data
           setUser(newUser);
-          console.log('✅ Token refreshed successfully');
         } catch (err) {
           console.error('❌ Token refresh failed', err);
           await logout(); // logout if refresh failed

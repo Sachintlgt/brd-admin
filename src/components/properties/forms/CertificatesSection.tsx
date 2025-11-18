@@ -199,7 +199,6 @@ export default function CertificatesSection({
         description: item.description?.trim() || undefined,
         displayOrder: item.displayOrder || 0
       }));
-    console.log('CertificatesSection: Setting certificates to:', certificates);
     setValue?.('certificates', certificates);
   }, [certificateItems, setValue]);
 

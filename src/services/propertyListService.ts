@@ -51,20 +51,12 @@ export const propertyListService = {
         },
       };
 
-      console.log('📦 Fetched properties:', {
-        count: properties.length,
-        total: response.data.pagination.total,
-        response,
-      }); // Debug log
-
       return response;
     } catch (err: any) {
       const serverMessage = err?.response?.data?.message;
       const status = err?.response?.status;
 
       let message = serverMessage || err?.message || 'Failed to fetch properties';
-
-      console.error('❌ Error fetching properties:', { message, status }); // Debug log
 
       const error: any = new Error(message);
       error.status = status;

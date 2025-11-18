@@ -259,8 +259,8 @@ export default function FloorPlansSection({
           isSubmitting={isSubmitting}
         />
 
-        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-          <p className="text-xs text-orange-800">
+        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-800">
             <strong>Tip:</strong> Upload floor plan images first, then enter the floor plan names below for each one.
           </p>
         </div>

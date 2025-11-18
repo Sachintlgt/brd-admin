@@ -280,12 +280,6 @@ export const propertyService = {
       if (payload.amenityNames) formData.append('amenityNames', payload.amenityNames);
       if (payload.documentNames) formData.append('documentNames', payload.documentNames);
 
-      console.log('=== FORMDATA DEBUG (propertyService) ===');
-      console.log('payload.amenityNames:', payload.amenityNames);
-      console.log('payload.documentNames:', payload.documentNames);
-      console.log('payload.amenityIcons?.length:', payload.amenityIcons?.length);
-      console.log('payload.documents?.length:', payload.documents?.length);
-
       // Delete IDs arrays (comma-separated UUIDs as per API spec)
       if (payload.imageIdsToDelete?.length) {
         formData.append('imageIdsToDelete', payload.imageIdsToDelete.join(','));
@@ -363,8 +357,6 @@ export const propertyService = {
       if (payload.floorPlanImages?.length) {
         payload.floorPlanImages.forEach((file) => formData.append('floorPlanImages', file));
       }
-
-      console.log('=== END FORMDATA DEBUG ===');
 
       const { data } = await api.patch<PropertyResponse>(`/properties/${id}`, formData, {
         headers: {

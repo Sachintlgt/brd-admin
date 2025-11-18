@@ -72,12 +72,10 @@ export default function EditProperty() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <BasicInformationSection register={formProps.register} errors={formProps.errors} />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
-        <HighlightsSection 
-          register={formProps.register} 
-          errors={formProps.errors} 
-          control={formProps.control} 
-          existingHighlights={formProps.existingHighlights}
-          onRemoveExisting={formProps.removeExistingHighlight}
+        <HighlightsSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
         />
         <CertificatesSection
           register={formProps.register}
@@ -105,13 +103,11 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
         />
-        <PaymentPlansSection 
-          register={formProps.register} 
-          errors={formProps.errors} 
+        <PaymentPlansSection
+          register={formProps.register}
+          errors={formProps.errors}
           control={formProps.control}
           getValues={formProps.getValues}
-          existingPaymentPlans={formProps.existingPaymentPlans}
-          onRemoveExisting={formProps.removeExistingPaymentPlan}
         />
 
         <PricingDetailsSection
@@ -120,8 +116,6 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           control={formProps.control}
-          onRemoveExisting={formProps.removeExistingPricing}
-          existingPricingDetails={formProps.existingPricingDetails}
         />
 
         <ShareDetailsSection
@@ -130,8 +124,6 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           control={formProps.control}
-          onRemoveExisting={formProps.removeExistingShareDetail}
-          existingShareDetails={formProps.existingShareDetails}
         />
 
         <MaintenanceTemplatesSection
@@ -140,8 +132,6 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           control={formProps.control}
-          onRemoveExisting={formProps.removeExistingMaintenanceTemplate}
-          existingMaintenanceTemplates={formProps.existingMaintenanceTemplates}
         />
 
         <MediaDocumentsSection

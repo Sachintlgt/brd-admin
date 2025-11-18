@@ -142,16 +142,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     forceUpdate();
   }, [errorsJson]);
 
-  // Watch for form changes and log entire form data
-  useEffect(() => {
-    const subscription = watch((data) => {
-      console.log('=== FORM DATA CHANGED ===');
-      console.log('Complete form data:', JSON.stringify(data, null, 2));
-      console.log('========================');
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
-
   // File upload handlers
   const onImagesDrop = (accepted: File[]) => {
     const allowed = Math.max(0, IMAGE_MAX - imageFiles.length);
@@ -331,38 +321,50 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingAmenity = (id: string) => {
-    setAmenityIdsToDelete((prev) => [...prev, id]);
-    setExistingAmenities((prev) => prev.filter((amenity) => amenity.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setAmenityIdsToDelete((prev) => [...prev, id]);
+      setExistingAmenities((prev) => prev.filter((amenity) => amenity.id !== id));
+    }, 0);
   };
 
   const removeExistingPricing = (id: string) => {
-    setPricingIdsToDelete((prev) => [...prev, id]);
-    setExistingPricingDetails((prev) => prev.filter((pricing) => pricing.id !== id));
-    const currentPricingDetails = getValues('pricingDetails') || [];
-    setValue(
-      'pricingDetails',
-      currentPricingDetails.filter((p: any) => p.id !== id),
-    );
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setPricingIdsToDelete((prev) => [...prev, id]);
+      setExistingPricingDetails((prev) => prev.filter((pricing) => pricing.id !== id));
+      const currentPricingDetails = getValues('pricingDetails') || [];
+      setValue(
+        'pricingDetails',
+        currentPricingDetails.filter((p: any) => p.id !== id),
+      );
+    }, 0);
   };
 
   const removeExistingShareDetail = (id: string) => {
-    setShareDetailIdsToDelete((prev) => [...prev, id]);
-    setExistingShareDetails((prev) => prev.filter((share) => share.id !== id));
-    const currentShareDetails = getValues('shareDetails') || [];
-    setValue(
-      'shareDetails',
-      currentShareDetails.filter((s: any) => s.id !== id),
-    );
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setShareDetailIdsToDelete((prev) => [...prev, id]);
+      setExistingShareDetails((prev) => prev.filter((share) => share.id !== id));
+      const currentShareDetails = getValues('shareDetails') || [];
+      setValue(
+        'shareDetails',
+        currentShareDetails.filter((s: any) => s.id !== id),
+      );
+    }, 0);
   };
 
   const removeExistingMaintenanceTemplate = (id: string) => {
-    setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]);
-    setExistingMaintenanceTemplates((prev) => prev.filter((template) => template.id !== id));
-    const currentTemplates = getValues('maintenanceTemplates') || [];
-    setValue(
-      'maintenanceTemplates',
-      currentTemplates.filter((t: any) => t.id !== id),
-    );
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]);
+      setExistingMaintenanceTemplates((prev) => prev.filter((template) => template.id !== id));
+      const currentTemplates = getValues('maintenanceTemplates') || [];
+      setValue(
+        'maintenanceTemplates',
+        currentTemplates.filter((t: any) => t.id !== id),
+      );
+    }, 0);
   };
 
   const removeExistingCertificate = (id: string) => {
@@ -376,23 +378,29 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingPaymentPlan = (id: string) => {
-    setPaymentPlanIdsToDelete((prev) => [...prev, id]);
-    const currentPaymentPlans = getValues('paymentPlans') || [];
-    setValue(
-      'paymentPlans',
-      currentPaymentPlans.filter((p: any) => p.id !== id),
-    );
-    setExistingPaymentPlans((prev) => prev.filter((plan) => plan.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setPaymentPlanIdsToDelete((prev) => [...prev, id]);
+      const currentPaymentPlans = getValues('paymentPlans') || [];
+      setValue(
+        'paymentPlans',
+        currentPaymentPlans.filter((p: any) => p.id !== id),
+      );
+      setExistingPaymentPlans((prev) => prev.filter((plan) => plan.id !== id));
+    }, 0);
   };
 
   const removeExistingHighlight = (id: string) => {
-    setHighlightIdsToDelete((prev) => [...prev, id]);
-    const currentHighlights = getValues('highlights') || [];
-    setValue(
-      'highlights',
-      currentHighlights.filter((h: any) => h.id !== id),
-    );
-    setExistingHighlights((prev) => prev.filter((highlight) => highlight.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setHighlightIdsToDelete((prev) => [...prev, id]);
+      const currentHighlights = getValues('highlights') || [];
+      setValue(
+        'highlights',
+        currentHighlights.filter((h: any) => h.id !== id),
+      );
+      setExistingHighlights((prev) => prev.filter((highlight) => highlight.id !== id));
+    }, 0);
   };
 
   // Mutations for create and update
@@ -501,15 +509,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setExistingVideos(videos);
           setExistingDocuments(property.documents || []);
           
-          console.log('\n=== FORM LOADING DEBUG ===');
-          console.log('property.amenities from API:', JSON.stringify(property.amenities, null, 2));
-          console.log('About to setExistingAmenities with:', JSON.stringify(property.amenities || [], null, 2));
-          
           setExistingAmenities(property.amenities || []);
           setExistingCertificates(property.certificates || []);
           setExistingFloorPlans(property.floorPlans || []);
           
-          // Set existing form array data
+          // Set existing form array data - load into form arrays for editing
           const pricings = (property.pricings || property.pricingDetails || []).map((pricing: any) => ({
             ...pricing,
             effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
@@ -526,13 +530,19 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             endDate: convertToDateTimeLocal(template.endDate),
           }));
           setExistingMaintenanceTemplates(templates);
-          
-          setExistingHighlights(property.highlights || []);
-          setExistingPaymentPlans(property.paymentPlans || []);
 
-          // NOTE: Do NOT populate form arrays with existing data
-          // All sections handle existing data separately and use form arrays only for NEW items
-          // This prevents duplication where existing items appear twice
+          const highlights = property.highlights || [];
+          setExistingHighlights(highlights);
+
+          const paymentPlans = property.paymentPlans || [];
+          setExistingPaymentPlans(paymentPlans);
+
+          // Populate form arrays with existing data for editing
+          setValue('pricingDetails', pricings);
+          setValue('shareDetails', shares);
+          setValue('maintenanceTemplates', templates);
+          setValue('highlights', highlights);
+          setValue('paymentPlans', paymentPlans);
 
           // Trigger currency input re-render by triggering blur event
           setTimeout(() => {
@@ -555,11 +565,8 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setSubmitError(null);
     setSubmitSuccess(null);
 
-    // Combine existing pricing details (not deleted) with new ones from form
-    const existingPricingNotDeleted = existingPricingDetails.filter(
-      pricing => !pricingIdsToDelete.includes(pricing.id)
-    );
-    const newPricingFromForm = (data.pricingDetails || []).map((pricing: any) => ({
+    // Process pricing details - all items come from form now (existing + new)
+    const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => ({
       id: pricing.id, // Include ID if exists (for existing records)
       label: pricing.label,
       price: Number(pricing.price),
@@ -569,26 +576,32 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       effectiveFrom: convertToISO(pricing.effectiveFrom),
       effectiveTo: convertToISO(pricing.effectiveTo),
     }));
-    const processedPricingDetails = [...existingPricingNotDeleted, ...newPricingFromForm];
 
-    // Combine existing share details (not deleted) with new ones from form
-    const existingShareDetailsNotDeleted = existingShareDetails.filter(
-      share => !shareDetailIdsToDelete.includes(share.id)
-    );
-    const newShareDetailsFromForm = (data.shareDetails || []).map((detail: any) => ({
+    // Find deleted pricing details (existing ones not in the form)
+    const currentPricingIds = processedPricingDetails.filter(p => p.id).map(p => p.id);
+    const deletedPricingIds = existingPricingDetails
+      .filter(p => !currentPricingIds.includes(p.id))
+      .map(p => p.id);
+    deletedPricingIds.forEach(id => setPricingIdsToDelete(prev => [...prev, id]));
+
+    // Process share details - all items come from form now (existing + new)
+    const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
       id: detail.id, // Include ID if exists
       title: detail.title,
       description: detail.description || undefined,
       shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
       amount: detail.amount ? Number(detail.amount) : undefined,
     }));
-    const processedShareDetails = [...existingShareDetailsNotDeleted, ...newShareDetailsFromForm];
 
-    // Combine existing maintenance templates (not deleted) with new ones from form
-    const existingMaintenanceNotDeleted = existingMaintenanceTemplates.filter(
-      template => !maintenanceTemplateIdsToDelete.includes(template.id)
-    );
-    const newMaintenanceFromForm = (data.maintenanceTemplates || []).map(
+    // Find deleted share details (existing ones not in the form)
+    const currentShareIds = processedShareDetails.filter(s => s.id).map(s => s.id);
+    const deletedShareIds = existingShareDetails
+      .filter(s => !currentShareIds.includes(s.id))
+      .map(s => s.id);
+    deletedShareIds.forEach(id => setShareDetailIdsToDelete(prev => [...prev, id]));
+
+    // Process maintenance templates - all items come from form now (existing + new)
+    const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
       (template: any) => ({
         id: template.id, // Include ID if exists
         chargeType: template.chargeType,
@@ -600,26 +613,16 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         isActive: template.isActive ?? true,
       }),
     );
-    const processedMaintenanceTemplates = [...existingMaintenanceNotDeleted, ...newMaintenanceFromForm];
+
+    // Find deleted maintenance templates (existing ones not in the form)
+    const currentTemplateIds = processedMaintenanceTemplates.filter(t => t.id).map(t => t.id);
+    const deletedTemplateIds = existingMaintenanceTemplates
+      .filter(t => !currentTemplateIds.includes(t.id))
+      .map(t => t.id);
+    deletedTemplateIds.forEach(id => setMaintenanceTemplateIdsToDelete(prev => [...prev, id]));
 
     if (propertyId) {
       // UPDATE MODE - TARGETED DEBUG LOGS
-      console.log('\n=== AMENITIES DEBUG ===');
-      console.log('existingAmenities:', JSON.stringify(existingAmenities, null, 2));
-      console.log('amenityIdsToDelete:', JSON.stringify(amenityIdsToDelete, null, 2));
-      console.log('data.amenityNames:', data.amenityNames);
-      console.log('iconFiles.length:', iconFiles.length);
-      
-      console.log('\n=== PRICING DEBUG ===');
-      console.log('Form data.pricingDetails:', JSON.stringify(data.pricingDetails, null, 2));
-      console.log('existingPricingDetails:', JSON.stringify(existingPricingDetails, null, 2));
-      console.log('pricingIdsToDelete:', JSON.stringify(pricingIdsToDelete, null, 2));
-      
-      console.log('\n=== SHARE DETAILS DEBUG ===');
-      console.log('Form data.shareDetails:', JSON.stringify(data.shareDetails, null, 2));
-      console.log('existingShareDetails:', JSON.stringify(existingShareDetails, null, 2));
-      console.log('shareDetailIdsToDelete:', JSON.stringify(shareDetailIdsToDelete, null, 2));
-      
       const payload: UpdatePropertyPayload = {
         name: data.name,
         location: data.location,
@@ -672,37 +675,54 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
         highlights: (() => {
-          const existingHighlightsNotDeleted = existingHighlights.filter(
-            highlight => !highlightIdsToDelete.includes(highlight.id)
-          );
-          const newHighlightsFromForm = data.highlights || [];
-          const allHighlights = [...existingHighlightsNotDeleted, ...newHighlightsFromForm];
-          return allHighlights.length > 0 ? allHighlights : undefined;
+          // Process highlights - all items come from form now (existing + new)
+          const processedHighlights = (data.highlights || []).map((highlight: any) => ({
+            id: highlight.id, // Include ID if exists
+            key: highlight.key,
+            label: highlight.label,
+            value: highlight.value,
+            displayOrder: highlight.displayOrder || 0,
+          }));
+
+          // Find deleted highlights (existing ones not in the form)
+          const currentHighlightIds = processedHighlights.filter(h => h.id).map(h => h.id);
+          const deletedHighlightIds = existingHighlights
+            .filter(h => !currentHighlightIds.includes(h.id))
+            .map(h => h.id);
+          deletedHighlightIds.forEach(id => setHighlightIdsToDelete(prev => [...prev, id]));
+
+          return processedHighlights.length > 0 ? processedHighlights : undefined;
         })(),
         paymentPlans: (() => {
-          const existingPaymentPlansNotDeleted = existingPaymentPlans.filter(
-            plan => !paymentPlanIdsToDelete.includes(plan.id)
-          );
-          const newPaymentPlansFromForm = data.paymentPlans || [];
-          const allPaymentPlans = [...existingPaymentPlansNotDeleted, ...newPaymentPlansFromForm];
-          return allPaymentPlans.length > 0 ? allPaymentPlans : undefined;
+          // Process payment plans - all items come from form now (existing + new)
+          const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
+            id: plan.id, // Include ID if exists
+            planType: plan.planType,
+            purchaseType: plan.purchaseType,
+            name: plan.name,
+            description: plan.description || undefined,
+            amount: plan.amount ? Number(plan.amount) : undefined,
+            percentage: plan.percentage ? Number(plan.percentage) : undefined,
+            milestone: plan.milestone || undefined,
+            dueDate: plan.dueDate || undefined,
+            displayOrder: plan.displayOrder || 0,
+            isGSTIncluded: plan.isGSTIncluded ?? false,
+            gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
+          }));
+
+          // Find deleted payment plans (existing ones not in the form)
+          const currentPaymentPlanIds = processedPaymentPlans.filter(p => p.id).map(p => p.id);
+          const deletedPaymentPlanIds = existingPaymentPlans
+            .filter(p => !currentPaymentPlanIds.includes(p.id))
+            .map(p => p.id);
+          deletedPaymentPlanIds.forEach(id => setPaymentPlanIdsToDelete(prev => [...prev, id]));
+
+          return processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined;
         })(),
         // Only send NEW certificates/floorPlans from form - existing ones are already in DB
         certificates: data.certificates?.length ? data.certificates : undefined,
         floorPlans: data.floorPlans?.length ? data.floorPlans : undefined,
       };
-
-      console.log('\n=== FINAL PAYLOAD SUMMARY ===');
-      console.log('data.certificates:', JSON.stringify(data.certificates, null, 2));
-      console.log('data.floorPlans:', JSON.stringify(data.floorPlans, null, 2));
-      console.log('payload.certificates:', JSON.stringify(payload.certificates, null, 2));
-      console.log('payload.floorPlans:', JSON.stringify(payload.floorPlans, null, 2));
-      console.log('payload.amenityNames:', payload.amenityNames);
-      console.log('payload.amenityIdsToDelete:', JSON.stringify(payload.amenityIdsToDelete));
-      console.log('payload.pricingDetails count:', payload.pricingDetails?.length || 0);
-      console.log('payload.pricingDetails:', JSON.stringify(payload.pricingDetails, null, 2));
-      console.log('payload.shareDetails count:', payload.shareDetails?.length || 0);
-      console.log('payload.shareDetails:', JSON.stringify(payload.shareDetails, null, 2));
 
       updateMutation.mutate({ id: propertyId, payload });
     } else {
@@ -744,8 +764,31 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
-        highlights: data.highlights?.length > 0 ? data.highlights : undefined,
-        paymentPlans: data.paymentPlans?.length > 0 ? data.paymentPlans : undefined,
+        highlights: (() => {
+          const processedHighlights = (data.highlights || []).map((highlight: any) => ({
+            key: highlight.key,
+            label: highlight.label,
+            value: highlight.value,
+            displayOrder: highlight.displayOrder || 0,
+          }));
+          return processedHighlights.length > 0 ? processedHighlights : undefined;
+        })(),
+        paymentPlans: (() => {
+          const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
+            planType: plan.planType,
+            purchaseType: plan.purchaseType,
+            name: plan.name,
+            description: plan.description || undefined,
+            amount: plan.amount ? Number(plan.amount) : undefined,
+            percentage: plan.percentage ? Number(plan.percentage) : undefined,
+            milestone: plan.milestone || undefined,
+            dueDate: plan.dueDate || undefined,
+            displayOrder: plan.displayOrder || 0,
+            isGSTIncluded: plan.isGSTIncluded ?? false,
+            gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
+          }));
+          return processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined;
+        })(),
         certificates: data.certificates?.length > 0 ? data.certificates : undefined,
         floorPlans: data.floorPlans?.length > 0 ? data.floorPlans : undefined,
       };
