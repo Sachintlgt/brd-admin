@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 import DashboardLayout from '../../../components/DashboardLayout';
 import { usePropertyForm } from '../../../hooks/usePropertyForm';
@@ -15,27 +14,17 @@ import StatusSection from '../../../components/properties/forms/StatusSection';
 import PricingDetailsSection from '@/components/properties/forms/PricingDetailsSection';
 import ShareDetailsSection from '@/components/properties/forms/ShareDetailsSection';
 import MaintenanceTemplatesSection from '@/components/properties/forms/MaintenanceTemplatesSection';
+// New sections for complex arrays
+import HighlightsSection from '@/components/properties/forms/HighlightsSection';
+import CertificatesSection from '@/components/properties/forms/CertificatesSection';
+import FloorPlansSection from '@/components/properties/forms/FloorPlansSection';
+import PaymentPlansSection from '@/components/properties/forms/PaymentPlansSection';
 
 export default function AddProperty() {
   const router = useRouter();
   const formProps = usePropertyForm(router);
 
-  console.log('AddProperty render');
-
   const { handleSubmit, onSubmit, isSubmitting, submitError, submitSuccess } = formProps;
-
-  const sanitizeErrors = (errors: any) => {
-    return Object.fromEntries(
-      Object.entries(errors).map(([key, err]) => [key, (err as any)?.message])
-    );
-  };
-
-  useEffect(() => {
-    console.log(JSON.stringify({
-      type: 'add_page_errors',
-      errors: sanitizeErrors(formProps.errors)
-    }, null, 2));
-  }, [formProps.errors]);
 
   return (
     <DashboardLayout>
@@ -72,6 +61,30 @@ export default function AddProperty() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <BasicInformationSection register={formProps.register} errors={formProps.errors} />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
+        <HighlightsSection register={formProps.register} errors={formProps.errors} control={formProps.control} />
+        <CertificatesSection 
+          register={formProps.register} 
+          errors={formProps.errors} 
+          certificateImageDropzone={formProps.certificateImageDropzone}
+          certificateImageFiles={formProps.certificateImageFiles}
+          setCertificateImageFiles={formProps.setCertificateImageFiles}
+          removeAt={formProps.removeAt}
+          isSubmitting={isSubmitting}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
+        />
+        <FloorPlansSection 
+          register={formProps.register} 
+          errors={formProps.errors} 
+          floorPlanImageDropzone={formProps.floorPlanImageDropzone}
+          floorPlanImageFiles={formProps.floorPlanImageFiles}
+          setFloorPlanImageFiles={formProps.setFloorPlanImageFiles}
+          removeAt={formProps.removeAt}
+          isSubmitting={isSubmitting}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
+        />
+        <PaymentPlansSection register={formProps.register} errors={formProps.errors} control={formProps.control} />
         {/*  Pricing Details Section */}
         <PricingDetailsSection
           register={formProps.register}

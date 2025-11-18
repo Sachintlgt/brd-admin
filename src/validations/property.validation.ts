@@ -71,6 +71,31 @@ const maintenanceTemplateSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+// Highlight Schema
+const highlightSchema = z.object({
+  key: z.string().min(1, 'Key is required'),
+  label: z.string().min(1, 'Label is required'),
+  value: z.string().min(1, 'Value is required'),
+});
+
+// Certificate Schema
+const certificateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+});
+
+// Floor Plan Schema
+const floorPlanSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+});
+
+// Payment Plan Schema
+const paymentPlanSchema = z.object({
+  planType: z.enum(['INSTALMENT', 'BIFURCATION']),
+  name: z.string().min(1, 'Name is required'),
+  amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
+  purchaseType: z.enum(['WHOLE_UNIT', 'FRACTIONAL']),
+});
+
 export const propertySchema = z
   .object({
     name: z
@@ -84,6 +109,26 @@ export const propertySchema = z
     description: z
       .string()
       .max(2000, { message: 'Description cannot exceed 2000 characters' })
+      .optional(),
+
+    // Property Details (Optional)
+    beds: z.coerce
+      .number()
+      .int('Beds must be an integer')
+      .min(1, 'Beds must be at least 1')
+      .optional(),
+    bathrooms: z.coerce
+      .number()
+      .int('Bathrooms must be an integer')
+      .min(1, 'Bathrooms must be at least 1')
+      .optional(),
+    sqft: z.coerce
+      .number()
+      .positive('Sqft must be a positive number')
+      .optional(),
+    maxOccupancy: z
+      .string()
+      .max(100, 'Max occupancy must not exceed 100 characters')
       .optional(),
 
     totalShares: z.coerce
@@ -100,17 +145,48 @@ export const propertySchema = z
       .min(0, { message: 'Available shares must be ≥ 0' })
       .max(1000000, { message: 'Available shares cannot exceed 1,000,000' }),
 
-    pricePerShare: z.coerce
+    // Pricing (Required)
+    initialPricePerShare: z.coerce
       .number()
-      .refine((n) => !Number.isNaN(n), { message: 'Price per share must be a number' })
-      .min(0, { message: 'Price per share must be ≥ 0' })
-      .max(100000000, { message: 'Price per share cannot exceed 100,000,000' }),
+      .refine((n) => !Number.isNaN(n), { message: 'Initial price per share must be a number' })
+      .positive({ message: 'Initial price per share must be positive' })
+      .max(100000000, { message: 'Initial price per share cannot exceed 100,000,000' }),
+    currentPricePerShare: z.coerce
+      .number()
+      .positive({ message: 'Current price per share must be positive' })
+      .optional(),
+    wholeUnitPrice: z.coerce
+      .number()
+      .positive({ message: 'Whole unit price must be positive' })
+      .optional(),
+
+    // Financial Metrics (Optional)
+    targetIRR: z.coerce
+      .number()
+      .refine((n) => !Number.isNaN(n), { message: 'Target IRR must be a number' })
+      .min(0, { message: 'Target IRR cannot be negative' })
+      .max(100, { message: 'Target IRR must not exceed 100%' })
+      .optional(),
+    targetRentalYield: z
+      .string()
+      .max(50, 'Target rental yield must not exceed 50 characters')
+      .optional(),
 
     appreciationRate: z.coerce
       .number()
       .refine((n) => !Number.isNaN(n), { message: 'Appreciation rate must be a number' })
       .min(0, { message: 'Appreciation rate must be ≥ 0' })
       .max(100, { message: 'Appreciation rate cannot exceed 100%' })
+      .optional(),
+
+    // Dates (Optional)
+    possessionDate: z
+      .string()
+      .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format for possession date' })
+      .optional(),
+    launchDate: z
+      .string()
+      .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format for launch date' })
       .optional(),
 
     maxBookingDays: z.coerce
@@ -121,29 +197,49 @@ export const propertySchema = z
       .max(365, { message: 'Max booking days cannot exceed 365' })
       .optional(),
 
+    // Booking Configuration (Optional)
+    bookingAmount: z.coerce
+      .number()
+      .positive({ message: 'Booking amount must be positive' })
+      .optional(),
+    bookingAmountGST: z.coerce
+      .number()
+      .min(0, { message: 'Booking amount GST cannot be negative' })
+      .optional(),
+
     isActive: z.boolean().default(true),
     isFeatured: z.boolean().default(false),
 
     amenityNames: z.string().optional(),
     documentNames: z.string().optional(),
+    certificateNames: z.string().optional(),
+    floorPlanNames: z.string().optional(),
 
     propertyImages: z
       .array(z.string())
-      .min(1, { message: 'At least 1 image is required' })
-      .max(20, { message: 'Maximum 20 images allowed' }),
+      .max(20, { message: 'Maximum 20 images allowed' })
+      .optional(),
     propertyVideos: z.array(z.string()).max(5, { message: 'Maximum 5 videos allowed' }).optional(),
-    amenityIcons: z.array(z.string()).optional(),
+    amenityIcons: z.array(z.string()).max(50, { message: 'Maximum 50 amenity icons allowed' }).optional(),
     documents: z.array(z.string()).max(10, { message: 'Maximum 10 documents allowed' }).optional(),
+    certificateImages: z.array(z.string()).max(10, { message: 'Maximum 10 certificate images allowed' }).optional(),
+    floorPlanImages: z.array(z.string()).max(10, { message: 'Maximum 10 floor plan images allowed' }).optional(),
 
     // File objects for validation
     imageFiles: z.array(z.instanceof(File)).optional(),
     videoFiles: z.array(z.instanceof(File)).optional(),
     documentFiles: z.array(z.instanceof(File)).optional(),
     iconFiles: z.array(z.instanceof(File)).optional(),
+    certificateImageFiles: z.array(z.instanceof(File)).optional(),
+    floorPlanImageFiles: z.array(z.instanceof(File)).optional(),
 
     pricingDetails: z.array(pricingDetailSchema).optional().default([]),
     shareDetails: z.array(shareDetailSchema).optional().default([]),
     maintenanceTemplates: z.array(maintenanceTemplateSchema).optional().default([]),
+    highlights: z.array(highlightSchema).optional().default([]),
+    certificates: z.array(certificateSchema).optional().default([]),
+    floorPlans: z.array(floorPlanSchema).optional().default([]),
+    paymentPlans: z.array(paymentPlanSchema).optional().default([]),
   })
   .superRefine((data, ctx) => {
     // availableShares <= totalShares
@@ -237,14 +333,53 @@ export const propertySchema = z
       });
     }
 
-    // documentNames count must match documents count if provided
-    if (data.documentNames && data.documentNames.trim().length > 0) {
-      const namesCount = data.documentNames
+    // Validate certificate image files
+    if (data.certificateImageFiles && data.certificateImageFiles.length > 0) {
+      data.certificateImageFiles.forEach((file, idx) => {
+        if (!ALLOWED_IMAGE_MIMES.includes(file.type)) {
+          ctx.addIssue({
+            path: ['certificateImageFiles', idx],
+            code: z.ZodIssueCode.custom,
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+          });
+        }
+        if (file.size > FILE_SIZE_LIMITS.image) {
+          ctx.addIssue({
+            path: ['certificateImageFiles', idx],
+            code: z.ZodIssueCode.custom,
+            message: `File size exceeds 10 MB limit`
+          });
+        }
+      });
+    }
+
+    // Validate floor plan image files
+    if (data.floorPlanImageFiles && data.floorPlanImageFiles.length > 0) {
+      data.floorPlanImageFiles.forEach((file, idx) => {
+        if (!ALLOWED_IMAGE_MIMES.includes(file.type)) {
+          ctx.addIssue({
+            path: ['floorPlanImageFiles', idx],
+            code: z.ZodIssueCode.custom,
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+          });
+        }
+        if (file.size > FILE_SIZE_LIMITS.image) {
+          ctx.addIssue({
+            path: ['floorPlanImageFiles', idx],
+            code: z.ZodIssueCode.custom,
+            message: `File size exceeds 10 MB limit`
+          });
+        }
+      });
+    }
+
+    // documentNames count must match documentFiles count only if NEW documents are being uploaded
+    if (data.documentFiles && data.documentFiles.length > 0) {
+      const namesCount = (data.documentNames ?? '')
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean).length;
-      const docsCount = data.documents?.length ?? 0;
-      if (namesCount !== docsCount) {
+      if (namesCount === 0 || namesCount !== data.documentFiles.length) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Document names count must match the number of uploaded documents',
@@ -253,17 +388,17 @@ export const propertySchema = z
       }
     }
 
-    // amenityIcons must match amenityNames count when icons are provided
-    if (data.amenityIcons && data.amenityIcons.length > 0) {
+    // amenityIcons must match amenityNames count when icons are provided (only for NEW icons)
+    if (data.iconFiles && data.iconFiles.length > 0) {
       const namesCount = (data.amenityNames ?? '')
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean).length;
-      if (namesCount === 0 || namesCount !== data.amenityIcons.length) {
+      if (namesCount === 0 || namesCount !== data.iconFiles.length) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Amenity icons count must match amenity names count',
-          path: ['amenityIcons'],
+          message: 'Amenity names count must match the number of uploaded icons',
+          path: ['amenityNames'],
         });
       }
     }
@@ -409,6 +544,136 @@ export const propertySchema = z
           code: z.ZodIssueCode.custom,
           message: maintErrors.join('\n'),
           path: ['maintenanceTemplates'],
+        });
+      }
+    }
+
+    /* ────────────────────────  HIGHLIGHTS  ──────────────────────── */
+    if (data.highlights && data.highlights.length > 0) {
+      const highlightErrors: string[] = [];
+
+      data.highlights.forEach((highlight, idx) => {
+        if (!highlight.key?.trim()) {
+          highlightErrors.push(`Highlight #${idx + 1}: Key is required`);
+        }
+        if (!highlight.label?.trim()) {
+          highlightErrors.push(`Highlight #${idx + 1}: Label is required`);
+        }
+        if (!highlight.value?.trim()) {
+          highlightErrors.push(`Highlight #${idx + 1}: Value is required`);
+        }
+      });
+
+      if (highlightErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: highlightErrors.join('\n'),
+          path: ['highlights'],
+        });
+      }
+    }
+
+    /* ────────────────────────  CERTIFICATES  ──────────────────────── */
+    if (data.certificates && data.certificates.length > 0) {
+      const certificateErrors: string[] = [];
+
+      data.certificates.forEach((cert, idx) => {
+        if (!cert.name?.trim()) {
+          certificateErrors.push(`Certificate #${idx + 1}: Name is required`);
+        }
+      });
+
+      if (certificateErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: certificateErrors.join('\n'),
+          path: ['certificates'],
+        });
+      }
+    }
+
+    /* ────────────────────────  FLOOR PLANS  ──────────────────────── */
+    if (data.floorPlans && data.floorPlans.length > 0) {
+      const floorPlanErrors: string[] = [];
+
+      data.floorPlans.forEach((plan, idx) => {
+        if (!plan.name?.trim()) {
+          floorPlanErrors.push(`Floor plan #${idx + 1}: Name is required`);
+        }
+      });
+
+      if (floorPlanErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: floorPlanErrors.join('\n'),
+          path: ['floorPlans'],
+        });
+      }
+    }
+
+    /* ────────────────────────  PAYMENT PLANS  ──────────────────────── */
+    if (data.paymentPlans && data.paymentPlans.length > 0) {
+      const paymentPlanErrors: string[] = [];
+
+      data.paymentPlans.forEach((plan, idx) => {
+        if (!plan.planType) {
+          paymentPlanErrors.push(`Payment plan #${idx + 1}: Plan type is required`);
+        }
+        if (!plan.name?.trim()) {
+          paymentPlanErrors.push(`Payment plan #${idx + 1}: Name is required`);
+        }
+        if (plan.amount == null || plan.amount <= 0) {
+          paymentPlanErrors.push(`Payment plan #${idx + 1}: Amount must be greater than 0`);
+        }
+        if (!plan.purchaseType) {
+          paymentPlanErrors.push(`Payment plan #${idx + 1}: Purchase type is required`);
+        }
+      });
+
+      if (paymentPlanErrors.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: paymentPlanErrors.join('\n'),
+          path: ['paymentPlans'],
+        });
+      }
+    }
+
+    // Business Logic Validations
+    // Certificate images must match certificates count only if NEW certificate images are being uploaded
+    if (data.certificateImageFiles && data.certificateImageFiles.length > 0) {
+      if (data.certificates && data.certificates.length > 0) {
+        if (!data.certificateImages || data.certificateImages.length !== data.certificates.length) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Number of certificate images must match certificates count',
+            path: ['certificateImages'],
+          });
+        }
+      } else {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Certificate images provided but no certificate data specified',
+          path: ['certificateImages'],
+        });
+      }
+    }
+
+    // Floor plan images must match floor plans count only if NEW floor plan images are being uploaded
+    if (data.floorPlanImageFiles && data.floorPlanImageFiles.length > 0) {
+      if (data.floorPlans && data.floorPlans.length > 0) {
+        if (!data.floorPlanImages || data.floorPlanImages.length !== data.floorPlans.length) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Number of floor plan images must match floor plans count',
+            path: ['floorPlanImages'],
+          });
+        }
+      } else {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Floor plan images provided but no floor plan data specified',
+          path: ['floorPlanImages'],
         });
       }
     }

@@ -1,5 +1,4 @@
 import FormInput from '../../ui/propertiesFormInput';
-import { useEffect } from 'react';
 
 interface BasicInformationSectionProps {
   register: any;
@@ -10,15 +9,6 @@ export default function BasicInformationSection({
   register,
   errors,
 }: BasicInformationSectionProps) {
-  useEffect(() => {
-    const sanitized = Object.fromEntries(
-      Object.entries(errors).map(([key, err]) => [key, (err as any)?.message])
-    );
-    console.log(JSON.stringify({
-      type: 'basic_info_errors',
-      errors: sanitized
-    }, null, 2));
-  }, [errors]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -51,6 +41,43 @@ export default function BasicInformationSection({
         {errors.description && (
           <p className="mt-2 text-sm text-red-600">{String(errors.description.message)}</p>
         )}
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormInput
+            id="beds"
+            label="Beds"
+            type="number"
+            placeholder="0"
+            inputProps={register('beds')}
+            error={errors.beds}
+          />
+          <FormInput
+            id="bathrooms"
+            label="Bathrooms"
+            type="number"
+            placeholder="0"
+            inputProps={register('bathrooms')}
+            error={errors.bathrooms}
+          />
+          <FormInput
+            id="sqft"
+            label="Sqft"
+            type="number"
+            placeholder="0"
+            inputProps={register('sqft')}
+            error={errors.sqft}
+          />
+          <FormInput
+            id="maxOccupancy"
+            label="Max Occupancy"
+            placeholder="e.g., 6-8 guests"
+            inputProps={register('maxOccupancy')}
+            error={errors.maxOccupancy}
+          />
+        </div>
       </div>
     </div>
   );

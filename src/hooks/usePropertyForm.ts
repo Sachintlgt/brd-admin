@@ -27,17 +27,30 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [maintenanceTemplateIdsToDelete, setMaintenanceTemplateIdsToDelete] = useState<string[]>(
     [],
   );
+  const [certificateIdsToDelete, setCertificateIdsToDelete] = useState<string[]>([]);
+  const [floorPlanIdsToDelete, setFloorPlanIdsToDelete] = useState<string[]>([]);
+  const [paymentPlanIdsToDelete, setPaymentPlanIdsToDelete] = useState<string[]>([]);
+  const [highlightIdsToDelete, setHighlightIdsToDelete] = useState<string[]>([]);
 
   // File states
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
   const [iconFiles, setIconFiles] = useState<File[]>([]);
+  const [certificateImageFiles, setCertificateImageFiles] = useState<File[]>([]);
+  const [floorPlanImageFiles, setFloorPlanImageFiles] = useState<File[]>([]);
 
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [existingVideos, setExistingVideos] = useState<any[]>([]);
   const [existingDocuments, setExistingDocuments] = useState<any[]>([]);
   const [existingAmenities, setExistingAmenities] = useState<any[]>([]);
+  const [existingCertificates, setExistingCertificates] = useState<any[]>([]);
+  const [existingFloorPlans, setExistingFloorPlans] = useState<any[]>([]);
+  const [existingPricingDetails, setExistingPricingDetails] = useState<any[]>([]);
+  const [existingShareDetails, setExistingShareDetails] = useState<any[]>([]);
+  const [existingMaintenanceTemplates, setExistingMaintenanceTemplates] = useState<any[]>([]);
+  const [existingHighlights, setExistingHighlights] = useState<any[]>([]);
+  const [existingPaymentPlans, setExistingPaymentPlans] = useState<any[]>([]);
 
   const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
 
@@ -57,38 +70,50 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       name: '',
       location: '',
       description: '',
+      beds: undefined,
+      bathrooms: undefined,
+      sqft: undefined,
+      maxOccupancy: '',
       totalShares: 0,
       availableShares: 0,
-      pricePerShare: 0,
+      initialPricePerShare: 0,
+      currentPricePerShare: undefined,
+      wholeUnitPrice: undefined,
+      targetIRR: undefined,
+      targetRentalYield: '',
       appreciationRate: 0,
+      possessionDate: '',
+      launchDate: '',
       maxBookingDays: 0,
+      bookingAmount: undefined,
+      bookingAmountGST: undefined,
       isActive: true,
       isFeatured: false,
       amenityNames: '',
       documentNames: '',
+      certificateNames: '',
+      floorPlanNames: '',
       propertyImages: [],
       propertyVideos: [],
       amenityIcons: [],
       documents: [],
+      certificateImages: [],
+      floorPlanImages: [],
       imageFiles: [],
       videoFiles: [],
       documentFiles: [],
       iconFiles: [],
+      certificateImageFiles: [],
+      floorPlanImageFiles: [],
       pricingDetails: [],
       shareDetails: [],
       maintenanceTemplates: [],
+      highlights: [],
+      certificates: [],
+      floorPlans: [],
+      paymentPlans: [],
     },
   });
-
-  const nameValue = watch('name');
-
-  useEffect(() => {
-    console.log(JSON.stringify({
-      type: 'name_change',
-      value: nameValue,
-      error: errors.name?.message || null
-    }, null, 2));
-  }, [nameValue]);
 
   const sanitizeErrors = (errors: any) => {
     return Object.fromEntries(
@@ -105,13 +130,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const errorsJson = JSON.stringify(sanitizeErrors(errors));
 
-  useEffect(() => {
-    console.log(JSON.stringify({
-      type: 'errors_update',
-      errors: sanitizeErrors(errors)
-    }, null, 2));
-  }, [errorsJson]);
-
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
@@ -121,9 +139,18 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   useEffect(() => {
-    console.log('forceUpdate called');
     forceUpdate();
   }, [errorsJson]);
+
+  // Watch for form changes and log entire form data
+  useEffect(() => {
+    const subscription = watch((data) => {
+      console.log('=== FORM DATA CHANGED ===');
+      console.log('Complete form data:', JSON.stringify(data, null, 2));
+      console.log('========================');
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   // File upload handlers
   const onImagesDrop = (accepted: File[]) => {
@@ -132,7 +159,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...imageFiles, ...toAdd];
     setImageFiles(next);
-    setValue('propertyImages', [...getValues('propertyImages'), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('propertyImages', [...(getValues('propertyImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
     setValue('imageFiles', next, { shouldValidate: true });
   };
 
@@ -169,6 +196,26 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setValue('iconFiles', next, { shouldValidate: true });
   };
 
+  const onCertificateImagesDrop = (accepted: File[]) => {
+    const allowed = Math.max(0, IMAGE_MAX - certificateImageFiles.length);
+    const toAdd = accepted.slice(0, allowed);
+    if (toAdd.length === 0) return;
+    const next = [...certificateImageFiles, ...toAdd];
+    setCertificateImageFiles(next);
+    setValue('certificateImages', [...(getValues('certificateImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('certificateImageFiles', next, { shouldValidate: true });
+  };
+
+  const onFloorPlanImagesDrop = (accepted: File[]) => {
+    const allowed = Math.max(0, IMAGE_MAX - floorPlanImageFiles.length);
+    const toAdd = accepted.slice(0, allowed);
+    if (toAdd.length === 0) return;
+    const next = [...floorPlanImageFiles, ...toAdd];
+    setFloorPlanImageFiles(next);
+    setValue('floorPlanImages', [...(getValues('floorPlanImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('floorPlanImageFiles', next, { shouldValidate: true });
+  };
+
   // Dropzones
   const imageDropzone = useDropzone({
     onDrop: onImagesDrop,
@@ -201,6 +248,18 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     multiple: true,
   });
 
+  const certificateImageDropzone = useDropzone({
+    onDrop: onCertificateImagesDrop,
+    accept: { 'image/*': [] },
+    multiple: true,
+  });
+
+  const floorPlanImageDropzone = useDropzone({
+    onDrop: onFloorPlanImagesDrop,
+    accept: { 'image/*': [] },
+    multiple: true,
+  });
+
   // Remove file handlers
   const removeAt = (
     idx: number,
@@ -223,6 +282,10 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       setValue('documentFiles', newFiles, { shouldValidate: true });
     } else if (formKey === 'amenityIcons') {
       setValue('iconFiles', newFiles, { shouldValidate: true });
+    } else if (formKey === 'certificateImages') {
+      setValue('certificateImageFiles', newFiles, { shouldValidate: true });
+    } else if (formKey === 'floorPlanImages') {
+      setValue('floorPlanImageFiles', newFiles, { shouldValidate: true });
     }
   };
 
@@ -233,6 +296,22 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       return new Date(dateString).toISOString();
     } catch {
       return undefined;
+    }
+  };
+
+  // Helper function to convert ISO date to datetime-local format (YYYY-MM-DDTHH:MM)
+  const convertToDateTimeLocal = (isoString?: string) => {
+    if (!isoString) return '';
+    try {
+      const date = new Date(isoString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch {
+      return '';
     }
   };
 
@@ -281,6 +360,36 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       'maintenanceTemplates',
       currentTemplates.filter((t: any) => t.id !== id),
     );
+  };
+
+  const removeExistingCertificate = (id: string) => {
+    setCertificateIdsToDelete((prev) => [...prev, id]);
+    setExistingCertificates((prev) => prev.filter((cert) => cert.id !== id));
+  };
+
+  const removeExistingFloorPlan = (id: string) => {
+    setFloorPlanIdsToDelete((prev) => [...prev, id]);
+    setExistingFloorPlans((prev) => prev.filter((plan) => plan.id !== id));
+  };
+
+  const removeExistingPaymentPlan = (id: string) => {
+    setPaymentPlanIdsToDelete((prev) => [...prev, id]);
+    const currentPaymentPlans = getValues('paymentPlans') || [];
+    setValue(
+      'paymentPlans',
+      currentPaymentPlans.filter((p: any) => p.id !== id),
+    );
+    setExistingPaymentPlans((prev) => prev.filter((plan) => plan.id !== id));
+  };
+
+  const removeExistingHighlight = (id: string) => {
+    setHighlightIdsToDelete((prev) => [...prev, id]);
+    const currentHighlights = getValues('highlights') || [];
+    setValue(
+      'highlights',
+      currentHighlights.filter((h: any) => h.id !== id),
+    );
+    setExistingHighlights((prev) => prev.filter((highlight) => highlight.id !== id));
   };
 
   // Mutations for create and update
@@ -337,26 +446,48 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             name: property.name,
             location: property.location,
             description: property.description || '',
+            beds: property.beds || undefined,
+            bathrooms: property.bathrooms || undefined,
+            sqft: property.sqft || undefined,
+            maxOccupancy: property.maxOccupancy || '',
             totalShares: property.totalShares,
             availableShares: property.availableShares,
-            pricePerShare: property.pricePerShare,
+            initialPricePerShare: property.initialPricePerShare || property.pricePerShare || 0,
+            currentPricePerShare: property.currentPricePerShare || undefined,
+            wholeUnitPrice: property.wholeUnitPrice || undefined,
+            targetIRR: property.targetIRR || undefined,
+            targetRentalYield: property.targetRentalYield || '',
             appreciationRate: property.appreciationRate || 0,
+            possessionDate: convertToDateTimeLocal(property.possessionDate),
+            launchDate: convertToDateTimeLocal(property.launchDate),
             maxBookingDays: property.maxBookingDays || 0,
+            bookingAmount: property.bookingAmount || undefined,
+            bookingAmountGST: property.bookingAmountGST || undefined,
             isActive: property.isActive,
             isFeatured: property.isFeatured,
             amenityNames: property.amenities?.map((a: any) => a.name).join(', ') || '',
             documentNames: property.documents?.map((d: any) => d.name).join(', ') || '',
+            certificateNames: property.certificates?.map((c: any) => c.name).join(', ') || '',
+            floorPlanNames: property.floorPlans?.map((f: any) => f.name).join(', ') || '',
             propertyImages: [],
             propertyVideos: [],
             amenityIcons: [],
             documents: [],
+            certificateImages: [],
+            floorPlanImages: [],
             imageFiles: [],
             videoFiles: [],
             documentFiles: [],
             iconFiles: [],
-            pricingDetails: property.pricings || [],
-            shareDetails: property.shareDetails || [],
-            maintenanceTemplates: property.maintenanceTemplates || [],
+            certificateImageFiles: [],
+            floorPlanImageFiles: [],
+            pricingDetails: [], // Will be populated after data loads
+            shareDetails: [], // Will be populated after data loads
+            maintenanceTemplates: [], // Will be populated after data loads
+            highlights: [], // Will be populated after data loads
+            certificates: [], // Will be populated after data loads
+            floorPlans: [], // Will be populated after data loads
+            paymentPlans: [], // Will be populated after data loads
           });
 
           // Set existing media
@@ -365,7 +496,39 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setExistingImages(images);
           setExistingVideos(videos);
           setExistingDocuments(property.documents || []);
+          
+          console.log('\n=== FORM LOADING DEBUG ===');
+          console.log('property.amenities from API:', JSON.stringify(property.amenities, null, 2));
+          console.log('About to setExistingAmenities with:', JSON.stringify(property.amenities || [], null, 2));
+          
           setExistingAmenities(property.amenities || []);
+          setExistingCertificates(property.certificates || []);
+          setExistingFloorPlans(property.floorPlans || []);
+          
+          // Set existing form array data
+          const pricings = (property.pricings || []).map((pricing: any) => ({
+            ...pricing,
+            effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
+            effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
+          }));
+          setExistingPricingDetails(pricings);
+          
+          const shares = property.shareDetails || [];
+          setExistingShareDetails(shares);
+          
+          const templates = (property.maintenanceTemplates || []).map((template: any) => ({
+            ...template,
+            startDate: convertToDateTimeLocal(template.startDate),
+            endDate: convertToDateTimeLocal(template.endDate),
+          }));
+          setExistingMaintenanceTemplates(templates);
+          
+          setExistingHighlights(property.highlights || []);
+          setExistingPaymentPlans(property.paymentPlans || []);
+
+          // NOTE: Do NOT populate form arrays with existing data
+          // All sections handle existing data separately and use form arrays only for NEW items
+          // This prevents duplication where existing items appear twice
 
           // Trigger currency input re-render by triggering blur event
           setTimeout(() => {
@@ -388,8 +551,12 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setSubmitError(null);
     setSubmitSuccess(null);
 
-    const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => ({
-      id: pricing.id, // Include ID if exists
+    // Combine existing pricing details (not deleted) with new ones from form
+    const existingPricingNotDeleted = existingPricingDetails.filter(
+      pricing => !pricingIdsToDelete.includes(pricing.id)
+    );
+    const newPricingFromForm = (data.pricingDetails || []).map((pricing: any) => ({
+      id: pricing.id, // Include ID if exists (for existing records)
       label: pricing.label,
       price: Number(pricing.price),
       type: pricing.type,
@@ -398,16 +565,26 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       effectiveFrom: convertToISO(pricing.effectiveFrom),
       effectiveTo: convertToISO(pricing.effectiveTo),
     }));
+    const processedPricingDetails = [...existingPricingNotDeleted, ...newPricingFromForm];
 
-    const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
+    // Combine existing share details (not deleted) with new ones from form
+    const existingShareDetailsNotDeleted = existingShareDetails.filter(
+      share => !shareDetailIdsToDelete.includes(share.id)
+    );
+    const newShareDetailsFromForm = (data.shareDetails || []).map((detail: any) => ({
       id: detail.id, // Include ID if exists
       title: detail.title,
       description: detail.description || undefined,
       shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
       amount: detail.amount ? Number(detail.amount) : undefined,
     }));
+    const processedShareDetails = [...existingShareDetailsNotDeleted, ...newShareDetailsFromForm];
 
-    const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
+    // Combine existing maintenance templates (not deleted) with new ones from form
+    const existingMaintenanceNotDeleted = existingMaintenanceTemplates.filter(
+      template => !maintenanceTemplateIdsToDelete.includes(template.id)
+    );
+    const newMaintenanceFromForm = (data.maintenanceTemplates || []).map(
       (template: any) => ({
         id: template.id, // Include ID if exists
         chargeType: template.chargeType,
@@ -419,22 +596,55 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         isActive: template.isActive ?? true,
       }),
     );
+    const processedMaintenanceTemplates = [...existingMaintenanceNotDeleted, ...newMaintenanceFromForm];
 
     if (propertyId) {
-      // UPDATE MODE
+      // UPDATE MODE - TARGETED DEBUG LOGS
+      console.log('\n=== AMENITIES DEBUG ===');
+      console.log('existingAmenities:', JSON.stringify(existingAmenities, null, 2));
+      console.log('amenityIdsToDelete:', JSON.stringify(amenityIdsToDelete, null, 2));
+      console.log('data.amenityNames:', data.amenityNames);
+      console.log('iconFiles.length:', iconFiles.length);
+      
+      console.log('\n=== PRICING DEBUG ===');
+      console.log('Form data.pricingDetails:', JSON.stringify(data.pricingDetails, null, 2));
+      console.log('existingPricingDetails:', JSON.stringify(existingPricingDetails, null, 2));
+      console.log('pricingIdsToDelete:', JSON.stringify(pricingIdsToDelete, null, 2));
+      
+      console.log('\n=== SHARE DETAILS DEBUG ===');
+      console.log('Form data.shareDetails:', JSON.stringify(data.shareDetails, null, 2));
+      console.log('existingShareDetails:', JSON.stringify(existingShareDetails, null, 2));
+      console.log('shareDetailIdsToDelete:', JSON.stringify(shareDetailIdsToDelete, null, 2));
+      
       const payload: UpdatePropertyPayload = {
         name: data.name,
         location: data.location,
         description: data.description || undefined,
+        beds: data.beds || undefined,
+        bathrooms: data.bathrooms || undefined,
+        sqft: data.sqft || undefined,
+        maxOccupancy: data.maxOccupancy || undefined,
         totalShares: data.totalShares,
         availableShares: data.availableShares,
-        pricePerShare: data.pricePerShare,
+        initialPricePerShare: data.initialPricePerShare,
+        currentPricePerShare: data.currentPricePerShare || undefined,
+        wholeUnitPrice: data.wholeUnitPrice || undefined,
+        targetIRR: data.targetIRR || undefined,
+        targetRentalYield: data.targetRentalYield || undefined,
         appreciationRate: data.appreciationRate || undefined,
+        possessionDate: convertToISO(data.possessionDate) || undefined,
+        launchDate: convertToISO(data.launchDate) || undefined,
         maxBookingDays: data.maxBookingDays || undefined,
+        bookingAmount: data.bookingAmount || undefined,
+        bookingAmountGST: data.bookingAmountGST || undefined,
         isActive: data.isActive,
         isFeatured: data.isFeatured,
-        amenityNames: data.amenityNames || undefined,
-        documentNames: data.documentNames || undefined,
+        // WORKAROUND: Don't send amenityNames in edit mode to prevent backend duplication
+        // The backend should only create new amenities from uploaded amenityIcons
+        amenityNames: iconFiles.length > 0 ? data.amenityNames : undefined,
+        documentNames: documentFiles.length > 0 ? data.documentNames : undefined,
+        certificateNames: certificateImageFiles.length > 0 ? data.certificateNames : undefined,
+        floorPlanNames: floorPlanImageFiles.length > 0 ? data.floorPlanNames : undefined,
         imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
         amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
         documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,
@@ -443,15 +653,61 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           shareDetailIdsToDelete.length > 0 ? shareDetailIdsToDelete : undefined,
         maintenanceTemplateIdsToDelete:
           maintenanceTemplateIdsToDelete.length > 0 ? maintenanceTemplateIdsToDelete : undefined,
+        certificateIdsToDelete: certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
+        floorPlanIdsToDelete: floorPlanIdsToDelete.length > 0 ? floorPlanIdsToDelete : undefined,
+        paymentPlanIdsToDelete: paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
+        highlightIdsToDelete: highlightIdsToDelete.length > 0 ? highlightIdsToDelete : undefined,
         propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
         amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
         documents: documentFiles.length > 0 ? documentFiles : undefined,
+        certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
+        floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
         pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
         shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+        highlights: (() => {
+          const existingHighlightsNotDeleted = existingHighlights.filter(
+            highlight => !highlightIdsToDelete.includes(highlight.id)
+          );
+          const newHighlightsFromForm = data.highlights || [];
+          const allHighlights = [...existingHighlightsNotDeleted, ...newHighlightsFromForm];
+          return allHighlights.length > 0 ? allHighlights : undefined;
+        })(),
+        paymentPlans: (() => {
+          const existingPaymentPlansNotDeleted = existingPaymentPlans.filter(
+            plan => !paymentPlanIdsToDelete.includes(plan.id)
+          );
+          const newPaymentPlansFromForm = data.paymentPlans || [];
+          const allPaymentPlans = [...existingPaymentPlansNotDeleted, ...newPaymentPlansFromForm];
+          return allPaymentPlans.length > 0 ? allPaymentPlans : undefined;
+        })(),
+        certificates: (() => {
+          const existingCertificatesNotDeleted = existingCertificates.filter(
+            cert => !certificateIdsToDelete.includes(cert.id)
+          );
+          const newCertificatesFromForm = data.certificates || [];
+          const allCertificates = [...existingCertificatesNotDeleted, ...newCertificatesFromForm];
+          return allCertificates.length > 0 ? allCertificates : undefined;
+        })(),
+        floorPlans: (() => {
+          const existingFloorPlansNotDeleted = existingFloorPlans.filter(
+            plan => !floorPlanIdsToDelete.includes(plan.id)
+          );
+          const newFloorPlansFromForm = data.floorPlans || [];
+          const allFloorPlans = [...existingFloorPlansNotDeleted, ...newFloorPlansFromForm];
+          return allFloorPlans.length > 0 ? allFloorPlans : undefined;
+        })(),
       };
+
+      console.log('\n=== FINAL PAYLOAD SUMMARY ===');
+      console.log('payload.amenityNames:', payload.amenityNames);
+      console.log('payload.amenityIdsToDelete:', JSON.stringify(payload.amenityIdsToDelete));
+      console.log('payload.pricingDetails count:', payload.pricingDetails?.length || 0);
+      console.log('payload.pricingDetails:', JSON.stringify(payload.pricingDetails, null, 2));
+      console.log('payload.shareDetails count:', payload.shareDetails?.length || 0);
+      console.log('payload.shareDetails:', JSON.stringify(payload.shareDetails, null, 2));
 
       updateMutation.mutate({ id: propertyId, payload });
     } else {
@@ -460,23 +716,43 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         name: data.name,
         location: data.location,
         description: data.description || undefined,
+        beds: data.beds || undefined,
+        bathrooms: data.bathrooms || undefined,
+        sqft: data.sqft || undefined,
+        maxOccupancy: data.maxOccupancy || undefined,
         totalShares: data.totalShares,
         availableShares: data.availableShares,
-        pricePerShare: data.pricePerShare,
+        initialPricePerShare: data.initialPricePerShare,
+        currentPricePerShare: data.currentPricePerShare || undefined,
+        wholeUnitPrice: data.wholeUnitPrice || undefined,
+        targetIRR: data.targetIRR || undefined,
+        targetRentalYield: data.targetRentalYield || undefined,
         appreciationRate: data.appreciationRate || undefined,
+        possessionDate: convertToISO(data.possessionDate) || undefined,
+        launchDate: convertToISO(data.launchDate) || undefined,
         maxBookingDays: data.maxBookingDays || undefined,
+        bookingAmount: data.bookingAmount || undefined,
+        bookingAmountGST: data.bookingAmountGST || undefined,
         isActive: data.isActive,
         isFeatured: data.isFeatured,
         amenityNames: data.amenityNames || undefined,
         documentNames: data.documentNames || undefined,
+        certificateNames: data.certificateNames || undefined,
+        floorPlanNames: data.floorPlanNames || undefined,
         propertyImages: imageFiles,
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
         amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
         documents: documentFiles.length > 0 ? documentFiles : undefined,
+        certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
+        floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
         pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
         shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+        highlights: data.highlights?.length > 0 ? data.highlights : undefined,
+        paymentPlans: data.paymentPlans?.length > 0 ? data.paymentPlans : undefined,
+        certificates: data.certificates?.length > 0 ? data.certificates : undefined,
+        floorPlans: data.floorPlans?.length > 0 ? data.floorPlans : undefined,
       };
 
       createMutation.mutate(payload);
@@ -499,10 +775,16 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setDocumentFiles,
     iconFiles,
     setIconFiles,
+    certificateImageFiles,
+    setCertificateImageFiles,
+    floorPlanImageFiles,
+    setFloorPlanImageFiles,
     imageDropzone,
     videoDropzone,
     documentDropzone,
     iconDropzone,
+    certificateImageDropzone,
+    floorPlanImageDropzone,
     removeAt,
     onSubmit,
     submitError,
@@ -514,13 +796,24 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     existingVideos,
     existingDocuments,
     existingAmenities,
+    existingCertificates,
+    existingFloorPlans,
+    existingPricingDetails,
+    existingShareDetails,
+    existingMaintenanceTemplates,
+    existingHighlights,
+    existingPaymentPlans,
     removeExistingImage,
     removeExistingVideo,
     removeExistingDocument,
     removeExistingAmenity,
+    removeExistingCertificate,
+    removeExistingFloorPlan,
     removeExistingPricing,
     removeExistingShareDetail,
     removeExistingMaintenanceTemplate,
+    removeExistingPaymentPlan,
+    removeExistingHighlight,
     isEditMode: !!propertyId,
   };
 };

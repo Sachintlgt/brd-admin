@@ -49,7 +49,7 @@ export default function PropertyListItemRow({
             <div className="flex items-center space-x-4 mt-2 flex-wrap">
               {/* Price */}
               <span className="text-sm font-medium text-gray-600">
-                {displayCurrency(property.pricePerShare) || '₹ N/A'} per share
+                {displayCurrency(property.initialPricePerShare) || '₹ N/A'} per share
               </span>
 
               {/* Shares Info */}

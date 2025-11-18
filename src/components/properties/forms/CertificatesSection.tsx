@@ -4,45 +4,45 @@ import FileUploadZone from '../FileUploadZone';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import { useEffect, useState, memo, useCallback } from 'react';
 
-interface AmenitiesSectionProps {
+interface CertificatesSectionProps {
   register: any;
   errors: any;
   setValue?: any;
   getValues?: any;
 
-  // Icons upload
-  iconDropzone: any;
-  iconFiles: File[];
-  setIconFiles: (f: File[]) => void;
+  // Images upload
+  certificateImageDropzone: any;
+  certificateImageFiles: File[];
+  setCertificateImageFiles: (f: File[]) => void;
 
   // Helper
   removeAt: (idx: number, files: File[], setFiles: (f: File[]) => void, formKey: any) => void;
 
-  // Existing amenities from DB
-  existingAmenities?: any[];
-  onRemoveExisting?: (id: string) => void; // removeExistingAmenity
+  // Existing certificates from DB
+  existingCertificates?: any[];
+  onRemoveExisting?: (id: string) => void; // removeExistingCertificate
 
   // Form submission
   isSubmitting: boolean;
 }
 
-interface AmenityItem {
-  id?: string; // for existing amenities
+interface CertificateItem {
+  id?: string; // for existing certificates
   name: string;
   file?: File; // for new uploads
   isExisting?: boolean;
   uniqueId: string; // stable unique identifier for React keys
 }
 
-interface AmenityItemRowProps {
-  item: AmenityItem;
+interface CertificateItemRowProps {
+  item: CertificateItem;
   index: number;
   onUpdate: (index: number, name: string) => void;
   onRemove: (index: number) => void;
   isSubmitting: boolean;
 }
 
-const AmenityItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: AmenityItemRowProps) => (
+const CertificateItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: CertificateItemRowProps) => (
   <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
     <div className="shrink-0">
       {item.isExisting ? (
@@ -59,7 +59,7 @@ const AmenityItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: 
         type="text"
         value={item.name}
         onChange={(e) => onUpdate(index, e.target.value)}
-        placeholder="Enter amenity name (e.g., Swimming Pool)"
+        placeholder="Enter certificate name (e.g., RERA Certificate)"
         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         disabled={isSubmitting}
       />
@@ -74,7 +74,7 @@ const AmenityItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: 
       type="button"
       onClick={() => onRemove(index)}
       className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-      title="Remove amenity"
+      title="Remove certificate"
       disabled={isSubmitting}
     >
       <X className="w-4 h-4" />
@@ -82,41 +82,41 @@ const AmenityItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: 
   </div>
 ));
 
-AmenityItemRow.displayName = 'AmenityItemRow';
+CertificateItemRow.displayName = 'CertificateItemRow';
 
-export default function AmenitiesSection({
+export default function CertificatesSection({
   register,
   errors,
-  iconDropzone,
-  iconFiles,
-  setIconFiles,
+  certificateImageDropzone,
+  certificateImageFiles,
+  setCertificateImageFiles,
   removeAt,
   setValue,
   getValues,
-  existingAmenities = [],
+  existingCertificates = [],
   onRemoveExisting,
   isSubmitting,
-}: AmenitiesSectionProps) {
-  const [amenityItems, setAmenityItems] = useState<AmenityItem[]>([]);
+}: CertificatesSectionProps) {
+  const [certificateItems, setCertificateItems] = useState<CertificateItem[]>([]);
 
-  // Initialize amenity items when component mounts or existing amenities change
+  // Initialize certificate items when component mounts or existing certificates change
   useEffect(() => {
-    setAmenityItems(prev => {
-      const updatedItems: AmenityItem[] = [];
+    setCertificateItems(prev => {
+      const updatedItems: CertificateItem[] = [];
       const previousMap = new Map(prev.map(item => [item.uniqueId, item]));
 
-      // Add existing amenities
-      existingAmenities.forEach((amenity) => {
+      // Add existing certificates
+      existingCertificates.forEach((certificate) => {
         updatedItems.push({
-          id: amenity.id,
-          name: amenity.name,
+          id: certificate.id,
+          name: certificate.name,
           isExisting: true,
-          uniqueId: amenity.id || `existing-${amenity.id}`,
+          uniqueId: certificate.id || `existing-${certificate.id}`,
         });
       });
 
       // Add new uploaded files - preserve their names if they were entered before
-      iconFiles.forEach((file, index) => {
+      certificateImageFiles.forEach((file, index) => {
         const uniqueId = `new-file-${file.name}-${file.size}-${index}`;
         const previousItem = previousMap.get(uniqueId);
         updatedItems.push({
@@ -129,102 +129,115 @@ export default function AmenitiesSection({
 
       return updatedItems;
     });
-  }, [existingAmenities, iconFiles]);
+  }, [existingCertificates, certificateImageFiles]);
 
-  // Update amenityNames whenever amenityItems change
+  // Update certificateNames whenever certificateItems change
   useEffect(() => {
-    const names = amenityItems
+    const names = certificateItems
       .filter(item => item.name.trim() !== '')
       .map(item => item.name.trim());
     const commaSeparatedNames = names.join(', ');
-    setValue?.('amenityNames', commaSeparatedNames);
-  }, [amenityItems, setValue]);
+    setValue?.('certificateNames', commaSeparatedNames);
+  }, [certificateItems, setValue]);
 
-  const updateAmenityName = useCallback((index: number, name: string) => {
-    setAmenityItems(prev => prev.map((item, i) =>
+  // Update certificates array whenever certificateItems change
+  useEffect(() => {
+    const certificates = certificateItems
+      .filter(item => item.name.trim() !== '')
+      .map((item, index) => ({
+        name: item.name.trim(),
+        imageUrl: 'will-be-uploaded',
+        description: '', // Could be enhanced to include description field later
+        displayOrder: index + 1
+      }));
+    setValue?.('certificates', certificates);
+  }, [certificateItems, setValue]);
+
+  const updateCertificateName = useCallback((index: number, name: string) => {
+    setCertificateItems(prev => prev.map((item, i) =>
       i === index ? { ...item, name } : item
     ));
   }, []);
 
-  const removeAmenityItem = useCallback((index: number) => {
-    setAmenityItems(prev => {
+  const removeCertificateItem = useCallback((index: number) => {
+    setCertificateItems(prev => {
       const item = prev[index];
 
       if (item.isExisting && item.id) {
-        // Remove existing amenity
+        // Remove existing certificate
         onRemoveExisting?.(item.id);
       } else if (item.file) {
         // Remove new uploaded file
-        const fileIndex = iconFiles.findIndex(f => f === item.file);
+        const fileIndex = certificateImageFiles.findIndex(f => f === item.file);
         if (fileIndex !== -1) {
-          removeAt(fileIndex, iconFiles, setIconFiles, 'amenityIcons');
+          removeAt(fileIndex, certificateImageFiles, setCertificateImageFiles, 'certificateImages');
         }
       }
 
       // Remove from local state
       return prev.filter((_, i) => i !== index);
     });
-  }, [iconFiles, removeAt, setIconFiles, onRemoveExisting]);
+  }, [certificateImageFiles, removeAt, setCertificateImageFiles, onRemoveExisting]);
 
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
       <div className="flex items-center space-x-3 mb-2">
-        <div className="p-2 bg-green-50 rounded-lg">
-          <ImageIcon className="w-6 h-6 text-green-600" />
+        <div className="p-2 bg-indigo-50 rounded-lg">
+          <ImageIcon className="w-6 h-6 text-indigo-600" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Amenities</h2>
-          <p className="text-sm text-gray-600">Add amenities with optional icons</p>
+          <h2 className="text-xl font-semibold text-gray-900">Certificates</h2>
+          <p className="text-sm text-gray-600">Add certificates with optional images</p>
         </div>
       </div>
 
       {/* Upload Zone */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-gray-700">Upload Amenity Icons</h3>
-          <span className="text-xs text-gray-500">Max 50 • JPG, PNG, WebP, GIF</span>
+          <h3 className="text-sm font-medium text-gray-700">Upload Certificate Images</h3>
+          <span className="text-xs text-gray-500">Max 20 • JPG, PNG, WebP, GIF</span>
         </div>
 
         <FileUploadZone
           label=""
-          dropzone={iconDropzone}
-          files={iconFiles}
+          dropzone={certificateImageDropzone}
+          files={certificateImageFiles}
           onRemove={(idx) => {
-            // Remove from files array, the useEffect will handle updating amenityItems
-            removeAt(idx, iconFiles, setIconFiles, 'amenityIcons');
+            // Remove from files array, the useEffect will handle updating certificateItems
+            removeAt(idx, certificateImageFiles, setCertificateImageFiles, 'certificateImages');
           }}
-          error={errors.amenityIcons}
+          error={errors.certificateImages}
           isSubmitting={isSubmitting}
         />
 
         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-xs text-blue-800">
-            <strong>Tip:</strong> Upload icon images first, then enter the amenity names below for each one.
+            <strong>Tip:</strong> Upload certificate images first, then enter the certificate names below for each one.
           </p>
         </div>
       </div>
 
-      {/* Amenity Items */}
+      {/* Certificate Items */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-gray-700">
-          Amenity Details {amenityItems.length > 0 && `(${amenityItems.length})`}
+          Certificate Details {certificateItems.length > 0 && `(${certificateItems.length})`}
         </h3>
 
-        {amenityItems.length === 0 ? (
+        {certificateItems.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">No amenities added yet</p>
-            <p className="text-xs">Upload icon files above to get started</p>
+            <p className="text-sm">No certificates added yet</p>
+            <p className="text-xs">Upload certificate images above to get started</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {amenityItems.map((item, index) => (
-              <AmenityItemRow 
+            {certificateItems.map((item, index) => (
+              <CertificateItemRow 
                 key={item.uniqueId} 
                 item={item} 
                 index={index} 
-                onUpdate={updateAmenityName}
-                onRemove={removeAmenityItem}
+                onUpdate={updateCertificateName}
+                onRemove={removeCertificateItem}
                 isSubmitting={isSubmitting}
               />
             ))}
@@ -232,10 +245,10 @@ export default function AmenitiesSection({
         )}
 
         {/* Hidden field for comma-separated names (for backend compatibility) */}
-        <input type="hidden" {...register('amenityNames')} />
+        <input type="hidden" {...register('certificateNames')} />
 
-        {errors.amenityNames && (
-          <p className="mt-2 text-sm text-red-600">{errors.amenityNames.message}</p>
+        {errors.certificateNames && (
+          <p className="mt-2 text-sm text-red-600">{errors.certificateNames.message}</p>
         )}
       </div>
     </div>

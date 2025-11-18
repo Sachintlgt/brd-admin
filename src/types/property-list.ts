@@ -24,7 +24,9 @@ export type SortField =
   | 'updatedAt'
   | 'name'
   | 'location'
-  | 'pricePerShare'
+  | 'initialPricePerShare'
+  | 'currentPricePerShare'
+  | 'wholeUnitPrice'
   | 'totalShares'
   | 'availableShares';
 export type SortOrder = 'asc' | 'desc';
@@ -35,7 +37,9 @@ export interface PropertyListItem {
   name: string;
   location: string;
   description?: string;
-  pricePerShare: number;
+  initialPricePerShare: number;
+  currentPricePerShare?: number;
+  wholeUnitPrice?: number;
   totalShares: number;
   availableShares: number;
   isActive: boolean;
@@ -45,6 +49,11 @@ export interface PropertyListItem {
   updatedAt: string;
   images?: string[];
   amenities?: string[];
+  // Optional new fields for property details
+  beds?: number;
+  bathrooms?: number;
+  sqft?: number;
+  maxOccupancy?: string;
 }
 
 // API Response Structure

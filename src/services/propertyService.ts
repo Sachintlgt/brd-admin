@@ -11,11 +11,23 @@ export interface CreatePropertyPayload {
   name: string;
   location: string;
   description?: string;
+  beds?: number;
+  bathrooms?: number;
+  sqft?: number;
+  maxOccupancy?: string;
   totalShares: number;
   availableShares: number;
-  pricePerShare: number;
+  initialPricePerShare: number;
+  currentPricePerShare?: number;
+  wholeUnitPrice?: number;
+  targetIRR?: number;
+  targetRentalYield?: string;
   appreciationRate?: number;
+  possessionDate?: string;
+  launchDate?: string;
   maxBookingDays?: number;
+  bookingAmount?: number;
+  bookingAmountGST?: number;
   isActive: boolean;
   isFeatured: boolean;
   amenityNames?: string;
@@ -24,20 +36,38 @@ export interface CreatePropertyPayload {
   propertyVideos?: File[];
   amenityIcons?: File[];
   documents?: File[];
+  certificateImages?: File[];
+  floorPlanImages?: File[];
   pricingDetails?: any[];
   shareDetails?: any[];
   maintenanceTemplates?: any[];
+  highlights?: any[];
+  certificates?: any[];
+  floorPlans?: any[];
+  paymentPlans?: any[];
 }
 
 export interface UpdatePropertyPayload {
   name?: string;
   location?: string;
   description?: string;
+  beds?: number;
+  bathrooms?: number;
+  sqft?: number;
+  maxOccupancy?: string;
   totalShares?: number;
   availableShares?: number;
-  pricePerShare?: number;
+  initialPricePerShare?: number;
+  currentPricePerShare?: number;
+  wholeUnitPrice?: number;
+  targetIRR?: number;
+  targetRentalYield?: string;
   appreciationRate?: number;
+  possessionDate?: string;
+  launchDate?: string;
   maxBookingDays?: number;
+  bookingAmount?: number;
+  bookingAmountGST?: number;
   isActive?: boolean;
   isFeatured?: boolean;
   amenityNames?: string;
@@ -48,13 +78,25 @@ export interface UpdatePropertyPayload {
   pricingIdsToDelete?: string[];
   shareDetailIdsToDelete?: string[];
   maintenanceTemplateIdsToDelete?: string[];
+  certificateIdsToDelete?: string[];
+  floorPlanIdsToDelete?: string[];
+  paymentPlanIdsToDelete?: string[];
+  highlightIdsToDelete?: string[];
   propertyImages?: File[];
   propertyVideos?: File[];
   amenityIcons?: File[];
   documents?: File[];
+  certificateImages?: File[];
+  floorPlanImages?: File[];
   pricingDetails?: any[];
   shareDetails?: any[];
   maintenanceTemplates?: any[];
+  highlights?: any[];
+  certificates?: any[];
+  floorPlans?: any[];
+  paymentPlans?: any[];
+  certificateNames?: string;
+  floorPlanNames?: string;
 }
 
 export const propertyService = {
@@ -66,17 +108,30 @@ export const propertyService = {
       formData.append('location', payload.location);
       if (payload.description) formData.append('description', payload.description);
 
+      // Property Details
+      if (payload.beds !== undefined) formData.append('beds', String(payload.beds));
+      if (payload.bathrooms !== undefined) formData.append('bathrooms', String(payload.bathrooms));
+      if (payload.sqft !== undefined) formData.append('sqft', String(payload.sqft));
+      if (payload.maxOccupancy) formData.append('maxOccupancy', payload.maxOccupancy);
+
       formData.append('totalShares', String(payload.totalShares));
       formData.append('availableShares', String(payload.availableShares));
-      formData.append('pricePerShare', String(payload.pricePerShare));
+      formData.append('initialPricePerShare', String(payload.initialPricePerShare));
+      if (payload.currentPricePerShare !== undefined) formData.append('currentPricePerShare', String(payload.currentPricePerShare));
+      if (payload.wholeUnitPrice !== undefined) formData.append('wholeUnitPrice', String(payload.wholeUnitPrice));
 
-      if (payload.appreciationRate !== undefined) {
-        formData.append('appreciationRate', String(payload.appreciationRate));
-      }
+      // Financial Metrics
+      if (payload.targetIRR !== undefined) formData.append('targetIRR', String(payload.targetIRR));
+      if (payload.targetRentalYield) formData.append('targetRentalYield', payload.targetRentalYield);
+      if (payload.appreciationRate !== undefined) formData.append('appreciationRate', String(payload.appreciationRate));
 
-      if (payload.maxBookingDays !== undefined) {
-        formData.append('maxBookingDays', String(payload.maxBookingDays));
-      }
+      // Dates
+      if (payload.possessionDate) formData.append('possessionDate', payload.possessionDate);
+      if (payload.launchDate) formData.append('launchDate', payload.launchDate);
+
+      if (payload.maxBookingDays !== undefined) formData.append('maxBookingDays', String(payload.maxBookingDays));
+      if (payload.bookingAmount !== undefined) formData.append('bookingAmount', String(payload.bookingAmount));
+      if (payload.bookingAmountGST !== undefined) formData.append('bookingAmountGST', String(payload.bookingAmountGST));
 
       formData.append('isActive', String(payload.isActive));
       formData.append('isFeatured', String(payload.isFeatured));
@@ -96,6 +151,12 @@ export const propertyService = {
       if (payload.documents?.length) {
         payload.documents.forEach((file) => formData.append('documents', file));
       }
+      if (payload.certificateImages?.length) {
+        payload.certificateImages.forEach((file) => formData.append('certificateImages', file));
+      }
+      if (payload.floorPlanImages?.length) {
+        payload.floorPlanImages.forEach((file) => formData.append('floorPlanImages', file));
+      }
 
       if (payload.pricingDetails?.length) {
         formData.append('pricingDetails', JSON.stringify(payload.pricingDetails));
@@ -105,6 +166,18 @@ export const propertyService = {
       }
       if (payload.maintenanceTemplates?.length) {
         formData.append('maintenanceTemplates', JSON.stringify(payload.maintenanceTemplates));
+      }
+      if (payload.highlights?.length) {
+        formData.append('highlights', JSON.stringify(payload.highlights));
+      }
+      if (payload.certificates?.length) {
+        formData.append('certificates', JSON.stringify(payload.certificates));
+      }
+      if (payload.floorPlans?.length) {
+        formData.append('floorPlans', JSON.stringify(payload.floorPlans));
+      }
+      if (payload.paymentPlans?.length) {
+        formData.append('paymentPlans', JSON.stringify(payload.paymentPlans));
       }
 
       const { data } = await api.post<PropertyResponse>('/properties', formData, {
@@ -174,16 +247,29 @@ export const propertyService = {
       if (payload.description !== undefined) formData.append('description', payload.description);
 
       // Numeric fields
-      if (payload.totalShares !== undefined)
-        formData.append('totalShares', String(payload.totalShares));
-      if (payload.availableShares !== undefined)
-        formData.append('availableShares', String(payload.availableShares));
-      if (payload.pricePerShare !== undefined)
-        formData.append('pricePerShare', String(payload.pricePerShare));
-      if (payload.appreciationRate !== undefined)
-        formData.append('appreciationRate', String(payload.appreciationRate));
-      if (payload.maxBookingDays !== undefined)
-        formData.append('maxBookingDays', String(payload.maxBookingDays));
+      if (payload.beds !== undefined) formData.append('beds', String(payload.beds));
+      if (payload.bathrooms !== undefined) formData.append('bathrooms', String(payload.bathrooms));
+      if (payload.sqft !== undefined) formData.append('sqft', String(payload.sqft));
+      if (payload.maxOccupancy) formData.append('maxOccupancy', payload.maxOccupancy);
+
+      if (payload.totalShares !== undefined) formData.append('totalShares', String(payload.totalShares));
+      if (payload.availableShares !== undefined) formData.append('availableShares', String(payload.availableShares));
+      if (payload.initialPricePerShare !== undefined) formData.append('initialPricePerShare', String(payload.initialPricePerShare));
+      if (payload.currentPricePerShare !== undefined) formData.append('currentPricePerShare', String(payload.currentPricePerShare));
+      if (payload.wholeUnitPrice !== undefined) formData.append('wholeUnitPrice', String(payload.wholeUnitPrice));
+
+      // Financial Metrics
+      if (payload.targetIRR !== undefined) formData.append('targetIRR', String(payload.targetIRR));
+      if (payload.targetRentalYield) formData.append('targetRentalYield', payload.targetRentalYield);
+      if (payload.appreciationRate !== undefined) formData.append('appreciationRate', String(payload.appreciationRate));
+
+      // Dates
+      if (payload.possessionDate) formData.append('possessionDate', payload.possessionDate);
+      if (payload.launchDate) formData.append('launchDate', payload.launchDate);
+
+      if (payload.maxBookingDays !== undefined) formData.append('maxBookingDays', String(payload.maxBookingDays));
+      if (payload.bookingAmount !== undefined) formData.append('bookingAmount', String(payload.bookingAmount));
+      if (payload.bookingAmountGST !== undefined) formData.append('bookingAmountGST', String(payload.bookingAmountGST));
 
       // Boolean fields
       if (payload.isActive !== undefined) formData.append('isActive', String(payload.isActive));
@@ -193,6 +279,12 @@ export const propertyService = {
       // Text fields
       if (payload.amenityNames) formData.append('amenityNames', payload.amenityNames);
       if (payload.documentNames) formData.append('documentNames', payload.documentNames);
+
+      console.log('=== FORMDATA DEBUG (propertyService) ===');
+      console.log('payload.amenityNames:', payload.amenityNames);
+      console.log('payload.documentNames:', payload.documentNames);
+      console.log('payload.amenityIcons?.length:', payload.amenityIcons?.length);
+      console.log('payload.documents?.length:', payload.documents?.length);
 
       // Delete IDs arrays
       if (payload.imageIdsToDelete?.length) {
@@ -227,6 +319,18 @@ export const propertyService = {
       if (payload.maintenanceTemplates?.length) {
         formData.append('maintenanceTemplates', JSON.stringify(payload.maintenanceTemplates));
       }
+      if (payload.highlights?.length) {
+        formData.append('highlights', JSON.stringify(payload.highlights));
+      }
+      if (payload.certificates?.length) {
+        formData.append('certificates', JSON.stringify(payload.certificates));
+      }
+      if (payload.floorPlans?.length) {
+        formData.append('floorPlans', JSON.stringify(payload.floorPlans));
+      }
+      if (payload.paymentPlans?.length) {
+        formData.append('paymentPlans', JSON.stringify(payload.paymentPlans));
+      }
 
       // File uploads
       if (payload.propertyImages?.length) {
@@ -241,6 +345,14 @@ export const propertyService = {
       if (payload.documents?.length) {
         payload.documents.forEach((file) => formData.append('documents', file));
       }
+      if (payload.certificateImages?.length) {
+        payload.certificateImages.forEach((file) => formData.append('certificateImages', file));
+      }
+      if (payload.floorPlanImages?.length) {
+        payload.floorPlanImages.forEach((file) => formData.append('floorPlanImages', file));
+      }
+
+      console.log('=== END FORMDATA DEBUG ===');
 
       const { data } = await api.patch<PropertyResponse>(`/properties/${id}`, formData, {
         headers: {

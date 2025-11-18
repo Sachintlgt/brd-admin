@@ -14,6 +14,10 @@ import StatusSection from '@/components/properties/forms/StatusSection';
 import PricingDetailsSection from '@/components/properties/forms/PricingDetailsSection';
 import ShareDetailsSection from '@/components/properties/forms/ShareDetailsSection';
 import MaintenanceTemplatesSection from '@/components/properties/forms/MaintenanceTemplatesSection';
+import HighlightsSection from '@/components/properties/forms/HighlightsSection';
+import CertificatesSection from '@/components/properties/forms/CertificatesSection';
+import FloorPlansSection from '@/components/properties/forms/FloorPlansSection';
+import PaymentPlansSection from '@/components/properties/forms/PaymentPlansSection';
 
 export default function EditProperty() {
   const params = useParams();
@@ -21,8 +25,6 @@ export default function EditProperty() {
   const propertyId = params.id as string;
 
   const formProps = usePropertyForm(router, propertyId);
-
-  console.log('EditProperty render');
 
   const { handleSubmit, onSubmit, isSubmitting, submitError, submitSuccess, isLoading } = formProps;
 
@@ -70,6 +72,47 @@ export default function EditProperty() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <BasicInformationSection register={formProps.register} errors={formProps.errors} />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
+        <HighlightsSection 
+          register={formProps.register} 
+          errors={formProps.errors} 
+          control={formProps.control} 
+          existingHighlights={formProps.existingHighlights}
+          onRemoveExisting={formProps.removeExistingHighlight}
+        />
+        <CertificatesSection
+          register={formProps.register}
+          errors={formProps.errors}
+          certificateImageDropzone={formProps.certificateImageDropzone}
+          certificateImageFiles={formProps.certificateImageFiles}
+          setCertificateImageFiles={formProps.setCertificateImageFiles}
+          removeAt={formProps.removeAt}
+          existingCertificates={formProps.existingCertificates}
+          onRemoveExisting={formProps.removeExistingCertificate}
+          isSubmitting={isSubmitting}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
+        />
+        <FloorPlansSection
+          register={formProps.register}
+          errors={formProps.errors}
+          floorPlanImageDropzone={formProps.floorPlanImageDropzone}
+          floorPlanImageFiles={formProps.floorPlanImageFiles}
+          setFloorPlanImageFiles={formProps.setFloorPlanImageFiles}
+          removeAt={formProps.removeAt}
+          existingFloorPlans={formProps.existingFloorPlans}
+          onRemoveExisting={formProps.removeExistingFloorPlan}
+          isSubmitting={isSubmitting}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
+        />
+        <PaymentPlansSection 
+          register={formProps.register} 
+          errors={formProps.errors} 
+          control={formProps.control}
+          getValues={formProps.getValues}
+          existingPaymentPlans={formProps.existingPaymentPlans}
+          onRemoveExisting={formProps.removeExistingPaymentPlan}
+        />
 
         <PricingDetailsSection
           register={formProps.register}
@@ -78,6 +121,7 @@ export default function EditProperty() {
           getValues={formProps.getValues}
           control={formProps.control}
           onRemoveExisting={formProps.removeExistingPricing}
+          existingPricingDetails={formProps.existingPricingDetails}
         />
 
         <ShareDetailsSection
@@ -87,6 +131,7 @@ export default function EditProperty() {
           getValues={formProps.getValues}
           control={formProps.control}
           onRemoveExisting={formProps.removeExistingShareDetail}
+          existingShareDetails={formProps.existingShareDetails}
         />
 
         <MaintenanceTemplatesSection
@@ -96,6 +141,7 @@ export default function EditProperty() {
           getValues={formProps.getValues}
           control={formProps.control}
           onRemoveExisting={formProps.removeExistingMaintenanceTemplate}
+          existingMaintenanceTemplates={formProps.existingMaintenanceTemplates}
         />
 
         <MediaDocumentsSection
@@ -119,6 +165,7 @@ export default function EditProperty() {
           onRemoveExistingImage={formProps.removeExistingImage}
           onRemoveExistingVideo={formProps.removeExistingVideo}
           onRemoveExistingDocument={formProps.removeExistingDocument}
+          isSubmitting={isSubmitting}
         />
 
         <AmenitiesSection
