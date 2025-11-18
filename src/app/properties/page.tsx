@@ -1,3 +1,4 @@
+// src/app/properties/page.tsx
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -7,16 +8,13 @@ import DashboardLayout from '../../components/DashboardLayout';
 import PropertyFilters from '../../components/properties/list/PropertyFilters';
 import PropertyListContent from '../../components/properties/list/PropertyListContent';
 import PropertyPagination from '../../components/properties/list/PropertyPagination';
-import {
-  usePropertiesList,
-  useDeleteProperty,
-  useToggleActive,
-  useToggleFeatured,
-} from '../../hooks/usePropertiesList';
+import { DeleteConfirmationDialog } from '@/components/common/DeleteConfirmationDialog';
 import { useDebouncedFilters } from '../../hooks/useDebouncedFilters';
 import { PropertyFilterState } from '../../types/property-list';
-import { DeleteConfirmationDialog } from '@/components/common/DeleteConfirmationDialog';
-import toast from 'react-hot-toast';
+
+// Import new hooks
+import { usePropertiesQuery } from '@/hooks/queries';
+import { useDeleteProperty, useToggleActive, useToggleFeatured } from '@/hooks/mutations';
 
 const DEFAULT_FILTERS: PropertyFilterState = {
   searchTerm: '',
@@ -32,13 +30,12 @@ export default function Properties() {
   const [filters, setFilters] = useState<PropertyFilterState>(DEFAULT_FILTERS);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<any>(null);
-  // Debounce filters to prevent excessive API calls (especially for search)
-  // Uses 600ms delay which is appropriate for user input
+
+  // Debounce filters
   const debouncedFilters = useDebouncedFilters(filters, 600);
 
-  // TanStack Query hooks for data fetching
-  // Uses debounced filters to avoid multiple API calls
-  const { data, isLoading, isError, error } = usePropertiesList({
+  // Queries
+  const { data, isLoading, isError, error } = usePropertiesQuery({
     page: debouncedFilters.page,
     limit: debouncedFilters.limit,
     search: debouncedFilters.searchTerm || undefined,
@@ -58,12 +55,12 @@ export default function Properties() {
     staffId: debouncedFilters.staffId,
   });
 
-  // Mutations for property actions
+  // Mutations
   const deletePropertyMutation = useDeleteProperty();
   const toggleActiveMutation = useToggleActive();
   const toggleFeaturedMutation = useToggleFeatured();
 
-  // Extract pagination data
+  // Extract data
   const pagination = useMemo(() => {
     if (!data?.data?.pagination) {
       return {
@@ -78,17 +75,12 @@ export default function Properties() {
     return data.data.pagination;
   }, [data, debouncedFilters.page, debouncedFilters.limit]);
 
-  // Extract properties list
   const properties = useMemo(() => {
     const props = data?.data?.properties;
-    if (!Array.isArray(props)) {
-      console.warn('Properties data is not an array:', props); // Debug log
-      return [];
-    }
+    if (!Array.isArray(props)) return [];
     return props;
   }, [data]);
 
-  // Check if any filters are applied
   const hasFiltersApplied = useMemo(() => {
     return (
       filters.searchTerm !== '' ||
@@ -103,31 +95,24 @@ export default function Properties() {
     );
   }, [filters]);
 
-  // Handle filter changes
+  // Handlers
   const handleFiltersChange = (newFilters: Partial<PropertyFilterState>) => {
     setFilters((prev) => ({
       ...prev,
       ...newFilters,
-      page: 1, // Reset to first page when filters change
+      page: 1,
     }));
   };
 
-  // Handle filter reset
   const handleResetFilters = () => {
     setFilters(DEFAULT_FILTERS);
   };
 
-  // Handle page change
   const handlePageChange = (page: number) => {
-    setFilters((prev) => ({
-      ...prev,
-      page,
-    }));
-    // Scroll to top
+    setFilters((prev) => ({ ...prev, page }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle delete
   const handleDelete = (id: string) => {
     const property = properties.find((p: any) => p.id === id);
     if (property) {
@@ -136,7 +121,6 @@ export default function Properties() {
     }
   };
 
-  // Handle toggle active
   const handleToggleActive = (id: string) => {
     const property = properties.find((p) => p.id === id);
     if (property) {
@@ -147,7 +131,6 @@ export default function Properties() {
     }
   };
 
-  // Handle toggle featured
   const handleToggleFeatured = (id: string) => {
     const property = properties.find((p) => p.id === id);
     if (property) {
@@ -156,6 +139,18 @@ export default function Properties() {
         isFeatured: !property.isFeatured,
       });
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!propertyToDelete) return;
+
+    deletePropertyMutation.mutate(propertyToDelete.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false);
+        setPropertyToDelete(null);
+      },
+      // Error is already handled in the mutation hook
+    });
   };
 
   return (
@@ -211,41 +206,21 @@ export default function Properties() {
         />
       )}
 
+      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
           if (!open) {
-            setPropertyToDelete(null); // clear when closed via cancel/backdrop/esc
+            setPropertyToDelete(null);
           }
         }}
-        onConfirm={() => {
-          if (!propertyToDelete) return;
-
-          deletePropertyMutation.mutate(propertyToDelete.id, {
-            onSuccess: () => {
-              toast.success('Property deleted successfully');
-              setDeleteDialogOpen(false);
-              setPropertyToDelete(null);
-            },
-            onError: (error: any) => {
-              toast.error(
-                error?.response?.data?.message || error?.message || 'Failed to delete property',
-              );
-              // Modal stays open so user can retry
-            },
-          });
-        }}
+        onConfirm={handleConfirmDelete}
         title="Delete Property"
         description={
           propertyToDelete
-            ? `Are you sure you want to delete the property "${
-                propertyToDelete.title ||
-                propertyToDelete.address ||
-                propertyToDelete.name ||
-                propertyToDelete.id
-              }"? This action cannot be undone.`
-            : 'Are you sure you want to delete this property? This action cannot be undone.'
+            ? `Are you sure you want to delete "${propertyToDelete.name || propertyToDelete.id}"? This action cannot be undone.`
+            : 'Are you sure you want to delete this property?'
         }
         isLoading={deletePropertyMutation.isPending}
       />

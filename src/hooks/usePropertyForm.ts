@@ -1,12 +1,14 @@
-import { useEffect, useState, useMemo, useReducer } from 'react';
+// src/hooks/usePropertyForm.ts (Refactored to use new mutations)
+import { useEffect, useState, useReducer } from 'react';
 import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { propertySchema, type PropertyFormValues } from '../validations/property.validation';
-import { propertyService, UpdatePropertyPayload } from '../services/propertyService';
+import { UpdatePropertyPayload } from '../services/propertyService';
+import { usePropertyQuery } from './queries';
+import { useCreateProperty, useUpdateProperty } from './mutations';
 
 const IMAGE_MAX = 20;
 const VIDEO_MAX = 5;
@@ -17,8 +19,16 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const router = routerParam || useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
-  const [isLoadingInitial, setIsLoadingInitial] = useState(false);
-  const [initialData, setInitialData] = useState<any>(null);
+
+  // File states
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+  const [iconFiles, setIconFiles] = useState<File[]>([]);
+  const [certificateImageFiles, setCertificateImageFiles] = useState<File[]>([]);
+  const [floorPlanImageFiles, setFloorPlanImageFiles] = useState<File[]>([]);
+
+  // Deletion tracking
   const [imageIdsToDelete, setImageIdsToDelete] = useState<string[]>([]);
   const [amenityIdsToDelete, setAmenityIdsToDelete] = useState<string[]>([]);
   const [documentIdsToDelete, setDocumentIdsToDelete] = useState<string[]>([]);
@@ -32,14 +42,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [paymentPlanIdsToDelete, setPaymentPlanIdsToDelete] = useState<string[]>([]);
   const [highlightIdsToDelete, setHighlightIdsToDelete] = useState<string[]>([]);
 
-  // File states
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
-  const [iconFiles, setIconFiles] = useState<File[]>([]);
-  const [certificateImageFiles, setCertificateImageFiles] = useState<File[]>([]);
-  const [floorPlanImageFiles, setFloorPlanImageFiles] = useState<File[]>([]);
-
+  // Existing data states
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [existingVideos, setExistingVideos] = useState<any[]>([]);
   const [existingDocuments, setExistingDocuments] = useState<any[]>([]);
@@ -52,6 +55,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [existingHighlights, setExistingHighlights] = useState<any[]>([]);
   const [existingPaymentPlans, setExistingPaymentPlans] = useState<any[]>([]);
 
+  // React Hook Form
   const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
 
   const {
@@ -62,7 +66,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     reset,
     watch,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<PropertyFormValues>({
     resolver: typedResolver,
     mode: 'onChange',
@@ -115,55 +119,123 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     },
   });
 
-  const sanitizeErrors = (errors: any) => {
-    return Object.fromEntries(
-      Object.entries(errors).map(([key, err]: [string, any]) => [
-        key,
-        {
-          type: err.type,
-          message: err.message,
-          ref: err.ref?.name,
-        },
-      ]),
-    );
-  };
+  // Use new query hook for fetching property
+  const { data: propertyData, isLoading: isLoadingProperty } = usePropertyQuery(propertyId, {
+    enabled: !!propertyId,
+  });
 
-  const errorsJson = JSON.stringify(sanitizeErrors(errors));
+  // Use new mutation hooks
+  const createMutation = useCreateProperty({
+    onSuccess: (data) => {
+      setSubmitSuccess(data.message || 'Property created successfully!');
+    },
+    onError: (error: any) => {
+      setSubmitError(error?.message || 'Failed to create property');
+    },
+  });
 
-  const [formErrors, setFormErrors] = useState({});
+  const updateMutation = useUpdateProperty({
+    onSuccess: (data) => {
+      setSubmitSuccess(data.message || 'Property updated successfully!');
+    },
+    onError: (error: any) => {
+      setSubmitError(error?.message || 'Failed to update property');
+    },
+  });
 
+  // Load property data when fetched
   useEffect(() => {
-    setFormErrors(sanitizeErrors(errors));
-  }, [errorsJson]);
+    if (propertyData?.data) {
+      const property = propertyData.data;
 
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+      // Reset form with property data
+      reset({
+        name: property.name,
+        location: property.location,
+        description: property.description || '',
+        beds: property.beds || undefined,
+        bathrooms: property.bathrooms || undefined,
+        sqft: property.sqft || undefined,
+        maxOccupancy: property.maxOccupancy || '',
+        totalShares: property.totalShares,
+        availableShares: property.availableShares,
+        initialPricePerShare: property.initialPricePerShare || property.pricePerShare || 0,
+        currentPricePerShare: property.currentPricePerShare || undefined,
+        wholeUnitPrice: property.wholeUnitPrice || undefined,
+        targetIRR: property.targetIRR || undefined,
+        targetRentalYield: property.targetRentalYield || '',
+        appreciationRate: property.appreciationRate || 0,
+        possessionDate: convertToDateTimeLocal(property.possessionDate),
+        launchDate: convertToDateTimeLocal(property.launchDate),
+        maxBookingDays: property.maxBookingDays || 0,
+        bookingAmount: property.bookingAmount || undefined,
+        bookingAmountGST: property.bookingAmountGST || undefined,
+        isActive: property.isActive,
+        isFeatured: property.isFeatured,
+        amenityNames: property.amenities?.map((a: any) => a.name).join(', ') || '',
+        documentNames: property.documents?.map((d: any) => d.name).join(', ') || '',
+        certificateNames: property.certificates?.map((c: any) => c.name).join(', ') || '',
+        floorPlanNames: property.floorPlans?.map((f: any) => f.name).join(', ') || '',
+        propertyImages: [],
+        propertyVideos: [],
+        amenityIcons: [],
+        documents: [],
+        certificateImages: [],
+        floorPlanImages: [],
+        imageFiles: [],
+        videoFiles: [],
+        documentFiles: [],
+        iconFiles: [],
+        certificateImageFiles: [],
+        floorPlanImageFiles: [],
+        pricingDetails: [],
+        shareDetails: [],
+        maintenanceTemplates: [],
+        highlights: [],
+        certificates: [],
+        floorPlans: [],
+        paymentPlans: [],
+      });
 
-  useEffect(() => {
-    forceUpdate();
-  }, [errorsJson]);
+      // Set existing media
+      const images = property.images?.filter((img: any) => img.type === 'image') || [];
+      const videos = property.images?.filter((img: any) => img.type === 'video') || [];
+      setExistingImages(images);
+      setExistingVideos(videos);
+      setExistingDocuments(property.documents || []);
+      setExistingAmenities(property.amenities || []);
+      setExistingCertificates(property.certificates || []);
+      setExistingFloorPlans(property.floorPlans || []);
 
-  // Watch for form changes and log entire form data
-  useEffect(() => {
-    const subscription = watch((data) => {
-      console.log('=== FORM DATA CHANGED ===');
-      console.log('Complete form data:', JSON.stringify(data, null, 2));
-      console.log('========================');
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
+      // Set existing structured data
+      const pricings = (property.pricings || []).map((pricing: any) => ({
+        ...pricing,
+        effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
+        effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
+      }));
+      setExistingPricingDetails(pricings);
 
-  // File upload handlers
+      setExistingShareDetails(property.shareDetails || []);
+
+      const templates = (property.maintenanceTemplates || []).map((template: any) => ({
+        ...template,
+        startDate: convertToDateTimeLocal(template.startDate),
+        endDate: convertToDateTimeLocal(template.endDate),
+      }));
+      setExistingMaintenanceTemplates(templates);
+
+      setExistingHighlights(property.highlights || []);
+      setExistingPaymentPlans(property.paymentPlans || []);
+    }
+  }, [propertyData, reset]);
+
+  // Dropzone handlers
   const onImagesDrop = (accepted: File[]) => {
     const allowed = Math.max(0, IMAGE_MAX - imageFiles.length);
     const toAdd = accepted.slice(0, allowed);
     if (toAdd.length === 0) return;
     const next = [...imageFiles, ...toAdd];
     setImageFiles(next);
-    setValue(
-      'propertyImages',
-      [...(getValues('propertyImages') || []), ...toAdd.map((f) => f.name)],
-      { shouldValidate: true },
-    );
     setValue('imageFiles', next, { shouldValidate: true });
   };
 
@@ -173,11 +245,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...videoFiles, ...toAdd];
     setVideoFiles(next);
-    setValue(
-      'propertyVideos',
-      [...(getValues('propertyVideos') || []), ...toAdd.map((f) => f.name)],
-      { shouldValidate: true },
-    );
     setValue('videoFiles', next, { shouldValidate: true });
   };
 
@@ -187,9 +254,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...documentFiles, ...toAdd];
     setDocumentFiles(next);
-    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)], {
-      shouldValidate: true,
-    });
     setValue('documentFiles', next, { shouldValidate: true });
   };
 
@@ -199,9 +263,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...iconFiles, ...toAdd];
     setIconFiles(next);
-    setValue('amenityIcons', [...(getValues('amenityIcons') || []), ...toAdd.map((f) => f.name)], {
-      shouldValidate: true,
-    });
     setValue('iconFiles', next, { shouldValidate: true });
   };
 
@@ -211,11 +272,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...certificateImageFiles, ...toAdd];
     setCertificateImageFiles(next);
-    setValue(
-      'certificateImages',
-      [...(getValues('certificateImages') || []), ...toAdd.map((f) => f.name)],
-      { shouldValidate: true },
-    );
     setValue('certificateImageFiles', next, { shouldValidate: true });
   };
 
@@ -225,11 +281,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...floorPlanImageFiles, ...toAdd];
     setFloorPlanImageFiles(next);
-    setValue(
-      'floorPlanImages',
-      [...(getValues('floorPlanImages') || []), ...toAdd.map((f) => f.name)],
-      { shouldValidate: true },
-    );
     setValue('floorPlanImageFiles', next, { shouldValidate: true });
   };
 
@@ -239,45 +290,38 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     accept: { 'image/*': [] },
     multiple: true,
   });
-
   const videoDropzone = useDropzone({
     onDrop: onVideosDrop,
     accept: { 'video/*': [] },
     multiple: true,
   });
-
   const documentDropzone = useDropzone({
     onDrop: onDocumentsDrop,
     accept: {
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
+      'image/*': [],
     },
     multiple: true,
   });
-
   const iconDropzone = useDropzone({
     onDrop: onIconsDrop,
-    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.svg', '.webp'] },
+    accept: { 'image/*': [] },
     multiple: true,
   });
-
   const certificateImageDropzone = useDropzone({
     onDrop: onCertificateImagesDrop,
     accept: { 'image/*': [] },
     multiple: true,
   });
-
   const floorPlanImageDropzone = useDropzone({
     onDrop: onFloorPlanImagesDrop,
     accept: { 'image/*': [] },
     multiple: true,
   });
 
-  // Remove file handlers
+  // Remove handlers
   const removeAt = (
     idx: number,
     files: File[],
@@ -286,50 +330,16 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   ) => {
     const newFiles = files.filter((_, i) => i !== idx);
     setFiles(newFiles);
-    const names = (getValues(formKey) as string[]) || [];
-    const newNames = names.filter((_, i) => i !== idx);
-    setValue(formKey, newNames, { shouldValidate: true });
 
-    // Also update the file objects in form state
-    if (formKey === 'propertyImages') {
-      setValue('imageFiles', newFiles, { shouldValidate: true });
-    } else if (formKey === 'propertyVideos') {
-      setValue('videoFiles', newFiles, { shouldValidate: true });
-    } else if (formKey === 'documents') {
+    if (formKey === 'imageFiles') setValue('imageFiles', newFiles, { shouldValidate: true });
+    else if (formKey === 'videoFiles') setValue('videoFiles', newFiles, { shouldValidate: true });
+    else if (formKey === 'documentFiles')
       setValue('documentFiles', newFiles, { shouldValidate: true });
-    } else if (formKey === 'amenityIcons') {
-      setValue('iconFiles', newFiles, { shouldValidate: true });
-    } else if (formKey === 'certificateImages') {
+    else if (formKey === 'iconFiles') setValue('iconFiles', newFiles, { shouldValidate: true });
+    else if (formKey === 'certificateImageFiles')
       setValue('certificateImageFiles', newFiles, { shouldValidate: true });
-    } else if (formKey === 'floorPlanImages') {
+    else if (formKey === 'floorPlanImageFiles')
       setValue('floorPlanImageFiles', newFiles, { shouldValidate: true });
-    }
-  };
-
-  // Helper function to convert datetime-local to ISO format
-  const convertToISO = (dateString?: string) => {
-    if (!dateString) return undefined;
-    try {
-      return new Date(dateString).toISOString();
-    } catch {
-      return undefined;
-    }
-  };
-
-  // Helper function to convert ISO date to datetime-local format (YYYY-MM-DDTHH:MM)
-  const convertToDateTimeLocal = (isoString?: string) => {
-    if (!isoString) return '';
-    try {
-      const date = new Date(isoString);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    } catch {
-      return '';
-    }
   };
 
   const removeExistingImage = (id: string) => {
@@ -338,7 +348,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingVideo = (id: string) => {
-    setExistingImages((prev) => [...prev, id]); // Videos are in images table
+    setImageIdsToDelete((prev) => [...prev, id]);
     setExistingVideos((prev) => prev.filter((vid) => vid.id !== id));
   };
 
@@ -349,317 +359,98 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const removeExistingAmenity = (id: string) => {
     setAmenityIdsToDelete((prev) => [...prev, id]);
-    setExistingAmenities((prev) => prev.filter((amenity) => amenity.id !== id));
+    setExistingAmenities((prev) => prev.filter((a) => a.id !== id));
   };
 
   const removeExistingPricing = (id: string) => {
     setPricingIdsToDelete((prev) => [...prev, id]);
-    const currentPricingDetails = getValues('pricingDetails') || [];
-    setValue(
-      'pricingDetails',
-      currentPricingDetails.filter((p: any) => p.id !== id),
-    );
+    setExistingPricingDetails((prev) => prev.filter((p) => p.id !== id));
   };
 
   const removeExistingShareDetail = (id: string) => {
     setShareDetailIdsToDelete((prev) => [...prev, id]);
-    const currentShareDetails = getValues('shareDetails') || [];
-    setValue(
-      'shareDetails',
-      currentShareDetails.filter((s: any) => s.id !== id),
-    );
+    setExistingShareDetails((prev) => prev.filter((s) => s.id !== id));
   };
 
   const removeExistingMaintenanceTemplate = (id: string) => {
     setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]);
-    const currentTemplates = getValues('maintenanceTemplates') || [];
-    setValue(
-      'maintenanceTemplates',
-      currentTemplates.filter((t: any) => t.id !== id),
-    );
+    setExistingMaintenanceTemplates((prev) => prev.filter((t) => t.id !== id));
   };
 
   const removeExistingCertificate = (id: string) => {
     setCertificateIdsToDelete((prev) => [...prev, id]);
-    setExistingCertificates((prev) => prev.filter((cert) => cert.id !== id));
+    setExistingCertificates((prev) => prev.filter((c) => c.id !== id));
   };
 
   const removeExistingFloorPlan = (id: string) => {
     setFloorPlanIdsToDelete((prev) => [...prev, id]);
-    setExistingFloorPlans((prev) => prev.filter((plan) => plan.id !== id));
+    setExistingFloorPlans((prev) => prev.filter((f) => f.id !== id));
   };
 
   const removeExistingPaymentPlan = (id: string) => {
     setPaymentPlanIdsToDelete((prev) => [...prev, id]);
-    const currentPaymentPlans = getValues('paymentPlans') || [];
-    setValue(
-      'paymentPlans',
-      currentPaymentPlans.filter((p: any) => p.id !== id),
-    );
-    setExistingPaymentPlans((prev) => prev.filter((plan) => plan.id !== id));
+    setExistingPaymentPlans((prev) => prev.filter((p) => p.id !== id));
   };
 
   const removeExistingHighlight = (id: string) => {
     setHighlightIdsToDelete((prev) => [...prev, id]);
-    const currentHighlights = getValues('highlights') || [];
-    setValue(
-      'highlights',
-      currentHighlights.filter((h: any) => h.id !== id),
-    );
-    setExistingHighlights((prev) => prev.filter((highlight) => highlight.id !== id));
+    setExistingHighlights((prev) => prev.filter((h) => h.id !== id));
   };
 
-  // Mutations for create and update
-  const createMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      return await propertyService.createProperty(payload);
-    },
-    onSuccess: (response) => {
-      setSubmitSuccess(response.message || 'Property created successfully!');
-      toast.success('Property created successfully!');
-      setTimeout(() => {
-        router.push('/properties');
-      }, 1500);
-    },
-    onError: (error: any) => {
-      const message = error?.message || 'Failed to create property. Please try again.';
-      setSubmitError(message);
-      toast.error(message);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: UpdatePropertyPayload }) => {
-      return await propertyService.updateProperty(id, payload);
-    },
-    onSuccess: (response) => {
-      setSubmitSuccess(response.message || 'Property updated successfully!');
-      toast.success('Property updated successfully!');
-      setTimeout(() => {
-        router.push('/properties');
-      }, 1500);
-    },
-    onError: (error: any) => {
-      const message = error?.message || 'Failed to update property. Please try again.';
-      setSubmitError(message);
-      toast.error(message);
-    },
-  });
-
-  // Load property data for edit mode
-  useEffect(() => {
-    if (propertyId) {
-      setIsLoadingInitial(true);
-      propertyService
-        .getPropertyById(propertyId)
-        .then((response) => {
-          const property = response.data;
-          setInitialData(property);
-
-          // Set basic fields
-          reset({
-            name: property.name,
-            location: property.location,
-            description: property.description || '',
-            beds: property.beds || undefined,
-            bathrooms: property.bathrooms || undefined,
-            sqft: property.sqft || undefined,
-            maxOccupancy: property.maxOccupancy || '',
-            totalShares: property.totalShares,
-            availableShares: property.availableShares,
-            initialPricePerShare: property.initialPricePerShare || property.pricePerShare || 0,
-            currentPricePerShare: property.currentPricePerShare || undefined,
-            wholeUnitPrice: property.wholeUnitPrice || undefined,
-            targetIRR: property.targetIRR || undefined,
-            targetRentalYield: property.targetRentalYield || '',
-            appreciationRate: property.appreciationRate || 0,
-            possessionDate: convertToDateTimeLocal(property.possessionDate),
-            launchDate: convertToDateTimeLocal(property.launchDate),
-            maxBookingDays: property.maxBookingDays || 0,
-            bookingAmount: property.bookingAmount || undefined,
-            bookingAmountGST: property.bookingAmountGST || undefined,
-            isActive: property.isActive,
-            isFeatured: property.isFeatured,
-            amenityNames: property.amenities?.map((a: any) => a.name).join(', ') || '',
-            documentNames: property.documents?.map((d: any) => d.name).join(', ') || '',
-            certificateNames: property.certificates?.map((c: any) => c.name).join(', ') || '',
-            floorPlanNames: property.floorPlans?.map((f: any) => f.name).join(', ') || '',
-            propertyImages: [],
-            propertyVideos: [],
-            amenityIcons: [],
-            documents: [],
-            certificateImages: [],
-            floorPlanImages: [],
-            imageFiles: [],
-            videoFiles: [],
-            documentFiles: [],
-            iconFiles: [],
-            certificateImageFiles: [],
-            floorPlanImageFiles: [],
-            pricingDetails: [], // Will be populated after data loads
-            shareDetails: [], // Will be populated after data loads
-            maintenanceTemplates: [], // Will be populated after data loads
-            highlights: [], // Will be populated after data loads
-            certificates: [], // Will be populated after data loads
-            floorPlans: [], // Will be populated after data loads
-            paymentPlans: [], // Will be populated after data loads
-          });
-
-          // Set existing media
-          const images = property.images?.filter((img: any) => img.type === 'image') || [];
-          const videos = property.images?.filter((img: any) => img.type === 'video') || [];
-          setExistingImages(images);
-          setExistingVideos(videos);
-          setExistingDocuments(property.documents || []);
-
-          console.log('\n=== FORM LOADING DEBUG ===');
-          console.log('property.amenities from API:', JSON.stringify(property.amenities, null, 2));
-          console.log(
-            'About to setExistingAmenities with:',
-            JSON.stringify(property.amenities || [], null, 2),
-          );
-
-          setExistingAmenities(property.amenities || []);
-          setExistingCertificates(property.certificates || []);
-          setExistingFloorPlans(property.floorPlans || []);
-
-          // Set existing form array data
-          const pricings = (property.pricings || []).map((pricing: any) => ({
-            ...pricing,
-            effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
-            effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
-          }));
-          setExistingPricingDetails(pricings);
-
-          const shares = property.shareDetails || [];
-          setExistingShareDetails(shares);
-
-          const templates = (property.maintenanceTemplates || []).map((template: any) => ({
-            ...template,
-            startDate: convertToDateTimeLocal(template.startDate),
-            endDate: convertToDateTimeLocal(template.endDate),
-          }));
-          setExistingMaintenanceTemplates(templates);
-
-          setExistingHighlights(property.highlights || []);
-          setExistingPaymentPlans(property.paymentPlans || []);
-
-          // NOTE: Do NOT populate form arrays with existing data
-          // All sections handle existing data separately and use form arrays only for NEW items
-          // This prevents duplication where existing items appear twice
-
-          // Trigger currency input re-render by triggering blur event
-          setTimeout(() => {
-            const priceInput = document.getElementById('pricePerShare') as HTMLInputElement;
-            if (priceInput) {
-              priceInput.dispatchEvent(new Event('blur', { bubbles: true }));
-            }
-          }, 100);
-
-          setIsLoadingInitial(false);
-        })
-        .catch((err) => {
-          setSubmitError(err?.message || 'Failed to load property');
-          setIsLoadingInitial(false);
-        });
-    }
-  }, [propertyId, reset]);
-
+  // Submit handler
   const onSubmit = (data: PropertyFormValues) => {
     setSubmitError(null);
     setSubmitSuccess(null);
 
-    // Combine existing pricing details (not deleted) with new ones from form
-    const existingPricingNotDeleted = existingPricingDetails.filter(
-      (pricing) => !pricingIdsToDelete.includes(pricing.id),
-    );
-    const newPricingFromForm = (data.pricingDetails || []).map((pricing: any) => ({
-      id: pricing.id, // Include ID if exists (for existing records)
-      label: pricing.label,
-      price: Number(pricing.price),
-      type: pricing.type,
-      phaseName: pricing.phaseName || undefined,
-      description: pricing.description || undefined,
-      effectiveFrom: convertToISO(pricing.effectiveFrom),
-      effectiveTo: convertToISO(pricing.effectiveTo),
-    }));
-    const processedPricingDetails = [...existingPricingNotDeleted, ...newPricingFromForm];
+    // Combine existing and new data
+    const processedPricingDetails = [
+      ...existingPricingDetails.filter((p) => !pricingIdsToDelete.includes(p.id)),
+      ...(data.pricingDetails || []).map((p: any) => ({
+        ...p,
+        effectiveFrom: convertToISO(p.effectiveFrom),
+        effectiveTo: convertToISO(p.effectiveTo),
+      })),
+    ];
 
-    // Combine existing share details (not deleted) with new ones from form
-    const existingShareDetailsNotDeleted = existingShareDetails.filter(
-      (share) => !shareDetailIdsToDelete.includes(share.id),
-    );
-    const newShareDetailsFromForm = (data.shareDetails || []).map((detail: any) => ({
-      id: detail.id, // Include ID if exists
-      title: detail.title,
-      description: detail.description || undefined,
-      shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
-      amount: detail.amount ? Number(detail.amount) : undefined,
-    }));
-    const processedShareDetails = [...existingShareDetailsNotDeleted, ...newShareDetailsFromForm];
+    const processedShareDetails = [
+      ...existingShareDetails.filter((s) => !shareDetailIdsToDelete.includes(s.id)),
+      ...(data.shareDetails || []),
+    ];
 
-    // Combine existing maintenance templates (not deleted) with new ones from form
-    const existingMaintenanceNotDeleted = existingMaintenanceTemplates.filter(
-      (template) => !maintenanceTemplateIdsToDelete.includes(template.id),
-    );
-    const newMaintenanceFromForm = (data.maintenanceTemplates || []).map((template: any) => ({
-      id: template.id, // Include ID if exists
-      chargeType: template.chargeType,
-      amount: Number(template.amount),
-      description: template.description || undefined,
-      dueDay: template.dueDay ? Number(template.dueDay) : undefined,
-      startDate: convertToISO(template.startDate),
-      endDate: convertToISO(template.endDate),
-      isActive: template.isActive ?? true,
-    }));
     const processedMaintenanceTemplates = [
-      ...existingMaintenanceNotDeleted,
-      ...newMaintenanceFromForm,
+      ...existingMaintenanceTemplates.filter((t) => !maintenanceTemplateIdsToDelete.includes(t.id)),
+      ...(data.maintenanceTemplates || []).map((t: any) => ({
+        ...t,
+        startDate: convertToISO(t.startDate),
+        endDate: convertToISO(t.endDate),
+      })),
     ];
 
     if (propertyId) {
-      // UPDATE MODE - TARGETED DEBUG LOGS
-      console.log('\n=== AMENITIES DEBUG ===');
-      console.log('existingAmenities:', JSON.stringify(existingAmenities, null, 2));
-      console.log('amenityIdsToDelete:', JSON.stringify(amenityIdsToDelete, null, 2));
-      console.log('data.amenityNames:', data.amenityNames);
-      console.log('iconFiles.length:', iconFiles.length);
-
-      console.log('\n=== PRICING DEBUG ===');
-      console.log('Form data.pricingDetails:', JSON.stringify(data.pricingDetails, null, 2));
-      console.log('existingPricingDetails:', JSON.stringify(existingPricingDetails, null, 2));
-      console.log('pricingIdsToDelete:', JSON.stringify(pricingIdsToDelete, null, 2));
-
-      console.log('\n=== SHARE DETAILS DEBUG ===');
-      console.log('Form data.shareDetails:', JSON.stringify(data.shareDetails, null, 2));
-      console.log('existingShareDetails:', JSON.stringify(existingShareDetails, null, 2));
-      console.log('shareDetailIdsToDelete:', JSON.stringify(shareDetailIdsToDelete, null, 2));
-
+      // UPDATE
       const payload: UpdatePropertyPayload = {
         name: data.name,
         location: data.location,
         description: data.description || undefined,
-        beds: data.beds || undefined,
-        bathrooms: data.bathrooms || undefined,
-        sqft: data.sqft || undefined,
-        maxOccupancy: data.maxOccupancy || undefined,
+        beds: data.beds,
+        bathrooms: data.bathrooms,
+        sqft: data.sqft,
+        maxOccupancy: data.maxOccupancy,
         totalShares: data.totalShares,
         availableShares: data.availableShares,
         initialPricePerShare: data.initialPricePerShare,
-        currentPricePerShare: data.currentPricePerShare || undefined,
-        wholeUnitPrice: data.wholeUnitPrice || undefined,
-        targetIRR: data.targetIRR || undefined,
-        targetRentalYield: data.targetRentalYield || undefined,
-        appreciationRate: data.appreciationRate || undefined,
-        possessionDate: convertToISO(data.possessionDate) || undefined,
-        launchDate: convertToISO(data.launchDate) || undefined,
-        maxBookingDays: data.maxBookingDays || undefined,
-        bookingAmount: data.bookingAmount || undefined,
-        bookingAmountGST: data.bookingAmountGST || undefined,
+        currentPricePerShare: data.currentPricePerShare,
+        wholeUnitPrice: data.wholeUnitPrice,
+        targetIRR: data.targetIRR,
+        targetRentalYield: data.targetRentalYield,
+        appreciationRate: data.appreciationRate,
+        possessionDate: convertToISO(data.possessionDate),
+        launchDate: convertToISO(data.launchDate),
+        maxBookingDays: data.maxBookingDays,
+        bookingAmount: data.bookingAmount,
+        bookingAmountGST: data.bookingAmountGST,
         isActive: data.isActive,
         isFeatured: data.isFeatured,
-        // WORKAROUND: Don't send amenityNames in edit mode to prevent backend duplication
-        // The backend should only create new amenities from uploaded amenityIcons
         amenityNames: iconFiles.length > 0 ? data.amenityNames : undefined,
         documentNames: documentFiles.length > 0 ? data.documentNames : undefined,
         certificateNames: certificateImageFiles.length > 0 ? data.certificateNames : undefined,
@@ -688,78 +479,78 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
-        highlights: (() => {
-          const existingHighlightsNotDeleted = existingHighlights.filter(
-            (highlight) => !highlightIdsToDelete.includes(highlight.id),
-          );
-          const newHighlightsFromForm = data.highlights || [];
-          const allHighlights = [...existingHighlightsNotDeleted, ...newHighlightsFromForm];
-          return allHighlights.length > 0 ? allHighlights : undefined;
-        })(),
-        paymentPlans: (() => {
-          const existingPaymentPlansNotDeleted = existingPaymentPlans.filter(
-            (plan) => !paymentPlanIdsToDelete.includes(plan.id),
-          );
-          const newPaymentPlansFromForm = data.paymentPlans || [];
-          const allPaymentPlans = [...existingPaymentPlansNotDeleted, ...newPaymentPlansFromForm];
-          return allPaymentPlans.length > 0 ? allPaymentPlans : undefined;
-        })(),
-        certificates: (() => {
-          const existingCertificatesNotDeleted = existingCertificates.filter(
-            (cert) => !certificateIdsToDelete.includes(cert.id),
-          );
-          const newCertificatesFromForm = data.certificates || [];
-          const allCertificates = [...existingCertificatesNotDeleted, ...newCertificatesFromForm];
-          return allCertificates.length > 0 ? allCertificates : undefined;
-        })(),
-        floorPlans: (() => {
-          const existingFloorPlansNotDeleted = existingFloorPlans.filter(
-            (plan) => !floorPlanIdsToDelete.includes(plan.id),
-          );
-          const newFloorPlansFromForm = data.floorPlans || [];
-          const allFloorPlans = [...existingFloorPlansNotDeleted, ...newFloorPlansFromForm];
-          return allFloorPlans.length > 0 ? allFloorPlans : undefined;
-        })(),
+        highlights:
+          [
+            ...existingHighlights.filter((h) => !highlightIdsToDelete.includes(h.id)),
+            ...(data.highlights || []),
+          ].length > 0
+            ? [
+                ...existingHighlights.filter((h) => !highlightIdsToDelete.includes(h.id)),
+                ...(data.highlights || []),
+              ]
+            : undefined,
+        certificates:
+          [
+            ...existingCertificates.filter((c) => !certificateIdsToDelete.includes(c.id)),
+            ...(data.certificates || []),
+          ].length > 0
+            ? [
+                ...existingCertificates.filter((c) => !certificateIdsToDelete.includes(c.id)),
+                ...(data.certificates || []),
+              ]
+            : undefined,
+        floorPlans:
+          [
+            ...existingFloorPlans.filter((f) => !floorPlanIdsToDelete.includes(f.id)),
+            ...(data.floorPlans || []),
+          ].length > 0
+            ? [
+                ...existingFloorPlans.filter((f) => !floorPlanIdsToDelete.includes(f.id)),
+                ...(data.floorPlans || []),
+              ]
+            : undefined,
+        paymentPlans:
+          [
+            ...existingPaymentPlans.filter((p) => !paymentPlanIdsToDelete.includes(p.id)),
+            ...(data.paymentPlans || []),
+          ].length > 0
+            ? [
+                ...existingPaymentPlans.filter((p) => !paymentPlanIdsToDelete.includes(p.id)),
+                ...(data.paymentPlans || []),
+              ]
+            : undefined,
       };
-
-      console.log('\n=== FINAL PAYLOAD SUMMARY ===');
-      console.log('payload.amenityNames:', payload.amenityNames);
-      console.log('payload.amenityIdsToDelete:', JSON.stringify(payload.amenityIdsToDelete));
-      console.log('payload.pricingDetails count:', payload.pricingDetails?.length || 0);
-      console.log('payload.pricingDetails:', JSON.stringify(payload.pricingDetails, null, 2));
-      console.log('payload.shareDetails count:', payload.shareDetails?.length || 0);
-      console.log('payload.shareDetails:', JSON.stringify(payload.shareDetails, null, 2));
 
       updateMutation.mutate({ id: propertyId, payload });
     } else {
-      // CREATE MODE
+      // CREATE
       const payload = {
         name: data.name,
         location: data.location,
-        description: data.description || undefined,
-        beds: data.beds || undefined,
-        bathrooms: data.bathrooms || undefined,
-        sqft: data.sqft || undefined,
-        maxOccupancy: data.maxOccupancy || undefined,
+        description: data.description,
+        beds: data.beds,
+        bathrooms: data.bathrooms,
+        sqft: data.sqft,
+        maxOccupancy: data.maxOccupancy,
         totalShares: data.totalShares,
         availableShares: data.availableShares,
         initialPricePerShare: data.initialPricePerShare,
-        currentPricePerShare: data.currentPricePerShare || undefined,
-        wholeUnitPrice: data.wholeUnitPrice || undefined,
-        targetIRR: data.targetIRR || undefined,
-        targetRentalYield: data.targetRentalYield || undefined,
-        appreciationRate: data.appreciationRate || undefined,
-        possessionDate: convertToISO(data.possessionDate) || undefined,
-        launchDate: convertToISO(data.launchDate) || undefined,
-        maxBookingDays: data.maxBookingDays || undefined,
-        bookingAmount: data.bookingAmount || undefined,
-        bookingAmountGST: data.bookingAmountGST || undefined,
+        currentPricePerShare: data.currentPricePerShare,
+        wholeUnitPrice: data.wholeUnitPrice,
+        targetIRR: data.targetIRR,
+        targetRentalYield: data.targetRentalYield,
+        appreciationRate: data.appreciationRate,
+        possessionDate: convertToISO(data.possessionDate),
+        launchDate: convertToISO(data.launchDate),
+        maxBookingDays: data.maxBookingDays,
+        bookingAmount: data.bookingAmount,
+        bookingAmountGST: data.bookingAmountGST,
         isActive: data.isActive,
         isFeatured: data.isFeatured,
-        amenityNames: data.amenityNames || undefined,
-        documentNames: data.documentNames || undefined,
-        certificateNames: data.certificateNames || undefined,
-        floorPlanNames: data.floorPlanNames || undefined,
+        amenityNames: data.amenityNames,
+        documentNames: data.documentNames,
+        certificateNames: data.certificateNames,
+        floorPlanNames: data.floorPlanNames,
         propertyImages: imageFiles,
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
         amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
@@ -771,9 +562,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
         highlights: data.highlights?.length > 0 ? data.highlights : undefined,
-        paymentPlans: data.paymentPlans?.length > 0 ? data.paymentPlans : undefined,
         certificates: data.certificates?.length > 0 ? data.certificates : undefined,
         floorPlans: data.floorPlans?.length > 0 ? data.floorPlans : undefined,
+        paymentPlans: data.paymentPlans?.length > 0 ? data.paymentPlans : undefined,
       };
 
       createMutation.mutate(payload);
@@ -786,7 +577,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setValue,
     getValues,
     control,
-    errors: formErrors,
+    errors,
     isSubmitting: createMutation.isPending || updateMutation.isPending,
     imageFiles,
     setImageFiles,
@@ -812,7 +603,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     submitSuccess,
     setSubmitError,
     setSubmitSuccess,
-    isLoading: isLoadingInitial,
+    isLoading: isLoadingProperty,
     existingImages,
     existingVideos,
     existingDocuments,
@@ -837,4 +628,29 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     removeExistingHighlight,
     isEditMode: !!propertyId,
   };
+};
+
+// Helper functions
+const convertToISO = (dateString?: string) => {
+  if (!dateString) return undefined;
+  try {
+    return new Date(dateString).toISOString();
+  } catch {
+    return undefined;
+  }
+};
+
+const convertToDateTimeLocal = (isoString?: string) => {
+  if (!isoString) return '';
+  try {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  } catch {
+    return '';
+  }
 };
