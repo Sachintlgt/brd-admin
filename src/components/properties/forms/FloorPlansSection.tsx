@@ -141,12 +141,13 @@ export default function FloorPlansSection({
   }, [floorPlanItems, setValue]);
 
   // Update floorPlans array whenever floorPlanItems change
+  // IMPORTANT: Only include NEW floor plans (without id) that need images uploaded
+  // Existing floor plans are already in the database and should not be included
   useEffect(() => {
     const floorPlans = floorPlanItems
-      .filter(item => item.name.trim() !== '')
+      .filter(item => item.name.trim() !== '' && !item.isExisting)
       .map((item, index) => ({
         name: item.name.trim(),
-        imageUrl: 'will-be-uploaded',
         description: '', // Could be enhanced to include description field later
         displayOrder: index + 1
       }));

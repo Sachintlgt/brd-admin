@@ -683,25 +683,16 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           const allPaymentPlans = [...existingPaymentPlansNotDeleted, ...newPaymentPlansFromForm];
           return allPaymentPlans.length > 0 ? allPaymentPlans : undefined;
         })(),
-        certificates: (() => {
-          const existingCertificatesNotDeleted = existingCertificates.filter(
-            cert => !certificateIdsToDelete.includes(cert.id)
-          );
-          const newCertificatesFromForm = data.certificates || [];
-          const allCertificates = [...existingCertificatesNotDeleted, ...newCertificatesFromForm];
-          return allCertificates.length > 0 ? allCertificates : undefined;
-        })(),
-        floorPlans: (() => {
-          const existingFloorPlansNotDeleted = existingFloorPlans.filter(
-            plan => !floorPlanIdsToDelete.includes(plan.id)
-          );
-          const newFloorPlansFromForm = data.floorPlans || [];
-          const allFloorPlans = [...existingFloorPlansNotDeleted, ...newFloorPlansFromForm];
-          return allFloorPlans.length > 0 ? allFloorPlans : undefined;
-        })(),
+        // Only send NEW certificates/floorPlans from form - existing ones are already in DB
+        certificates: data.certificates?.length ? data.certificates : undefined,
+        floorPlans: data.floorPlans?.length ? data.floorPlans : undefined,
       };
 
       console.log('\n=== FINAL PAYLOAD SUMMARY ===');
+      console.log('data.certificates:', JSON.stringify(data.certificates, null, 2));
+      console.log('data.floorPlans:', JSON.stringify(data.floorPlans, null, 2));
+      console.log('payload.certificates:', JSON.stringify(payload.certificates, null, 2));
+      console.log('payload.floorPlans:', JSON.stringify(payload.floorPlans, null, 2));
       console.log('payload.amenityNames:', payload.amenityNames);
       console.log('payload.amenityIdsToDelete:', JSON.stringify(payload.amenityIdsToDelete));
       console.log('payload.pricingDetails count:', payload.pricingDetails?.length || 0);
