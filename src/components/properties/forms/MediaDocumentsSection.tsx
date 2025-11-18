@@ -239,8 +239,8 @@ export default function MediaDocumentsSection({
               <div className="space-y-2">
                 <p className="text-xs text-gray-600 font-medium">Existing Images:</p>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {existingImages.map((img) => (
-                    <ExistingItem key={img.id} item={img} onRemove={onRemoveExistingImage || (() => {})} type="image" />
+                  {existingImages.map((img, index) => (
+                    <ExistingItem key={img.id || `img-${index}`} item={img} onRemove={onRemoveExistingImage || (() => {})} type="image" />
                   ))}
                 </div>
               </div>
@@ -271,8 +271,8 @@ export default function MediaDocumentsSection({
               <div className="space-y-2">
                 <p className="text-xs text-gray-600 font-medium">Existing Videos:</p>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {existingVideos.map((vid) => (
-                    <ExistingItem key={vid.id} item={vid} onRemove={onRemoveExistingVideo || (() => {})} type="video" />
+                  {existingVideos.map((vid, index) => (
+                    <ExistingItem key={vid.id || `vid-${index}`} item={vid} onRemove={onRemoveExistingVideo || (() => {})} type="video" />
                   ))}
                 </div>
               </div>

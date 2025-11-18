@@ -316,8 +316,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingDocument = (id: string) => {
-    setDocumentIdsToDelete((prev) => [...prev, id]);
-    setExistingDocuments((prev) => prev.filter((doc) => doc.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setDocumentIdsToDelete((prev) => [...prev, id]);
+      setExistingDocuments((prev) => prev.filter((doc) => doc.id !== id));
+    }, 0);
   };
 
   const removeExistingAmenity = (id: string) => {
@@ -368,13 +371,19 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingCertificate = (id: string) => {
-    setCertificateIdsToDelete((prev) => [...prev, id]);
-    setExistingCertificates((prev) => prev.filter((cert) => cert.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setCertificateIdsToDelete((prev) => [...prev, id]);
+      setExistingCertificates((prev) => prev.filter((cert) => cert.id !== id));
+    }, 0);
   };
 
   const removeExistingFloorPlan = (id: string) => {
-    setFloorPlanIdsToDelete((prev) => [...prev, id]);
-    setExistingFloorPlans((prev) => prev.filter((plan) => plan.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setFloorPlanIdsToDelete((prev) => [...prev, id]);
+      setExistingFloorPlans((prev) => prev.filter((plan) => plan.id !== id));
+    }, 0);
   };
 
   const removeExistingPaymentPlan = (id: string) => {
@@ -453,7 +462,25 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setInitialData(property);
 
 
-          // Set basic fields
+          // Prepare form array data
+          const pricings = (property.pricings || property.pricingDetails || []).map((pricing: any) => ({
+            ...pricing,
+            effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
+            effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
+          }));
+
+          const shares = property.shareDetails || [];
+
+          const templates = (property.maintenanceTemplates || []).map((template: any) => ({
+            ...template,
+            startDate: convertToDateTimeLocal(template.startDate),
+            endDate: convertToDateTimeLocal(template.endDate),
+          }));
+
+          const highlights = property.highlights || [];
+          const paymentPlans = property.paymentPlans || [];
+
+          // Set basic fields and form arrays together
           reset({
             name: property.name,
             location: property.location,
@@ -493,13 +520,13 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             iconFiles: [],
             certificateImageFiles: [],
             floorPlanImageFiles: [],
-            pricingDetails: [], // Will be populated after data loads
-            shareDetails: [], // Will be populated after data loads
-            maintenanceTemplates: [], // Will be populated after data loads
-            highlights: [], // Will be populated after data loads
-            certificates: [], // Will be populated after data loads
-            floorPlans: [], // Will be populated after data loads
-            paymentPlans: [], // Will be populated after data loads
+            pricingDetails: pricings,
+            shareDetails: shares,
+            maintenanceTemplates: templates,
+            highlights: highlights,
+            certificates: [],
+            floorPlans: [],
+            paymentPlans: paymentPlans,
           });
 
           // Set existing media
@@ -513,36 +540,12 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setExistingCertificates(property.certificates || []);
           setExistingFloorPlans(property.floorPlans || []);
           
-          // Set existing form array data - load into form arrays for editing
-          const pricings = (property.pricings || property.pricingDetails || []).map((pricing: any) => ({
-            ...pricing,
-            effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
-            effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
-          }));
+          // Set existing data for state management (for deletion tracking)
           setExistingPricingDetails(pricings);
-
-          const shares = property.shareDetails || [];
           setExistingShareDetails(shares);
-
-          const templates = (property.maintenanceTemplates || []).map((template: any) => ({
-            ...template,
-            startDate: convertToDateTimeLocal(template.startDate),
-            endDate: convertToDateTimeLocal(template.endDate),
-          }));
           setExistingMaintenanceTemplates(templates);
-
-          const highlights = property.highlights || [];
           setExistingHighlights(highlights);
-
-          const paymentPlans = property.paymentPlans || [];
           setExistingPaymentPlans(paymentPlans);
-
-          // Populate form arrays with existing data for editing
-          setValue('pricingDetails', pricings);
-          setValue('shareDetails', shares);
-          setValue('maintenanceTemplates', templates);
-          setValue('highlights', highlights);
-          setValue('paymentPlans', paymentPlans);
 
           // Trigger currency input re-render by triggering blur event
           setTimeout(() => {
