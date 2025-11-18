@@ -6,6 +6,13 @@ import { PropertyListFilters } from '@/types/property-list';
  * This ensures consistent cache keys across the application
  */
 export const queryKeys = {
+  // Auth
+  auth: {
+    all: ['auth'] as const,
+    user: () => [...queryKeys.auth.all, 'user'] as const,
+    session: () => [...queryKeys.auth.all, 'session'] as const,
+  },
+
   // Properties
   properties: {
     all: ['properties'] as const,
@@ -13,13 +20,6 @@ export const queryKeys = {
     list: (filters: PropertyListFilters) => [...queryKeys.properties.lists(), { filters }] as const,
     details: () => [...queryKeys.properties.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.properties.details(), id] as const,
-  },
-
-  // Auth
-  auth: {
-    all: ['auth'] as const,
-    user: () => [...queryKeys.auth.all, 'user'] as const,
-    session: () => [...queryKeys.auth.all, 'session'] as const,
   },
 
   // Add more resource keys as needed

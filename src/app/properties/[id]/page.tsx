@@ -19,11 +19,11 @@ import {
   History,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { propertyService } from '@/services/propertyService';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useProperties } from '@/app/context/PropertiesContext';
 import DashboardLayout from '@/components/DashboardLayout';
+import { propertiesApi } from '@/api/endpoints/properties.api';
 
 // Helper to build full URLs
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
@@ -41,7 +41,7 @@ export default function PropertyDetail() {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await propertyService.getPropertyById(id as string);
+        const response = await propertiesApi.getPropertyById(id as string);
         if (response.success && response.data) {
           setProperty(response.data);
         } else {

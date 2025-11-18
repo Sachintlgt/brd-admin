@@ -6,9 +6,9 @@ import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { propertySchema, type PropertyFormValues } from '../validations/property.validation';
-import { UpdatePropertyPayload } from '../services/propertyService';
 import { usePropertyQuery } from './queries';
 import { useCreateProperty, useUpdateProperty } from './mutations';
+import { UpdatePropertyPayload } from '@/types/property-list';
 
 const IMAGE_MAX = 20;
 const VIDEO_MAX = 5;

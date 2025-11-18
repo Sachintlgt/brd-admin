@@ -2,7 +2,7 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { propertiesApi } from '@/api/endpoints/properties.api';
 import { queryKeys } from '@/lib/react-query/query-keys';
-import { PropertyResponse } from '@/services/propertyService';
+import { PropertyResponse } from '@/types/property-list';
 
 /**
  * Hook to fetch single property by ID

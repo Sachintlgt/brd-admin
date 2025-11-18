@@ -1,11 +1,12 @@
 // src/api/endpoints/properties.api.ts
 import { api } from '@/lib/api';
-import { PropertyListResponse, PropertyListFilters } from '@/types/property-list';
 import {
+  PropertyListResponse,
+  PropertyListFilters,
   PropertyResponse,
   CreatePropertyPayload,
   UpdatePropertyPayload,
-} from '@/services/propertyService';
+} from '@/types/property-list';
 
 /**
  * Properties API

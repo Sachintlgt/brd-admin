@@ -92,3 +92,101 @@ export interface PropertyActionState {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface PropertyResponse {
+  success: boolean;
+  message: string;
+  data: any;
+}
+
+export interface CreatePropertyPayload {
+  name: string;
+  location: string;
+  description?: string;
+  beds?: number;
+  bathrooms?: number;
+  sqft?: number;
+  maxOccupancy?: string;
+  totalShares: number;
+  availableShares: number;
+  initialPricePerShare: number;
+  currentPricePerShare?: number;
+  wholeUnitPrice?: number;
+  targetIRR?: number;
+  targetRentalYield?: string;
+  appreciationRate?: number;
+  possessionDate?: string;
+  launchDate?: string;
+  maxBookingDays?: number;
+  bookingAmount?: number;
+  bookingAmountGST?: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  amenityNames?: string;
+  documentNames?: string;
+  propertyImages: File[];
+  propertyVideos?: File[];
+  amenityIcons?: File[];
+  documents?: File[];
+  certificateImages?: File[];
+  floorPlanImages?: File[];
+  pricingDetails?: any[];
+  shareDetails?: any[];
+  maintenanceTemplates?: any[];
+  highlights?: any[];
+  certificates?: any[];
+  floorPlans?: any[];
+  paymentPlans?: any[];
+}
+
+export interface UpdatePropertyPayload {
+  name?: string;
+  location?: string;
+  description?: string;
+  beds?: number;
+  bathrooms?: number;
+  sqft?: number;
+  maxOccupancy?: string;
+  totalShares?: number;
+  availableShares?: number;
+  initialPricePerShare?: number;
+  currentPricePerShare?: number;
+  wholeUnitPrice?: number;
+  targetIRR?: number;
+  targetRentalYield?: string;
+  appreciationRate?: number;
+  possessionDate?: string;
+  launchDate?: string;
+  maxBookingDays?: number;
+  bookingAmount?: number;
+  bookingAmountGST?: number;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  amenityNames?: string;
+  documentNames?: string;
+  imageIdsToDelete?: string[];
+  amenityIdsToDelete?: string[];
+  documentIdsToDelete?: string[];
+  pricingIdsToDelete?: string[];
+  shareDetailIdsToDelete?: string[];
+  maintenanceTemplateIdsToDelete?: string[];
+  certificateIdsToDelete?: string[];
+  floorPlanIdsToDelete?: string[];
+  paymentPlanIdsToDelete?: string[];
+  highlightIdsToDelete?: string[];
+  propertyImages?: File[];
+  propertyVideos?: File[];
+  amenityIcons?: File[];
+  documents?: File[];
+  certificateImages?: File[];
+  floorPlanImages?: File[];
+  pricingDetails?: any[];
+  shareDetails?: any[];
+  maintenanceTemplates?: any[];
+  highlights?: any[];
+  certificates?: any[];
+  floorPlans?: any[];
+  paymentPlans?: any[];
+  certificateNames?: string;
+  floorPlanNames?: string;
+}

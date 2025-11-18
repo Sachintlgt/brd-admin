@@ -1,3 +1,4 @@
+// src/app/login/page.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -8,7 +9,7 @@ import { Eye, EyeOff, Building2, Lock, AlertCircle, User } from 'lucide-react';
 
 import FormInput from '@/components/ui/authFormInput';
 import { loginSchema, type LoginFormValues } from '@/validations/auth.validation';
-import { useLogin } from '@/hooks/useLogin';
+import { useLogin } from '@/hooks/mutations';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
@@ -16,13 +17,14 @@ export default function Login() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
+  // Redirect if already authenticated
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
       router.replace('/dashboard');
     }
   }, [isAuthLoading, isAuthenticated, router]);
 
-  // react-hook-form setup
+  // React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -36,23 +38,18 @@ export default function Login() {
     },
   });
 
-  const loginMutation = useLogin();
-
-  // submit handler
-  const onSubmit = async (data: LoginFormValues) => {
-    try {
-      const payload = {
-        username: data.email,
-        password: data.password,
-        ...(data.role && { role: data.role }), // only include role if it exists
-      };
-      await loginMutation.mutateAsync(payload);
-    } catch (err: any) {
+  // Use new login mutation hook
+  const loginMutation = useLogin({
+    onError: (error: any) => {
+      // Handle validation errors from server
+      const validationErrors = error?.response?.data?.errors;
       const serverMessage =
-        err?.response?.data?.message || err?.message || 'Invalid credentials. Please try again.';
+        error?.response?.data?.message ||
+        error?.message ||
+        'Invalid credentials. Please try again.';
 
-      const validationErrors = err?.response?.data?.errors;
       if (validationErrors && typeof validationErrors === 'object') {
+        // Map field-specific errors
         Object.keys(validationErrors).forEach((field) => {
           setError(field as keyof LoginFormValues, {
             type: 'server',
@@ -60,25 +57,41 @@ export default function Login() {
           });
         });
       } else {
-        setError('email', { type: 'server', message: serverMessage });
+        // Generic error on email field
+        setError('email', {
+          type: 'server',
+          message: serverMessage,
+        });
       }
-    }
+    },
+  });
+
+  // Submit handler
+  const onSubmit = async (data: LoginFormValues) => {
+    const payload = {
+      username: data.email,
+      password: data.password,
+      ...(data.role && { role: data.role }),
+    };
+
+    loginMutation.mutate(payload);
   };
 
   const isLoading = loginMutation.isPending || isSubmitting;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-linear-to-br from-slate-900 via-blue-900 to-indigo-900 sm:px-6 lg:px-8">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute bg-blue-500 rounded-full -top-40 -right-40 w-80 h-80 mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute delay-1000 bg-indigo-500 rounded-full -bottom-40 -left-40 w-80 h-80 mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
       </div>
 
-      <div className="max-w-6xl w-full relative z-10 bg-white/5 backdrop-blur rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        <div className="hidden md:flex flex-col justify-center items-start p-12 bg-linear-to-br from-slate-800/30 via-blue-800/30 to-indigo-800/30 text-white">
+      <div className="relative z-10 grid w-full max-w-6xl grid-cols-1 overflow-hidden shadow-2xl bg-white/5 backdrop-blur rounded-3xl md:grid-cols-2">
+        {/* Left Side - Branding */}
+        <div className="flex-col items-start justify-center hidden p-12 text-white md:flex bg-linear-to-br from-slate-800/30 via-blue-800/30 to-indigo-800/30">
           <div className="flex items-center gap-4 mb-6">
-            <div className="mx-auto h-20 w-20 bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-2xl mb-0 ring-2 ring-blue-400/20">
-              <Building2 className="h-8 w-8 text-white" />
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-0 shadow-2xl bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl ring-2 ring-blue-400/20">
+              <Building2 className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight">BRD ASSOCIATES</h1>
           </div>
@@ -86,41 +99,44 @@ export default function Login() {
           <h2 className="text-4xl font-extrabold leading-tight">Welcome Back</h2>
           <p className="mt-2 text-lg text-blue-200">Sign in to your account</p>
 
-          <p className="mt-6 text-sm text-blue-100/80 max-w-xs">
+          <p className="max-w-xs mt-6 text-sm text-blue-100/80">
             Securely access your professional workspace to manage projects, clients, and internal
             resources.
           </p>
         </div>
 
+        {/* Right Side - Form */}
         <div className="flex items-center justify-center p-8">
           <div className="w-full max-w-md">
-            <div className="md:hidden text-center mb-6">
+            {/* Mobile Header */}
+            <div className="mb-6 text-center md:hidden">
               <div className="flex flex-col items-center">
-                <div className="mx-auto h-20 w-20 bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-2xl mb-4 ring-2 ring-blue-400/20">
-                  <Building2 className="h-8 w-8 text-white" />
+                <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 shadow-2xl bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl ring-2 ring-blue-400/20">
+                  <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">BRD ASSOCIATES</h1>
-                <h2 className="text-2xl font-bold text-white mt-2">Welcome Back</h2>
-                <p className="text-blue-200 text-lg">Sign in to your account</p>
+                <h1 className="text-2xl font-bold tracking-tight text-white">BRD ASSOCIATES</h1>
+                <h2 className="mt-2 text-2xl font-bold text-white">Welcome Back</h2>
+                <p className="text-lg text-blue-200">Sign in to your account</p>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
+            {/* Form Container */}
+            <div className="p-8 border shadow-2xl bg-white/10 backdrop-blur-lg rounded-3xl border-white/20">
               <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                {/* top-level server error: if you prefer a top-level banner, show it here.
-                    Currently server errors map to email field, but you can show one here too. */}
+                {/* Server Error Banner */}
                 {errors.email && errors.email.type === 'server' && (
-                  <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-start space-x-3 animate-in fade-in duration-300">
+                  <div className="flex items-start p-4 space-x-3 duration-300 border bg-red-500/20 border-red-500/50 rounded-xl animate-in fade-in">
                     <AlertCircle className="h-5 w-5 text-red-300 mt-0.5 shrink-0" />
-                    <p className="text-red-100 text-sm">{errors.email.message}</p>
+                    <p className="text-sm text-red-100">{errors.email.message}</p>
                   </div>
                 )}
 
+                {/* Email Input */}
                 <FormInput
                   id="email"
                   label="Email"
                   placeholder="Enter your email"
-                  icon={<User className="h-5 w-5 text-blue-300" />}
+                  icon={<User className="w-5 h-5 text-blue-300" />}
                   inputProps={{
                     ...register('email'),
                     autoComplete: 'username',
@@ -128,11 +144,12 @@ export default function Login() {
                   error={errors.email}
                 />
 
+                {/* Password Input */}
                 <FormInput
                   id="password"
                   label="Password"
                   placeholder="Enter your password"
-                  icon={<Lock className="h-5 w-5 text-blue-300" />}
+                  icon={<Lock className="w-5 h-5 text-blue-300" />}
                   inputProps={{
                     ...register('password'),
                     type: showPassword ? 'text' : 'password',
@@ -142,27 +159,29 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((s) => !s)}
-                      className="hover:scale-110 transition-transform duration-200"
+                      className="transition-transform duration-200 hover:scale-110"
                     >
                       {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-blue-300 hover:text-blue-200" />
+                        <EyeOff className="w-5 h-5 text-blue-300 hover:text-blue-200" />
                       ) : (
-                        <Eye className="h-5 w-5 text-blue-300 hover:text-blue-200" />
+                        <Eye className="w-5 h-5 text-blue-300 hover:text-blue-200" />
                       )}
                     </button>
                   }
                   error={errors.password}
                 />
 
+                {/* Forgot Password Link */}
                 <div className="flex justify-end text-sm">
                   <a
                     href="/forgot-password"
-                    className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
+                    className="font-medium text-blue-300 transition-colors duration-200 hover:text-blue-200"
                   >
                     Forgot password?
                   </a>
                 </div>
 
+                {/* Submit Button */}
                 <div className="pt-4">
                   <button
                     type="submit"
@@ -171,20 +190,21 @@ export default function Login() {
                   >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <div className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
                         <span>Signing in...</span>
                       </div>
                     ) : (
                       <span className="flex items-center space-x-2">
-                        <Lock className="h-4 w-4" />
+                        <Lock className="w-4 h-4" />
                         <span>Sign in to continue</span>
                       </span>
                     )}
                   </button>
                 </div>
 
-                <div className="text-center pt-4">
-                  <p className="text-blue-200 text-xs">
+                {/* Security Notice */}
+                <div className="pt-4 text-center">
+                  <p className="text-xs text-blue-200">
                     Secure access to your professional workspace
                   </p>
                 </div>

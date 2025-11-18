@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { propertiesApi } from '@/api/endpoints/properties.api';
 import { queryKeys } from '@/lib/react-query/query-keys';
-import { CreatePropertyPayload, PropertyResponse } from '@/services/propertyService';
+import { CreatePropertyPayload, PropertyResponse } from '@/types/property-list';
 
 export const useCreateProperty = (
   options?: Omit<UseMutationOptions<PropertyResponse, Error, CreatePropertyPayload>, 'mutationFn'>,

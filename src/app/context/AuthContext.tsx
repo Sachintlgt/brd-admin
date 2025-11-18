@@ -3,8 +3,8 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService, User } from '@/services/authService';
 import { getUserFromCookie, clearAuthStorage, AUTH_KEYS } from '@/lib/auth';
+import { authApi, User } from '@/api/endpoints/auth.api';
 
 type AuthContextType = {
   user: User | null;
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Call backend logout endpoint to clear cookies
-      await authService.logout();
+      await authApi.logout();
     } catch (err) {
       console.error('Logout API call failed', err);
     } finally {
@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           console.log('🔄 Refreshing token...');
 
-          const res = await authService.refreshToken();
+          const res = await authApi.refreshToken();
           const newUser = res.data.user;
 
           // Update user state with fresh data

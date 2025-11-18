@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { propertiesApi } from '@/api/endpoints/properties.api';
 import { queryKeys } from '@/lib/react-query/query-keys';
-import { UpdatePropertyPayload, PropertyResponse } from '@/services/propertyService';
+import { PropertyResponse, UpdatePropertyPayload } from '@/types/property-list';
 
 interface UpdatePropertyVariables {
   id: string;
