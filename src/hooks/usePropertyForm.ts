@@ -72,7 +72,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     mode: 'onChange',
     defaultValues: {
       name: '',
-      location: '',
+      googleLocation: {},
       description: '',
       beds: undefined,
       bathrooms: undefined,
@@ -95,8 +95,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       isFeatured: false,
       amenityNames: '',
       documentNames: '',
-      certificateNames: '',
-      floorPlanNames: '',
       propertyImages: [],
       propertyVideos: [],
       amenityIcons: [],
@@ -151,7 +149,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       // Reset form with property data
       reset({
         name: property.name,
-        location: property.location,
+        googleLocation: property.googleLocation,
         description: property.description || '',
         beds: property.beds || undefined,
         bathrooms: property.bathrooms || undefined,
@@ -174,8 +172,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         isFeatured: property.isFeatured,
         amenityNames: property.amenities?.map((a: any) => a.name).join(', ') || '',
         documentNames: property.documents?.map((d: any) => d.name).join(', ') || '',
-        certificateNames: property.certificates?.map((c: any) => c.name).join(', ') || '',
-        floorPlanNames: property.floorPlans?.map((f: any) => f.name).join(', ') || '',
         propertyImages: [],
         propertyVideos: [],
         amenityIcons: [],
@@ -430,7 +426,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       // UPDATE
       const payload: UpdatePropertyPayload = {
         name: data.name,
-        location: data.location,
+        googleLocation: data.googleLocation,
         description: data.description || undefined,
         beds: data.beds,
         bathrooms: data.bathrooms,
@@ -453,8 +449,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         isFeatured: data.isFeatured,
         amenityNames: iconFiles.length > 0 ? data.amenityNames : undefined,
         documentNames: documentFiles.length > 0 ? data.documentNames : undefined,
-        certificateNames: certificateImageFiles.length > 0 ? data.certificateNames : undefined,
-        floorPlanNames: floorPlanImageFiles.length > 0 ? data.floorPlanNames : undefined,
         imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
         amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
         documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,
@@ -526,7 +520,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       // CREATE
       const payload = {
         name: data.name,
-        location: data.location,
+        googleLocation: data.googleLocation,
         description: data.description,
         beds: data.beds,
         bathrooms: data.bathrooms,
@@ -549,8 +543,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         isFeatured: data.isFeatured,
         amenityNames: data.amenityNames,
         documentNames: data.documentNames,
-        certificateNames: data.certificateNames,
-        floorPlanNames: data.floorPlanNames,
         propertyImages: imageFiles,
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
         amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,

@@ -1,7 +1,7 @@
+// src/components/properties/forms/FloorPlansSection.tsx
 import { formatFileSize } from '@/utils/fileValidation';
-import FormInput from '../../ui/propertiesFormInput';
 import FileUploadZone from '../FileUploadZone';
-import { X, Plus, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, LayoutGrid, Image as ImageIcon } from 'lucide-react';
 import { useEffect, useState, memo, useCallback } from 'react';
 
 interface FloorPlansSectionProps {
@@ -9,77 +9,96 @@ interface FloorPlansSectionProps {
   errors: any;
   setValue?: any;
   getValues?: any;
-
-  // Images upload
   floorPlanImageDropzone: any;
   floorPlanImageFiles: File[];
   setFloorPlanImageFiles: (f: File[]) => void;
-
-  // Helper
   removeAt: (idx: number, files: File[], setFiles: (f: File[]) => void, formKey: any) => void;
-
-  // Existing floor plans from DB
   existingFloorPlans?: any[];
-  onRemoveExisting?: (id: string) => void; // removeExistingFloorPlan
-
-  // Form submission
+  onRemoveExisting?: (id: string) => void;
   isSubmitting: boolean;
 }
 
 interface FloorPlanItem {
-  id?: string; // for existing floor plans
+  id?: string;
   name: string;
-  file?: File; // for new uploads
+  description: string;
+  file?: File;
   isExisting?: boolean;
-  uniqueId: string; // stable unique identifier for React keys
+  uniqueId: string;
+  displayOrder: number;
 }
 
 interface FloorPlanItemRowProps {
   item: FloorPlanItem;
   index: number;
-  onUpdate: (index: number, name: string) => void;
+  onUpdate: (index: number, field: 'name' | 'description', value: string) => void;
   onRemove: (index: number) => void;
   isSubmitting: boolean;
 }
 
 const FloorPlanItemRow = memo(
   ({ item, index, onUpdate, onRemove, isSubmitting }: FloorPlanItemRowProps) => (
-    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-      <div className="shrink-0">
-        {item.isExisting ? (
-          <ImageIcon className="w-5 h-5 text-orange-600" />
-        ) : (
-          <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
-            <Plus className="w-3 h-3 text-green-600" />
+    <div className="p-4 transition-all border-2 border-gray-200 rounded-lg bg-gradient-to-br from-orange-50 to-white hover:border-orange-300">
+      <div className="flex items-start space-x-3">
+        <div className="mt-1 shrink-0">
+          {item.isExisting ? (
+            <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg">
+              <LayoutGrid className="w-5 h-5 text-orange-600" />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
+              <ImageIcon className="w-5 h-5 text-green-600" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 space-y-3">
+          <div>
+            <label className="block mb-1 text-xs font-medium text-gray-700">
+              Floor Plan Name * <span className="text-gray-500">(e.g., Ground Floor Layout)</span>
+            </label>
+            <input
+              type="text"
+              value={item.name}
+              onChange={(e) => onUpdate(index, 'name', e.target.value)}
+              placeholder="Enter floor plan name"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              disabled={isSubmitting}
+            />
           </div>
-        )}
-      </div>
 
-      <div className="flex-1">
-        <input
-          type="text"
-          value={item.name}
-          onChange={(e) => onUpdate(index, e.target.value)}
-          placeholder="Enter floor plan name (e.g., 3 BHK Layout)"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          <div>
+            <label className="block mb-1 text-xs font-medium text-gray-700">
+              Description <span className="text-gray-500">(optional)</span>
+            </label>
+            <textarea
+              value={item.description}
+              onChange={(e) => onUpdate(index, 'description', e.target.value)}
+              placeholder="Brief description of this floor plan"
+              rows={2}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {item.file && (
+            <div className="p-2 bg-gray-100 border border-gray-200 rounded">
+              <p className="text-xs font-medium text-gray-700">{item.file.name}</p>
+              <p className="text-xs text-gray-500">{formatFileSize(item.file.size)}</p>
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="p-2 text-red-500 transition-colors rounded-lg shrink-0 hover:text-red-700 hover:bg-red-50"
+          title="Remove floor plan"
           disabled={isSubmitting}
-        />
-        {item.file && (
-          <p className="text-xs text-gray-500 mt-1">
-            {item.file.name} ({formatFileSize(item.file.size)})
-          </p>
-        )}
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={() => onRemove(index)}
-        className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-        title="Remove floor plan"
-        disabled={isSubmitting}
-      >
-        <X className="w-4 h-4" />
-      </button>
     </div>
   ),
 );
@@ -101,31 +120,34 @@ export default function FloorPlansSection({
 }: FloorPlansSectionProps) {
   const [floorPlanItems, setFloorPlanItems] = useState<FloorPlanItem[]>([]);
 
-  // Initialize floor plan items when component mounts or existing floor plans change
   useEffect(() => {
     setFloorPlanItems((prev) => {
       const updatedItems: FloorPlanItem[] = [];
       const previousMap = new Map(prev.map((item) => [item.uniqueId, item]));
 
-      // Add existing floor plans
-      existingFloorPlans.forEach((floorPlan) => {
+      existingFloorPlans.forEach((floorPlan, idx) => {
         updatedItems.push({
           id: floorPlan.id,
-          name: floorPlan.name,
+          name: floorPlan.name || '',
+          description: floorPlan.description || '',
           isExisting: true,
           uniqueId: floorPlan.id || `existing-${floorPlan.id}`,
+          displayOrder: idx + 1,
         });
       });
 
-      // Add new uploaded files - preserve their names if they were entered before
       floorPlanImageFiles.forEach((file, index) => {
         const uniqueId = `new-file-${file.name}-${file.size}-${index}`;
         const previousItem = previousMap.get(uniqueId);
+        const fileName = file.name.replace(/\.[^/.]+$/, '');
+
         updatedItems.push({
-          name: previousItem?.name || '', // Preserve previous name if it exists
+          name: previousItem?.name || fileName,
+          description: previousItem?.description || '',
           file,
           isExisting: false,
           uniqueId,
+          displayOrder: existingFloorPlans.length + index + 1,
         });
       });
 
@@ -133,31 +155,25 @@ export default function FloorPlansSection({
     });
   }, [existingFloorPlans, floorPlanImageFiles]);
 
-  // Update floorPlanNames whenever floorPlanItems change
-  useEffect(() => {
-    const names = floorPlanItems
-      .filter((item) => item.name.trim() !== '')
-      .map((item) => item.name.trim());
-    const commaSeparatedNames = names.join(', ');
-    setValue?.('floorPlanNames', commaSeparatedNames);
-  }, [floorPlanItems, setValue]);
-
-  // Update floorPlans array whenever floorPlanItems change
   useEffect(() => {
     const floorPlans = floorPlanItems
       .filter((item) => item.name.trim() !== '')
-      .map((item, index) => ({
+      .map((item) => ({
         name: item.name.trim(),
-        imageUrl: 'will-be-uploaded',
-        description: '', // Could be enhanced to include description field later
-        displayOrder: index + 1,
+        description: item.description?.trim() || '',
+        displayOrder: item.displayOrder,
       }));
     setValue?.('floorPlans', floorPlans);
   }, [floorPlanItems, setValue]);
 
-  const updateFloorPlanName = useCallback((index: number, name: string) => {
-    setFloorPlanItems((prev) => prev.map((item, i) => (i === index ? { ...item, name } : item)));
-  }, []);
+  const updateFloorPlan = useCallback(
+    (index: number, field: 'name' | 'description', value: string) => {
+      setFloorPlanItems((prev) =>
+        prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
+      );
+    },
+    [],
+  );
 
   const removeFloorPlanItem = useCallback(
     (index: number) => {
@@ -165,17 +181,14 @@ export default function FloorPlansSection({
         const item = prev[index];
 
         if (item.isExisting && item.id) {
-          // Remove existing floor plan
           onRemoveExisting?.(item.id);
         } else if (item.file) {
-          // Remove new uploaded file
           const fileIndex = floorPlanImageFiles.findIndex((f) => f === item.file);
           if (fileIndex !== -1) {
             removeAt(fileIndex, floorPlanImageFiles, setFloorPlanImageFiles, 'floorPlanImages');
           }
         }
 
-        // Remove from local state
         return prev.filter((_, i) => i !== index);
       });
     },
@@ -184,21 +197,20 @@ export default function FloorPlansSection({
 
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
-      <div className="flex items-center space-x-3 mb-2">
-        <div className="p-2 bg-orange-50 rounded-lg">
-          <ImageIcon className="w-6 h-6 text-orange-600" />
+      <div className="flex items-center mb-6 space-x-3">
+        <div className="p-2 rounded-lg bg-orange-50">
+          <LayoutGrid className="w-6 h-6 text-orange-600" />
         </div>
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Floor Plans</h2>
-          <p className="text-sm text-gray-600">Add floor plans with optional images</p>
+          <p className="text-sm text-gray-600">Add property floor layouts (images optional)</p>
         </div>
       </div>
 
-      {/* Upload Zone */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-gray-700">Upload Floor Plan Images</h3>
-          <span className="text-xs text-gray-500">Max 20 • JPG, PNG, WebP, GIF</span>
+          <h3 className="text-sm font-medium text-gray-700">Upload Floor Plan Images (Optional)</h3>
+          <span className="text-xs text-gray-500">Max 10 • JPG, PNG, WebP, GIF</span>
         </div>
 
         <FileUploadZone
@@ -206,32 +218,30 @@ export default function FloorPlansSection({
           dropzone={floorPlanImageDropzone}
           files={floorPlanImageFiles}
           onRemove={(idx) => {
-            // Remove from files array, the useEffect will handle updating floorPlanItems
             removeAt(idx, floorPlanImageFiles, setFloorPlanImageFiles, 'floorPlanImages');
           }}
           error={errors.floorPlanImages}
           isSubmitting={isSubmitting}
         />
 
-        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+        <div className="p-3 mt-3 border border-orange-200 rounded-lg bg-orange-50">
           <p className="text-xs text-orange-800">
-            <strong>Tip:</strong> Upload floor plan images first, then enter the floor plan names
-            below for each one.
+            <strong>Auto-naming:</strong> File names will be used as default floor plan names. You
+            can edit them below.
           </p>
         </div>
       </div>
 
-      {/* Floor Plan Items */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-gray-700">
           Floor Plan Details {floorPlanItems.length > 0 && `(${floorPlanItems.length})`}
         </h3>
 
         {floorPlanItems.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">No floor plans added yet</p>
-            <p className="text-xs">Upload floor plan images above to get started</p>
+          <div className="py-12 text-center text-gray-500 border-2 border-gray-300 border-dashed rounded-lg">
+            <LayoutGrid className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p className="text-sm font-medium">No floor plans added yet</p>
+            <p className="text-xs">Upload images or add floor plan details manually</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -240,7 +250,7 @@ export default function FloorPlansSection({
                 key={item.uniqueId}
                 item={item}
                 index={index}
-                onUpdate={updateFloorPlanName}
+                onUpdate={updateFloorPlan}
                 onRemove={removeFloorPlanItem}
                 isSubmitting={isSubmitting}
               />
@@ -248,11 +258,8 @@ export default function FloorPlansSection({
           </div>
         )}
 
-        {/* Hidden field for comma-separated names (for backend compatibility) */}
-        <input type="hidden" {...register('floorPlanNames')} />
-
-        {errors.floorPlanNames && (
-          <p className="mt-2 text-sm text-red-600">{errors.floorPlanNames.message}</p>
+        {errors.floorPlans && (
+          <p className="mt-2 text-sm text-red-600">{errors.floorPlans.message}</p>
         )}
       </div>
     </div>

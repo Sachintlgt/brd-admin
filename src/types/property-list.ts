@@ -101,7 +101,7 @@ export interface PropertyResponse {
 
 export interface CreatePropertyPayload {
   name: string;
-  location: string;
+  googleLocation: any;
   description?: string;
   beds?: number;
   bathrooms?: number;
@@ -141,7 +141,7 @@ export interface CreatePropertyPayload {
 
 export interface UpdatePropertyPayload {
   name?: string;
-  location?: string;
+  googleLocation?: any;
   description?: string;
   beds?: number;
   bathrooms?: number;

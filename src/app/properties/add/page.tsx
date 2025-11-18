@@ -14,7 +14,6 @@ import StatusSection from '../../../components/properties/forms/StatusSection';
 import PricingDetailsSection from '@/components/properties/forms/PricingDetailsSection';
 import ShareDetailsSection from '@/components/properties/forms/ShareDetailsSection';
 import MaintenanceTemplatesSection from '@/components/properties/forms/MaintenanceTemplatesSection';
-// New sections for complex arrays
 import HighlightsSection from '@/components/properties/forms/HighlightsSection';
 import CertificatesSection from '@/components/properties/forms/CertificatesSection';
 import FloorPlansSection from '@/components/properties/forms/FloorPlansSection';
@@ -59,13 +58,24 @@ export default function AddProperty() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <BasicInformationSection register={formProps.register} errors={formProps.errors} />
+        {/* Basic Information with Google Location */}
+        <BasicInformationSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
+        />
+
+        {/* Shares & Pricing */}
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
+
+        {/* Highlights (Improved UI) */}
         <HighlightsSection
           register={formProps.register}
           errors={formProps.errors}
           control={formProps.control}
         />
+
+        {/* Certificates (Improved UI - Auto-naming) */}
         <CertificatesSection
           register={formProps.register}
           errors={formProps.errors}
@@ -77,6 +87,8 @@ export default function AddProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
         />
+
+        {/* Floor Plans (Improved UI - Auto-naming) */}
         <FloorPlansSection
           register={formProps.register}
           errors={formProps.errors}
@@ -88,12 +100,15 @@ export default function AddProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
         />
+
+        {/* Payment Plans */}
         <PaymentPlansSection
           register={formProps.register}
           errors={formProps.errors}
           control={formProps.control}
         />
-        {/*  Pricing Details Section */}
+
+        {/* Pricing Details */}
         <PricingDetailsSection
           register={formProps.register}
           errors={formProps.errors}
@@ -102,7 +117,7 @@ export default function AddProperty() {
           control={formProps.control}
         />
 
-        {/*  Share Details Section */}
+        {/* Share Details */}
         <ShareDetailsSection
           register={formProps.register}
           errors={formProps.errors}
@@ -111,7 +126,7 @@ export default function AddProperty() {
           control={formProps.control}
         />
 
-        {/* Maintenance Templates Section */}
+        {/* Maintenance Templates */}
         <MaintenanceTemplatesSection
           register={formProps.register}
           errors={formProps.errors}
@@ -120,6 +135,7 @@ export default function AddProperty() {
           control={formProps.control}
         />
 
+        {/* Media & Documents */}
         <MediaDocumentsSection
           register={formProps.register}
           errors={formProps.errors}
@@ -137,6 +153,8 @@ export default function AddProperty() {
           removeAt={formProps.removeAt}
           isSubmitting={isSubmitting}
         />
+
+        {/* Amenities (Images Optional - Auto-naming) */}
         <AmenitiesSection
           register={formProps.register}
           errors={formProps.errors}
@@ -148,6 +166,8 @@ export default function AddProperty() {
           removeAt={formProps.removeAt}
           isSubmitting={isSubmitting}
         />
+
+        {/* Status */}
         <StatusSection register={formProps.register} errors={formProps.errors} />
 
         <div className="flex justify-end space-x-4">
