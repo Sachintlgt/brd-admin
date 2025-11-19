@@ -10,6 +10,7 @@ export interface PropertyResponse {
 export interface CreatePropertyPayload {
   name: string;
   location: string;
+  googleLocation: any;
   description?: string;
   beds?: number;
   bathrooms?: number;
@@ -48,6 +49,7 @@ export interface CreatePropertyPayload {
 
 export interface UpdatePropertyPayload {
   name?: string;
+  googleLocation?: any;
   location?: string;
   description?: string;
   beds?: number;
@@ -104,6 +106,7 @@ export const propertyService = {
       formData.append('name', payload.name);
       formData.append('location', payload.location);
       if (payload.description) formData.append('description', payload.description);
+      if (payload.googleLocation) formData.append('googleLocation', payload.googleLocation);
 
       // Property Details
       if (payload.beds !== undefined) formData.append('beds', String(payload.beds));

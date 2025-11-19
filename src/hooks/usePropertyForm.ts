@@ -67,6 +67,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     defaultValues: {
       name: '',
       location: '',
+      googleLocation: {},
       description: '',
       beds: undefined,
       bathrooms: undefined,
@@ -483,6 +484,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           reset({
             name: property.name,
             location: property.location,
+            googleLocation: property.googleLocation,
             description: property.description || '',
             beds: property.beds || undefined,
             bathrooms: property.bathrooms || undefined,
@@ -626,6 +628,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       const payload: UpdatePropertyPayload = {
         name: data.name,
         location: data.location,
+        googleLocation: data.googleLocation,
         description: data.description || undefined,
         beds: data.beds || undefined,
         bathrooms: data.bathrooms || undefined,
@@ -713,6 +716,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       const payload = {
         name: data.name,
         location: data.location,
+        googleLocation: data.googleLocation,
         description: data.description || undefined,
         beds: data.beds || undefined,
         bathrooms: data.bathrooms || undefined,

@@ -58,7 +58,11 @@ export default function AddProperty() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <BasicInformationSection register={formProps.register} errors={formProps.errors} />
+        <BasicInformationSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
+        />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
         <CertificatesSection
           register={formProps.register}

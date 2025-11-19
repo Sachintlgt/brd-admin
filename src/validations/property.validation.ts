@@ -111,6 +111,24 @@ const paymentPlanSchema = z
     }
   });
 
+// Google Location Schema
+const googleLocationSchema = z.object({
+  name: z.string().min(1, 'Location name is required'),
+  formatted_address: z.string().min(1, 'Formatted address is required'),
+  place_id: z.string().min(1, 'Place ID is required'),
+  location: z.object({
+    type: z.literal('Point'),
+    coordinates: z.tuple([z.number(), z.number()]), // [lng, lat]
+  }),
+  viewport: z
+    .object({
+      northeast: z.object({ lat: z.number(), lng: z.number() }),
+      southwest: z.object({ lat: z.number(), lng: z.number() }),
+    })
+    .optional(),
+  zoom: z.number().optional(),
+});
+
 export const propertySchema = z
   .object({
     name: z
@@ -121,6 +139,7 @@ export const propertySchema = z
       .string()
       .min(3, { message: 'Location must be at least 3 characters' })
       .max(200, { message: 'Location cannot exceed 200 characters' }),
+    googleLocation: googleLocationSchema,
     description: z
       .string()
       .max(2000, { message: 'Description cannot exceed 2000 characters' })
