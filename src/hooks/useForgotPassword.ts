@@ -1,18 +1,44 @@
-// src/hooks/useForgotPassword.ts
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import { useState } from 'react';
 import { forgotPasswordService, ForgotPasswordResponse } from '@/services/forgotPasswordService';
 
 export type ForgotPasswordVars = { email: string };
-export type ForgotPasswordError = AxiosError<{ message?: string }>;
 
 export const useForgotPassword = () => {
-  return useMutation<ForgotPasswordResponse, ForgotPasswordError, ForgotPasswordVars>({
-    mutationFn: async ({ email }) => {
-      // call the actual service method
-      return forgotPasswordService.forgotPassword(email);
-    },
-  });
+  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<any>(null);
+
+  const mutateAsync = async (
+    { email }: ForgotPasswordVars,
+    options?: { onSuccess?: () => void },
+  ): Promise<ForgotPasswordResponse> => {
+    setIsPending(true);
+    setIsSuccess(false);
+    setError(null);
+
+    try {
+      const response = await forgotPasswordService.forgotPassword(email);
+      setIsSuccess(true);
+
+      if (options?.onSuccess) {
+        options.onSuccess();
+      }
+
+      return response;
+    } catch (err: any) {
+      setError(err);
+      throw err;
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return {
+    mutateAsync,
+    isPending,
+    isSuccess,
+    error,
+  };
 };

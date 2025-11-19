@@ -1,22 +1,16 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import PropertyFilters from '../../components/properties/list/PropertyFilters';
 import PropertyListContent from '../../components/properties/list/PropertyListContent';
 import PropertyPagination from '../../components/properties/list/PropertyPagination';
-import {
-  usePropertiesList,
-  useDeleteProperty,
-  useToggleActive,
-  useToggleFeatured,
-} from '../../hooks/usePropertiesList';
+import { useProperties } from '../../app/context/PropertiesContext';
 import { useDebouncedFilters } from '../../hooks/useDebouncedFilters';
 import { PropertyFilterState } from '../../types/property-list';
 import { DeleteConfirmationDialog } from '@/components/common/DeleteConfirmationDialog';
-import toast from 'react-hot-toast';
 
 const DEFAULT_FILTERS: PropertyFilterState = {
   searchTerm: '',
@@ -32,76 +26,61 @@ export default function Properties() {
   const [filters, setFilters] = useState<PropertyFilterState>(DEFAULT_FILTERS);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<any>(null);
-  // Debounce filters to prevent excessive API calls (especially for search)
-  // Uses 600ms delay which is appropriate for user input
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const debouncedFilters = useDebouncedFilters(filters, 600);
 
-  // TanStack Query hooks for data fetching
-  // Uses debounced filters to avoid multiple API calls
-  const { data, isLoading, isError, error } = usePropertiesList({
-    page: debouncedFilters.page,
-    limit: debouncedFilters.limit,
-    search: debouncedFilters.searchTerm || undefined,
-    isActive:
-      debouncedFilters.statusFilter === 'all'
-        ? undefined
-        : debouncedFilters.statusFilter === 'active',
-    isFeatured:
-      debouncedFilters.featuredFilter === 'all'
-        ? undefined
-        : debouncedFilters.featuredFilter === 'featured',
-    sortBy: debouncedFilters.sortBy,
-    sortOrder: debouncedFilters.sortOrder,
-    location: debouncedFilters.location || undefined,
-    minPrice: debouncedFilters.minPrice,
-    maxPrice: debouncedFilters.maxPrice,
-    staffId: debouncedFilters.staffId,
-  });
+  const { properties, pagination, isLoading, error, fetchProperties, deleteProperty } =
+    useProperties();
 
-  // Mutations for property actions
-  const deletePropertyMutation = useDeleteProperty();
-  const toggleActiveMutation = useToggleActive();
-  const toggleFeaturedMutation = useToggleFeatured();
+  // Fetch properties when debounced filters change
+  useEffect(() => {
+    const apiFilters = {
+      page: debouncedFilters.page,
+      limit: debouncedFilters.limit,
+      search: debouncedFilters.searchTerm || undefined,
+      isActive:
+        debouncedFilters.statusFilter === 'all'
+          ? undefined
+          : debouncedFilters.statusFilter === 'active',
+      isFeatured:
+        debouncedFilters.featuredFilter === 'all'
+          ? undefined
+          : debouncedFilters.featuredFilter === 'featured',
+      sortBy: debouncedFilters.sortBy,
+      sortOrder: debouncedFilters.sortOrder,
+      location: debouncedFilters.location || undefined,
+      minPrice: debouncedFilters.minPrice,
+      maxPrice: debouncedFilters.maxPrice,
+      staffId: debouncedFilters.staffId,
+    };
 
-  // Extract pagination data
-  const pagination = useMemo(() => {
-    if (!data?.data?.pagination) {
-      return {
-        page: debouncedFilters.page || 1,
-        limit: debouncedFilters.limit || 10,
-        total: 0,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-      };
-    }
-    return data.data.pagination;
-  }, [data, debouncedFilters.page, debouncedFilters.limit]);
-
-  // Extract properties list
-  const properties = useMemo(() => {
-    const props = data?.data?.properties;
-    if (!Array.isArray(props)) {
-      console.warn('Properties data is not an array:', props); // Debug log
-      return [];
-    }
-    return props;
-  }, [data]);
+    fetchProperties(apiFilters);
+  }, [
+    debouncedFilters.page,
+    debouncedFilters.limit,
+    debouncedFilters.searchTerm,
+    debouncedFilters.statusFilter,
+    debouncedFilters.featuredFilter,
+    debouncedFilters.sortBy,
+    debouncedFilters.sortOrder,
+    debouncedFilters.location,
+    debouncedFilters.minPrice,
+    debouncedFilters.maxPrice,
+    debouncedFilters.staffId,
+  ]);
 
   // Check if any filters are applied
-  const hasFiltersApplied = useMemo(() => {
-    return (
-      filters.searchTerm !== '' ||
-      filters.statusFilter !== 'all' ||
-      filters.featuredFilter !== 'all' ||
-      filters.location !== undefined ||
-      filters.minPrice !== undefined ||
-      filters.maxPrice !== undefined ||
-      filters.staffId !== undefined ||
-      filters.sortBy !== 'createdAt' ||
-      filters.sortOrder !== 'desc'
-    );
-  }, [filters]);
+  const hasFiltersApplied =
+    filters.searchTerm !== '' ||
+    filters.statusFilter !== 'all' ||
+    filters.featuredFilter !== 'all' ||
+    filters.location !== undefined ||
+    filters.minPrice !== undefined ||
+    filters.maxPrice !== undefined ||
+    filters.staffId !== undefined ||
+    filters.sortBy !== 'createdAt' ||
+    filters.sortOrder !== 'desc';
 
   // Handle filter changes
   const handleFiltersChange = (newFilters: Partial<PropertyFilterState>) => {
@@ -123,7 +102,6 @@ export default function Properties() {
       ...prev,
       page,
     }));
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -136,25 +114,19 @@ export default function Properties() {
     }
   };
 
-  // Handle toggle active
-  const handleToggleActive = (id: string) => {
-    const property = properties.find((p) => p.id === id);
-    if (property) {
-      toggleActiveMutation.mutate({
-        id,
-        isActive: !property.isActive,
-      });
-    }
-  };
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!propertyToDelete) return;
 
-  // Handle toggle featured
-  const handleToggleFeatured = (id: string) => {
-    const property = properties.find((p) => p.id === id);
-    if (property) {
-      toggleFeaturedMutation.mutate({
-        id,
-        isFeatured: !property.isFeatured,
-      });
+    setIsDeleting(true);
+    try {
+      await deleteProperty(propertyToDelete.id);
+      setDeleteDialogOpen(false);
+      setPropertyToDelete(null);
+    } catch (error) {
+      // Error is already handled in context
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -189,11 +161,9 @@ export default function Properties() {
       <PropertyListContent
         properties={properties}
         isLoading={isLoading}
-        isError={isError}
-        error={error}
+        isError={!!error}
+        error={error ? { message: error } : null}
         hasFiltersApplied={hasFiltersApplied}
-        onToggleActive={handleToggleActive}
-        onToggleFeatured={handleToggleFeatured}
         onDelete={handleDelete}
         count={pagination.total}
       />
@@ -216,25 +186,10 @@ export default function Properties() {
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
           if (!open) {
-            setPropertyToDelete(null); // clear when closed via cancel/backdrop/esc
+            setPropertyToDelete(null);
           }
         }}
-        onConfirm={() => {
-          if (!propertyToDelete) return;
-
-          deletePropertyMutation.mutate(propertyToDelete.id, {
-            onSuccess: () => {
-              setDeleteDialogOpen(false);
-              setPropertyToDelete(null);
-            },
-            onError: (error: any) => {
-              toast.error(
-                error?.response?.data?.message || error?.message || 'Failed to delete property',
-              );
-              // Modal stays open so user can retry
-            },
-          });
-        }}
+        onConfirm={handleConfirmDelete}
         title="Delete Property"
         description={
           propertyToDelete
@@ -246,7 +201,7 @@ export default function Properties() {
               }"? This action cannot be undone.`
             : 'Are you sure you want to delete this property? This action cannot be undone.'
         }
-        isLoading={deletePropertyMutation.isPending}
+        isLoading={isDeleting}
       />
     </DashboardLayout>
   );

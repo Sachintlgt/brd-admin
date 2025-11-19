@@ -3,7 +3,6 @@ import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { propertySchema, type PropertyFormValues } from '../validations/property.validation';
 import { propertyService, UpdatePropertyPayload } from '../services/propertyService';
@@ -49,7 +48,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [existingShareDetails, setExistingShareDetails] = useState<any[]>([]);
   const [existingMaintenanceTemplates, setExistingMaintenanceTemplates] = useState<any[]>([]);
   const [existingPaymentPlans, setExistingPaymentPlans] = useState<any[]>([]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
 
   const {
@@ -60,7 +59,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     reset,
     watch,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<PropertyFormValues>({
     resolver: typedResolver,
     mode: 'onChange',
@@ -413,43 +412,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     }, 0);
   };
 
-  // Mutations for create and update
-  const createMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      return await propertyService.createProperty(payload);
-    },
-    onSuccess: (response) => {
-      setSubmitSuccess(response.message || 'Property created successfully!');
-      toast.success('Property created successfully!');
-      setTimeout(() => {
-        router.push('/properties');
-      }, 1500);
-    },
-    onError: (error: any) => {
-      const message = error?.message || 'Failed to create property. Please try again.';
-      setSubmitError(message);
-      toast.error(message);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: UpdatePropertyPayload }) => {
-      return await propertyService.updateProperty(id, payload);
-    },
-    onSuccess: (response) => {
-      setSubmitSuccess(response.message || 'Property updated successfully!');
-      toast.success('Property updated successfully!');
-      setTimeout(() => {
-        router.push('/properties');
-      }, 1500);
-    },
-    onError: (error: any) => {
-      const message = error?.message || 'Failed to update property. Please try again.';
-      setSubmitError(message);
-      toast.error(message);
-    },
-  });
-
   // Load property data for edit mode
   useEffect(() => {
     if (propertyId) {
@@ -561,214 +523,219 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     }
   }, [propertyId, reset]);
 
-  const onSubmit = (data: PropertyFormValues) => {
+  const onSubmit = async (data: PropertyFormValues) => {
     setSubmitError(null);
     setSubmitSuccess(null);
+    setIsSubmitting(true);
 
-    // Process pricing details - all items come from form now (existing + new)
-    const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => ({
-      id: pricing.id, // Include ID if exists (for existing records)
-      label: pricing.label,
-      price: Number(pricing.price),
-      type: pricing.type,
-      phaseName: pricing.phaseName || undefined,
-      description: pricing.description || undefined,
-      effectiveFrom: convertToISO(pricing.effectiveFrom),
-      effectiveTo: convertToISO(pricing.effectiveTo),
-    }));
+    try {
+      // Process pricing details - all items come from form now (existing + new)
+      const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => ({
+        id: pricing.id, // Include ID if exists (for existing records)
+        label: pricing.label,
+        price: Number(pricing.price),
+        type: pricing.type,
+        phaseName: pricing.phaseName || undefined,
+        description: pricing.description || undefined,
+        effectiveFrom: convertToISO(pricing.effectiveFrom),
+        effectiveTo: convertToISO(pricing.effectiveTo),
+      }));
 
-    // Find deleted pricing details (existing ones not in the form)
-    const currentPricingIds = processedPricingDetails.filter((p) => p.id).map((p) => p.id);
-    const deletedPricingIds = existingPricingDetails
-      .filter((p) => !currentPricingIds.includes(p.id))
-      .map((p) => p.id);
-    deletedPricingIds.forEach((id) => setPricingIdsToDelete((prev) => [...prev, id]));
+      // Find deleted pricing details (existing ones not in the form)
+      const currentPricingIds = processedPricingDetails.filter((p) => p.id).map((p) => p.id);
+      const deletedPricingIds = existingPricingDetails
+        .filter((p) => !currentPricingIds.includes(p.id))
+        .map((p) => p.id);
+      deletedPricingIds.forEach((id) => setPricingIdsToDelete((prev) => [...prev, id]));
 
-    // Process share details - all items come from form now (existing + new)
-    const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
-      id: detail.id, // Include ID if exists
-      title: detail.title,
-      description: detail.description || undefined,
-      shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
-      amount: detail.amount ? Number(detail.amount) : undefined,
-    }));
+      // Process share details - all items come from form now (existing + new)
+      const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
+        id: detail.id, // Include ID if exists
+        title: detail.title,
+        description: detail.description || undefined,
+        shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
+        amount: detail.amount ? Number(detail.amount) : undefined,
+      }));
 
-    // Find deleted share details (existing ones not in the form)
-    const currentShareIds = processedShareDetails.filter((s) => s.id).map((s) => s.id);
-    const deletedShareIds = existingShareDetails
-      .filter((s) => !currentShareIds.includes(s.id))
-      .map((s) => s.id);
-    deletedShareIds.forEach((id) => setShareDetailIdsToDelete((prev) => [...prev, id]));
+      // Find deleted share details (existing ones not in the form)
+      const currentShareIds = processedShareDetails.filter((s) => s.id).map((s) => s.id);
+      const deletedShareIds = existingShareDetails
+        .filter((s) => !currentShareIds.includes(s.id))
+        .map((s) => s.id);
+      deletedShareIds.forEach((id) => setShareDetailIdsToDelete((prev) => [...prev, id]));
 
-    // Process maintenance templates - all items come from form now (existing + new)
-    const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
-      (template: any) => ({
-        id: template.id, // Include ID if exists
-        chargeType: template.chargeType,
-        amount: Number(template.amount),
-        description: template.description || undefined,
-        dueDay: template.dueDay ? Number(template.dueDay) : undefined,
-        startDate: convertToISO(template.startDate),
-        endDate: convertToISO(template.endDate),
-        isActive: template.isActive ?? true,
-      }),
-    );
+      // Process maintenance templates - all items come from form now (existing + new)
+      const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
+        (template: any) => ({
+          id: template.id, // Include ID if exists
+          chargeType: template.chargeType,
+          amount: Number(template.amount),
+          description: template.description || undefined,
+          dueDay: template.dueDay ? Number(template.dueDay) : undefined,
+          startDate: convertToISO(template.startDate),
+          endDate: convertToISO(template.endDate),
+          isActive: template.isActive ?? true,
+        }),
+      );
 
-    // Find deleted maintenance templates (existing ones not in the form)
-    const currentTemplateIds = processedMaintenanceTemplates.filter((t) => t.id).map((t) => t.id);
-    const deletedTemplateIds = existingMaintenanceTemplates
-      .filter((t) => !currentTemplateIds.includes(t.id))
-      .map((t) => t.id);
-    deletedTemplateIds.forEach((id) => setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]));
+      // Find deleted maintenance templates (existing ones not in the form)
+      const currentTemplateIds = processedMaintenanceTemplates.filter((t) => t.id).map((t) => t.id);
+      const deletedTemplateIds = existingMaintenanceTemplates
+        .filter((t) => !currentTemplateIds.includes(t.id))
+        .map((t) => t.id);
+      deletedTemplateIds.forEach((id) =>
+        setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]),
+      );
 
-    if (propertyId) {
-      // UPDATE MODE - TARGETED DEBUG LOGS
-      const payload: UpdatePropertyPayload = {
-        name: data.name,
-        location: data.location,
-        description: data.description || undefined,
-        beds: data.beds || undefined,
-        bathrooms: data.bathrooms || undefined,
-        sqft: data.sqft || undefined,
-        maxOccupancy: data.maxOccupancy || undefined,
-        totalShares: data.totalShares,
-        availableShares: data.availableShares,
-        initialPricePerShare: data.initialPricePerShare,
-        currentPricePerShare: data.currentPricePerShare || undefined,
-        wholeUnitPrice: data.wholeUnitPrice || undefined,
-        targetIRR: data.targetIRR || undefined,
-        targetRentalYield: data.targetRentalYield || undefined,
-        appreciationRate: data.appreciationRate || undefined,
-        possessionDate: convertToISO(data.possessionDate) || undefined,
-        launchDate: convertToISO(data.launchDate) || undefined,
-        maxBookingDays: data.maxBookingDays || undefined,
-        bookingAmount: data.bookingAmount || undefined,
-        bookingAmountGST: data.bookingAmountGST || undefined,
-        isActive: data.isActive,
-        isFeatured: data.isFeatured,
-        // WORKAROUND: Don't send amenityNames in edit mode to prevent backend duplication
-        // The backend should only create new amenities from uploaded amenityIcons
-        amenityNames: iconFiles.length > 0 ? data.amenityNames : undefined,
-        documentNames: documentFiles.length > 0 ? data.documentNames : undefined,
-        certificateNames: certificateImageFiles.length > 0 ? data.certificateNames : undefined,
-        floorPlanNames: floorPlanImageFiles.length > 0 ? data.floorPlanNames : undefined,
-        imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
-        amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
-        documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,
-        pricingIdsToDelete: pricingIdsToDelete.length > 0 ? pricingIdsToDelete : undefined,
-        shareDetailIdsToDelete:
-          shareDetailIdsToDelete.length > 0 ? shareDetailIdsToDelete : undefined,
-        maintenanceTemplateIdsToDelete:
-          maintenanceTemplateIdsToDelete.length > 0 ? maintenanceTemplateIdsToDelete : undefined,
-        certificateIdsToDelete:
-          certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
-        floorPlanIdsToDelete: floorPlanIdsToDelete.length > 0 ? floorPlanIdsToDelete : undefined,
-        paymentPlanIdsToDelete:
-          paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
-        propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
-        propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
-        amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
-        documents: documentFiles.length > 0 ? documentFiles : undefined,
-        certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
-        floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
-        pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
-        shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
-        maintenanceTemplates:
-          processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+      // Process payment plans
+      const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
+        id: plan.id, // Include ID if exists
+        planType: plan.planType,
+        purchaseType: plan.purchaseType,
+        name: plan.name,
+        description: plan.description || undefined,
+        amount: plan.amount ? Number(plan.amount) : undefined,
+        percentage: plan.percentage ? Number(plan.percentage) : undefined,
+        milestone: plan.milestone || undefined,
+        dueDate: plan.dueDate || undefined,
+        displayOrder: plan.displayOrder || 0,
+        isGSTIncluded: plan.isGSTIncluded ?? false,
+        gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
+      }));
 
-        paymentPlans: (() => {
-          // Process payment plans - all items come from form now (existing + new)
-          const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
-            id: plan.id, // Include ID if exists
-            planType: plan.planType,
-            purchaseType: plan.purchaseType,
-            name: plan.name,
-            description: plan.description || undefined,
-            amount: plan.amount ? Number(plan.amount) : undefined,
-            percentage: plan.percentage ? Number(plan.percentage) : undefined,
-            milestone: plan.milestone || undefined,
-            dueDate: plan.dueDate || undefined,
-            displayOrder: plan.displayOrder || 0,
-            isGSTIncluded: plan.isGSTIncluded ?? false,
-            gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
-          }));
+      // Find deleted payment plans (existing ones not in the form)
+      const currentPaymentPlanIds = processedPaymentPlans.filter((p) => p.id).map((p) => p.id);
+      const deletedPaymentPlanIds = existingPaymentPlans
+        .filter((p) => !currentPaymentPlanIds.includes(p.id))
+        .map((p) => p.id);
+      deletedPaymentPlanIds.forEach((id) => setPaymentPlanIdsToDelete((prev) => [...prev, id]));
 
-          // Find deleted payment plans (existing ones not in the form)
-          const currentPaymentPlanIds = processedPaymentPlans.filter((p) => p.id).map((p) => p.id);
-          const deletedPaymentPlanIds = existingPaymentPlans
-            .filter((p) => !currentPaymentPlanIds.includes(p.id))
-            .map((p) => p.id);
-          deletedPaymentPlanIds.forEach((id) => setPaymentPlanIdsToDelete((prev) => [...prev, id]));
+      if (propertyId) {
+        // UPDATE MODE
+        const payload: UpdatePropertyPayload = {
+          name: data.name,
+          location: data.location,
+          description: data.description || undefined,
+          beds: data.beds || undefined,
+          bathrooms: data.bathrooms || undefined,
+          sqft: data.sqft || undefined,
+          maxOccupancy: data.maxOccupancy || undefined,
+          totalShares: data.totalShares,
+          availableShares: data.availableShares,
+          initialPricePerShare: data.initialPricePerShare,
+          currentPricePerShare: data.currentPricePerShare || undefined,
+          wholeUnitPrice: data.wholeUnitPrice || undefined,
+          targetIRR: data.targetIRR || undefined,
+          targetRentalYield: data.targetRentalYield || undefined,
+          appreciationRate: data.appreciationRate || undefined,
+          possessionDate: convertToISO(data.possessionDate) || undefined,
+          launchDate: convertToISO(data.launchDate) || undefined,
+          maxBookingDays: data.maxBookingDays || undefined,
+          bookingAmount: data.bookingAmount || undefined,
+          bookingAmountGST: data.bookingAmountGST || undefined,
+          isActive: data.isActive,
+          isFeatured: data.isFeatured,
+          amenityNames: iconFiles.length > 0 ? data.amenityNames : undefined,
+          documentNames: documentFiles.length > 0 ? data.documentNames : undefined,
+          certificateNames: certificateImageFiles.length > 0 ? data.certificateNames : undefined,
+          floorPlanNames: floorPlanImageFiles.length > 0 ? data.floorPlanNames : undefined,
+          imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
+          amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
+          documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,
+          pricingIdsToDelete: pricingIdsToDelete.length > 0 ? pricingIdsToDelete : undefined,
+          shareDetailIdsToDelete:
+            shareDetailIdsToDelete.length > 0 ? shareDetailIdsToDelete : undefined,
+          maintenanceTemplateIdsToDelete:
+            maintenanceTemplateIdsToDelete.length > 0 ? maintenanceTemplateIdsToDelete : undefined,
+          certificateIdsToDelete:
+            certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
+          floorPlanIdsToDelete: floorPlanIdsToDelete.length > 0 ? floorPlanIdsToDelete : undefined,
+          paymentPlanIdsToDelete:
+            paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
+          propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
+          propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
+          amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
+          documents: documentFiles.length > 0 ? documentFiles : undefined,
+          certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
+          floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
+          pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
+          shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
+          maintenanceTemplates:
+            processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+          paymentPlans: processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined,
+          certificates: data.certificates?.length ? data.certificates : undefined,
+          floorPlans: data.floorPlans?.length ? data.floorPlans : undefined,
+        };
 
-          return processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined;
-        })(),
-        // Only send NEW certificates/floorPlans from form - existing ones are already in DB
-        certificates: data.certificates?.length ? data.certificates : undefined,
-        floorPlans: data.floorPlans?.length ? data.floorPlans : undefined,
-      };
+        const response = await propertyService.updateProperty(propertyId, payload);
 
-      updateMutation.mutate({ id: propertyId, payload });
-    } else {
-      // CREATE MODE
-      const payload = {
-        name: data.name,
-        location: data.location,
-        description: data.description || undefined,
-        beds: data.beds || undefined,
-        bathrooms: data.bathrooms || undefined,
-        sqft: data.sqft || undefined,
-        maxOccupancy: data.maxOccupancy || undefined,
-        totalShares: data.totalShares,
-        availableShares: data.availableShares,
-        initialPricePerShare: data.initialPricePerShare,
-        currentPricePerShare: data.currentPricePerShare || undefined,
-        wholeUnitPrice: data.wholeUnitPrice || undefined,
-        targetIRR: data.targetIRR || undefined,
-        targetRentalYield: data.targetRentalYield || undefined,
-        appreciationRate: data.appreciationRate || undefined,
-        possessionDate: convertToISO(data.possessionDate) || undefined,
-        launchDate: convertToISO(data.launchDate) || undefined,
-        maxBookingDays: data.maxBookingDays || undefined,
-        bookingAmount: data.bookingAmount || undefined,
-        bookingAmountGST: data.bookingAmountGST || undefined,
-        isActive: data.isActive,
-        isFeatured: data.isFeatured,
-        amenityNames: data.amenityNames || undefined,
-        documentNames: data.documentNames || undefined,
-        certificateNames: data.certificateNames || undefined,
-        floorPlanNames: data.floorPlanNames || undefined,
-        propertyImages: imageFiles,
-        propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
-        amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
-        documents: documentFiles.length > 0 ? documentFiles : undefined,
-        certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
-        floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
-        pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
-        shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
-        maintenanceTemplates:
-          processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+        setSubmitSuccess(response.message || 'Property updated successfully!');
+        toast.success('Property updated successfully!');
 
-        paymentPlans: (() => {
-          const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
-            planType: plan.planType,
-            purchaseType: plan.purchaseType,
-            name: plan.name,
-            description: plan.description || undefined,
-            amount: plan.amount ? Number(plan.amount) : undefined,
-            percentage: plan.percentage ? Number(plan.percentage) : undefined,
-            milestone: plan.milestone || undefined,
-            dueDate: plan.dueDate || undefined,
-            displayOrder: plan.displayOrder || 0,
-            isGSTIncluded: plan.isGSTIncluded ?? false,
-            gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
-          }));
-          return processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined;
-        })(),
-        certificates: data.certificates?.length > 0 ? data.certificates : undefined,
-        floorPlans: data.floorPlans?.length > 0 ? data.floorPlans : undefined,
-      };
+        setTimeout(() => {
+          router.push('/properties');
+        }, 1500);
+      } else {
+        // CREATE MODE
+        const payload = {
+          name: data.name,
+          location: data.location,
+          description: data.description || undefined,
+          beds: data.beds || undefined,
+          bathrooms: data.bathrooms || undefined,
+          sqft: data.sqft || undefined,
+          maxOccupancy: data.maxOccupancy || undefined,
+          totalShares: data.totalShares,
+          availableShares: data.availableShares,
+          initialPricePerShare: data.initialPricePerShare,
+          currentPricePerShare: data.currentPricePerShare || undefined,
+          wholeUnitPrice: data.wholeUnitPrice || undefined,
+          targetIRR: data.targetIRR || undefined,
+          targetRentalYield: data.targetRentalYield || undefined,
+          appreciationRate: data.appreciationRate || undefined,
+          possessionDate: convertToISO(data.possessionDate) || undefined,
+          launchDate: convertToISO(data.launchDate) || undefined,
+          maxBookingDays: data.maxBookingDays || undefined,
+          bookingAmount: data.bookingAmount || undefined,
+          bookingAmountGST: data.bookingAmountGST || undefined,
+          isActive: data.isActive,
+          isFeatured: data.isFeatured,
+          amenityNames: data.amenityNames || undefined,
+          documentNames: data.documentNames || undefined,
+          certificateNames: data.certificateNames || undefined,
+          floorPlanNames: data.floorPlanNames || undefined,
+          propertyImages: imageFiles,
+          propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
+          amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
+          documents: documentFiles.length > 0 ? documentFiles : undefined,
+          certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
+          floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
+          pricingDetails: processedPricingDetails.length > 0 ? processedPricingDetails : undefined,
+          shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
+          maintenanceTemplates:
+            processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
+          paymentPlans: processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined,
+          certificates: data.certificates?.length > 0 ? data.certificates : undefined,
+          floorPlans: data.floorPlans?.length > 0 ? data.floorPlans : undefined,
+        };
 
-      createMutation.mutate(payload);
+        const response = await propertyService.createProperty(payload);
+
+        setSubmitSuccess(response.message || 'Property created successfully!');
+        toast.success('Property created successfully!');
+
+        setTimeout(() => {
+          router.push('/properties');
+        }, 1500);
+      }
+    } catch (error: any) {
+      const message =
+        error?.message ||
+        `Failed to ${propertyId ? 'update' : 'create'} property. Please try again.`;
+      setSubmitError(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -779,7 +746,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     getValues,
     control,
     errors: formErrors,
-    isSubmitting: createMutation.isPending || updateMutation.isPending,
+    isSubmitting,
     imageFiles,
     setImageFiles,
     videoFiles,

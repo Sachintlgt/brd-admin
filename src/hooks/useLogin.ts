@@ -1,7 +1,6 @@
-// src/hooks/useLogin.ts
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/app/context/AuthContext';
@@ -11,27 +10,34 @@ type LoginVars = { username: string; password: string };
 export const useLogin = () => {
   const router = useRouter();
   const auth = useAuth();
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<any>(null);
 
-  const mutation = useMutation({
-    mutationFn: async (vars: LoginVars) => {
-      return await authService.login(vars);
-    },
-    onSuccess: (response) => {
-      // Backend has already set the cookies (accessToken and userData)
-      // Just update the user state in context
+  const mutateAsync = async (vars: LoginVars) => {
+    setIsPending(true);
+    setError(null);
+
+    try {
+      const response = await authService.login(vars);
+
+      // Backend has already set the cookies
       const user = response.data.user;
       auth.setUser(user);
-
-      // Optionally refresh user from cookie to ensure sync
       auth.refreshUser();
 
       router.push('/dashboard');
-    },
-    onError: (err: any) => {
-      // Handle global side-effects here if needed
-      console.error('Login error', err);
-    },
-  });
+      return response;
+    } catch (err: any) {
+      setError(err);
+      throw err;
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-  return mutation;
+  return {
+    mutateAsync,
+    isPending,
+    error,
+  };
 };

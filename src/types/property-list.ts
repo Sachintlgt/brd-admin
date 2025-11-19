@@ -70,6 +70,7 @@ export interface PropertyListResponse {
       hasPrevPage: boolean;
     };
   };
+  message?: string;
 }
 
 // Filter State UI (client side)
@@ -87,7 +88,6 @@ export interface PropertyFilterState {
   location?: string;
 }
 
-// Action state for mutations
 export interface PropertyActionState {
   isLoading: boolean;
   error: string | null;

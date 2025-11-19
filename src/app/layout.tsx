@@ -1,9 +1,10 @@
 // app/layout.tsx
 import React, { Suspense } from 'react';
 import './globals.css';
-import Providers from '@/app/providers/providers';
 import FullScreenLoader from '@/components/FullScreenLoader';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext';
+import { PropertiesProvider } from './context/PropertiesContext';
 
 export const metadata = {
   title: 'BRD Associates',
@@ -16,7 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Toaster position="top-right" />
         <Suspense fallback={<FullScreenLoader />}>
-          <Providers>{children}</Providers>
+          <AuthProvider>
+            <PropertiesProvider>{children}</PropertiesProvider>
+          </AuthProvider>
         </Suspense>
       </body>
     </html>

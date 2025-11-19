@@ -147,9 +147,10 @@ export default function PropertyDetail() {
     maintenanceTemplates: property.maintenanceTemplates || [],
   };
 
-  const assignedStaff = property.assignedStaff?.map((staffId: string) =>
-    staff.find((s: any) => s.id === staffId)
-  ).filter(Boolean) || [];
+  const assignedStaff =
+    property.assignedStaff
+      ?.map((staffId: string) => staff.find((s: any) => s.id === staffId))
+      .filter(Boolean) || [];
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: FileText },
@@ -252,8 +253,7 @@ export default function PropertyDetail() {
                   <dd className="mt-1 text-sm text-gray-900">
                     {assignedStaff.length > 0
                       ? assignedStaff.map((s: any) => s.name).join(', ')
-                      : 'Not assigned'
-                    }
+                      : 'Not assigned'}
                   </dd>
                 </div>
                 <div>
@@ -266,7 +266,9 @@ export default function PropertyDetail() {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Square Feet</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.sqft ? uiProperty.sqft.toLocaleString() : 'N/A'}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.sqft ? uiProperty.sqft.toLocaleString() : 'N/A'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Max Occupancy</dt>
@@ -304,19 +306,25 @@ export default function PropertyDetail() {
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Initial Price Per Share</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {uiProperty.initialPricePerShare ? `$${uiProperty.initialPricePerShare.toLocaleString()}` : 'N/A'}
+                    {uiProperty.initialPricePerShare
+                      ? `$${uiProperty.initialPricePerShare.toLocaleString()}`
+                      : 'N/A'}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Current Price Per Share</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {uiProperty.currentPricePerShare ? `$${uiProperty.currentPricePerShare.toLocaleString()}` : 'N/A'}
+                    {uiProperty.currentPricePerShare
+                      ? `$${uiProperty.currentPricePerShare.toLocaleString()}`
+                      : 'N/A'}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Whole Unit Price</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {uiProperty.wholeUnitPrice ? `$${uiProperty.wholeUnitPrice.toLocaleString()}` : 'N/A'}
+                    {uiProperty.wholeUnitPrice
+                      ? `$${uiProperty.wholeUnitPrice.toLocaleString()}`
+                      : 'N/A'}
                   </dd>
                 </div>
                 <div>
@@ -325,11 +333,15 @@ export default function PropertyDetail() {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Target IRR</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.targetIRR ? `${uiProperty.targetIRR}%` : 'N/A'}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.targetIRR ? `${uiProperty.targetIRR}%` : 'N/A'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Target Rental Yield</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.targetRentalYield ? `${uiProperty.targetRentalYield}%` : 'N/A'}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.targetRentalYield ? `${uiProperty.targetRentalYield}%` : 'N/A'}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -341,18 +353,24 @@ export default function PropertyDetail() {
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Booking Amount</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {uiProperty.bookingAmount ? `$${uiProperty.bookingAmount.toLocaleString()}` : 'N/A'}
+                    {uiProperty.bookingAmount
+                      ? `$${uiProperty.bookingAmount.toLocaleString()}`
+                      : 'N/A'}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Booking Amount GST</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {uiProperty.bookingAmountGST ? `$${uiProperty.bookingAmountGST.toLocaleString()}` : 'N/A'}
+                    {uiProperty.bookingAmountGST
+                      ? `$${uiProperty.bookingAmountGST.toLocaleString()}`
+                      : 'N/A'}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Max Booking Days</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.maxBookingDays || 'N/A'}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.maxBookingDays || 'N/A'}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -370,7 +388,9 @@ export default function PropertyDetail() {
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Possession Date</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {uiProperty.possessionDate ? format(new Date(uiProperty.possessionDate), 'PPP') : 'N/A'}
+                    {uiProperty.possessionDate
+                      ? format(new Date(uiProperty.possessionDate), 'PPP')
+                      : 'N/A'}
                   </dd>
                 </div>
                 <div>
@@ -408,9 +428,7 @@ export default function PropertyDetail() {
             {/* Purchased Shares */}
             {uiProperty.shareDetails && uiProperty.shareDetails.length > 0 && (
               <div>
-                <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                   Shares Details
-                </h3>
+                <h3 className="mb-4 text-lg font-semibold text-gray-900">Shares Details</h3>
                 <div className="space-y-3">
                   {uiProperty.shareDetails.map((share: any, index: number) => (
                     <div
@@ -511,7 +529,10 @@ export default function PropertyDetail() {
                 <h3 className="mb-4 text-lg font-semibold text-gray-900">Payment Plans</h3>
                 <div className="space-y-4">
                   {uiProperty.paymentPlans.map((plan: any, i: number) => (
-                    <div key={plan.id || i} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div
+                      key={plan.id || i}
+                      className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h4 className="font-medium text-gray-900">{plan.name}</h4>
@@ -522,9 +543,7 @@ export default function PropertyDetail() {
                             ${plan.amount?.toLocaleString() || 'N/A'}
                           </div>
                           {plan.percentage && (
-                            <div className="text-sm text-gray-600">
-                              {plan.percentage}% of total
-                            </div>
+                            <div className="text-sm text-gray-600">{plan.percentage}% of total</div>
                           )}
                         </div>
                       </div>
@@ -557,9 +576,7 @@ export default function PropertyDetail() {
                               </span>
                             )}
                             {plan.gstPercentage && (
-                              <span className="text-gray-600">
-                                GST: {plan.gstPercentage}%
-                              </span>
+                              <span className="text-gray-600">GST: {plan.gstPercentage}%</span>
                             )}
                           </div>
                         </div>
@@ -638,7 +655,10 @@ export default function PropertyDetail() {
               {uiProperty.certificates.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {uiProperty.certificates.map((cert: any, i: number) => (
-                    <div key={cert.id || i} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div
+                      key={cert.id || i}
+                      className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                    >
                       <div className="aspect-square mb-3 overflow-hidden rounded-lg">
                         <img
                           src={BASE_URL + cert.imageUrl}
@@ -666,7 +686,10 @@ export default function PropertyDetail() {
               {uiProperty.floorPlans.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {uiProperty.floorPlans.map((plan: any, i: number) => (
-                    <div key={plan.id || i} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div
+                      key={plan.id || i}
+                      className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                    >
                       <div className="aspect-square mb-3 overflow-hidden rounded-lg">
                         <img
                           src={BASE_URL + plan.imageUrl}
@@ -741,12 +764,11 @@ export default function PropertyDetail() {
                         <p className="mt-1 text-xs text-gray-500">
                           {tmpl.startDate && !isNaN(new Date(tmpl.startDate).getTime())
                             ? format(new Date(tmpl.startDate), 'PP')
-                            : 'Invalid start date'
-                          } –{' '}
+                            : 'Invalid start date'}{' '}
+                          –{' '}
                           {tmpl.endDate && !isNaN(new Date(tmpl.endDate).getTime())
                             ? format(new Date(tmpl.endDate), 'PP')
-                            : 'Ongoing'
-                          }
+                            : 'Ongoing'}
                         </p>
                       </div>
                       <span
@@ -767,7 +789,6 @@ export default function PropertyDetail() {
             )}
           </div>
         )}
-
 
         {/* Calendar */}
         {activeTab === 'calendar' && (
