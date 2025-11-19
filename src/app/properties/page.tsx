@@ -15,6 +15,8 @@ import {
 } from '../../hooks/usePropertiesList';
 import { useDebouncedFilters } from '../../hooks/useDebouncedFilters';
 import { PropertyFilterState } from '../../types/property-list';
+import { DeleteConfirmationDialog } from '@/components/common/DeleteConfirmationDialog';
+import toast from 'react-hot-toast';
 
 const DEFAULT_FILTERS: PropertyFilterState = {
   searchTerm: '',
@@ -28,7 +30,8 @@ const DEFAULT_FILTERS: PropertyFilterState = {
 
 export default function Properties() {
   const [filters, setFilters] = useState<PropertyFilterState>(DEFAULT_FILTERS);
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<any>(null);
   // Debounce filters to prevent excessive API calls (especially for search)
   // Uses 600ms delay which is appropriate for user input
   const debouncedFilters = useDebouncedFilters(filters, 600);
@@ -126,8 +129,10 @@ export default function Properties() {
 
   // Handle delete
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this property?')) {
-      deletePropertyMutation.mutate(id);
+    const property = properties.find((p: any) => p.id === id);
+    if (property) {
+      setPropertyToDelete(property);
+      setDeleteDialogOpen(true);
     }
   };
 
@@ -164,9 +169,9 @@ export default function Properties() {
           </div>
           <Link
             href="/properties/add"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+            className="inline-flex items-center px-4 py-2 font-medium text-white transition-colors duration-200 bg-blue-600 rounded-lg hover:bg-blue-700"
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <Plus className="w-5 h-5 mr-2" />
             Add Property
           </Link>
         </div>
@@ -205,6 +210,44 @@ export default function Properties() {
           onPageChange={handlePageChange}
         />
       )}
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setPropertyToDelete(null); // clear when closed via cancel/backdrop/esc
+          }
+        }}
+        onConfirm={() => {
+          if (!propertyToDelete) return;
+
+          deletePropertyMutation.mutate(propertyToDelete.id, {
+            onSuccess: () => {
+              setDeleteDialogOpen(false);
+              setPropertyToDelete(null);
+            },
+            onError: (error: any) => {
+              toast.error(
+                error?.response?.data?.message || error?.message || 'Failed to delete property',
+              );
+              // Modal stays open so user can retry
+            },
+          });
+        }}
+        title="Delete Property"
+        description={
+          propertyToDelete
+            ? `Are you sure you want to delete the property "${
+                propertyToDelete.title ||
+                propertyToDelete.address ||
+                propertyToDelete.name ||
+                propertyToDelete.id
+              }"? This action cannot be undone.`
+            : 'Are you sure you want to delete this property? This action cannot be undone.'
+        }
+        isLoading={deletePropertyMutation.isPending}
+      />
     </DashboardLayout>
   );
 }
