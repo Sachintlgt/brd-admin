@@ -66,7 +66,23 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     defaultValues: {
       name: '',
       location: '',
-      googleLocation: {},
+      locationLat: undefined,
+      locationLng: undefined,
+      locationPlaceId: undefined,
+      streetNumber: '',
+      street: '',
+      city: '',
+      state: '',
+      stateCode: '',
+      country: '',
+      countryCode: '',
+      postalCode: '',
+      postalCodeSuffix: '',
+      viewportNortheastLat: undefined,
+      viewportNortheastLng: undefined,
+      viewportSouthwestLat: undefined,
+      viewportSouthwestLng: undefined,
+      zoom: undefined,
       description: '',
       beds: undefined,
       bathrooms: undefined,
@@ -128,6 +144,8 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const errorsJson = JSON.stringify(sanitizeErrors(errors));
 
   const [formErrors, setFormErrors] = useState({});
+
+  console.log('🎯 usePropertyForm - formErrors:', formErrors);
 
   useEffect(() => {
     setFormErrors(sanitizeErrors(errors));
@@ -294,7 +312,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   // Helper function to convert datetime-local to ISO format
-  const convertToISO = (dateString?: string) => {
+  const convertToISO = (dateString?: string | null) => {
     if (!dateString) return undefined;
     try {
       return new Date(dateString).toISOString();
@@ -446,7 +464,23 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           reset({
             name: property.name,
             location: property.location,
-            googleLocation: property.googleLocation,
+            locationLat: property.locationLat,
+            locationLng: property.locationLng,
+            locationPlaceId: property.locationPlaceId,
+            streetNumber: property.streetNumber,
+            street: property.street,
+            city: property.city,
+            state: property.state,
+            stateCode: property.stateCode,
+            country: property.country,
+            countryCode: property.countryCode,
+            postalCode: property.postalCode,
+            postalCodeSuffix: property.postalCodeSuffix,
+            viewportNortheastLat: property.viewportNortheastLat,
+            viewportNortheastLng: property.viewportNortheastLng,
+            viewportSouthwestLat: property.viewportSouthwestLat,
+            viewportSouthwestLng: property.viewportSouthwestLng,
+            zoom: property.zoom,
             description: property.description || '',
             beds: property.beds || undefined,
             bathrooms: property.bathrooms || undefined,
@@ -618,7 +652,23 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           name: data.name,
           location: data.location,
           description: data.description || undefined,
-          googleLocation: data.googleLocation,
+          locationLat: data.locationLat || undefined,
+          locationLng: data.locationLng || undefined,
+          locationPlaceId: data.locationPlaceId || undefined,
+          streetNumber: data.streetNumber || undefined,
+          street: data.street || undefined,
+          city: data.city,
+          state: data.state,
+          stateCode: data.stateCode || undefined,
+          country: data.country,
+          countryCode: data.countryCode || undefined,
+          postalCode: data.postalCode,
+          postalCodeSuffix: data.postalCodeSuffix || undefined,
+          viewportNortheastLat: data.viewportNortheastLat || undefined,
+          viewportNortheastLng: data.viewportNortheastLng || undefined,
+          viewportSouthwestLat: data.viewportSouthwestLat || undefined,
+          viewportSouthwestLng: data.viewportSouthwestLng || undefined,
+          zoom: data.zoom || undefined,
           beds: data.beds || undefined,
           bathrooms: data.bathrooms || undefined,
           sqft: data.sqft || undefined,
@@ -638,10 +688,10 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           bookingAmountGST: data.bookingAmountGST || undefined,
           isActive: data.isActive,
           isFeatured: data.isFeatured,
-          amenityNames: iconFiles.length > 0 ? data.amenityNames : undefined,
-          documentNames: documentFiles.length > 0 ? data.documentNames : undefined,
-          certificateNames: certificateImageFiles.length > 0 ? data.certificateNames : undefined,
-          floorPlanNames: floorPlanImageFiles.length > 0 ? data.floorPlanNames : undefined,
+          amenityNames: iconFiles.length > 0 ? (data.amenityNames || undefined) : undefined,
+          documentNames: documentFiles.length > 0 ? (data.documentNames || undefined) : undefined,
+          certificateNames: certificateImageFiles.length > 0 ? (data.certificateNames || undefined) : undefined,
+          floorPlanNames: floorPlanImageFiles.length > 0 ? (data.floorPlanNames || undefined) : undefined,
           imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
           amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
           documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,
@@ -683,8 +733,24 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         const payload = {
           name: data.name,
           location: data.location,
-          googleLocation: data.googleLocation,
           description: data.description || undefined,
+          locationLat: data.locationLat || undefined,
+          locationLng: data.locationLng || undefined,
+          locationPlaceId: data.locationPlaceId || undefined,
+          streetNumber: data.streetNumber || undefined,
+          street: data.street || undefined,
+          city: data.city,
+          state: data.state,
+          stateCode: data.stateCode || undefined,
+          country: data.country,
+          countryCode: data.countryCode || undefined,
+          postalCode: data.postalCode,
+          postalCodeSuffix: data.postalCodeSuffix || undefined,
+          viewportNortheastLat: data.viewportNortheastLat || undefined,
+          viewportNortheastLng: data.viewportNortheastLng || undefined,
+          viewportSouthwestLat: data.viewportSouthwestLat || undefined,
+          viewportSouthwestLng: data.viewportSouthwestLng || undefined,
+          zoom: data.zoom || undefined,
           beds: data.beds || undefined,
           bathrooms: data.bathrooms || undefined,
           sqft: data.sqft || undefined,

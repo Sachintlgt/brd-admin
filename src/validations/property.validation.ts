@@ -111,23 +111,6 @@ const paymentPlanSchema = z
     }
   });
 
-// Google Location Schema
-const googleLocationSchema = z.object({
-  name: z.string().min(1, 'Location name is required'),
-  formatted_address: z.string().min(1, 'Formatted address is required'),
-  place_id: z.string().min(1, 'Place ID is required'),
-  location: z.object({
-    type: z.literal('Point'),
-    coordinates: z.tuple([z.number(), z.number()]), // [lng, lat]
-  }),
-  viewport: z
-    .object({
-      northeast: z.object({ lat: z.number(), lng: z.number() }),
-      southwest: z.object({ lat: z.number(), lng: z.number() }),
-    })
-    .optional(),
-  zoom: z.number().optional(),
-});
 
 export const propertySchema = z
   .object({
@@ -137,27 +120,47 @@ export const propertySchema = z
       .max(200, { message: 'Property name cannot exceed 200 characters' }),
     location: z
       .string()
-      .min(3, { message: 'Location must be at least 3 characters' })
-      .max(200, { message: 'Location cannot exceed 200 characters' }),
-    googleLocation: googleLocationSchema,
+      .min(1, { message: 'Location is required' })
+      .max(500, { message: 'Location cannot exceed 500 characters' }),
+
+    // Location fields
+    locationLat: z.coerce.number().nullish(),
+    locationLng: z.coerce.number().nullish(),
+    locationPlaceId: z.coerce.number().nullish(),
+    streetNumber: z.string().max(50).nullish(),
+    street: z.string().max(200).nullish(),
+    city: z.string().min(1, { message: 'City is required' }).max(100, { message: 'City cannot exceed 100 characters' }),
+    state: z.string().min(1, { message: 'State is required' }).max(100, { message: 'State cannot exceed 100 characters' }),
+    stateCode: z.string().max(10).nullish(),
+    country: z.string().min(1, { message: 'Country is required' }).max(100, { message: 'Country cannot exceed 100 characters' }),
+    countryCode: z.string().max(2).nullish(),
+    postalCode: z.string().min(1, { message: 'Postal code is required' }).max(20, { message: 'Postal code cannot exceed 20 characters' }),
+    postalCodeSuffix: z.string().max(10).nullish(),
+    viewportNortheastLat: z.coerce.number().nullish(),
+    viewportNortheastLng: z.coerce.number().nullish(),
+    viewportSouthwestLat: z.coerce.number().nullish(),
+    viewportSouthwestLng: z.coerce.number().nullish(),
+    zoom: z.coerce.number().nullish(),
     description: z
       .string()
       .max(2000, { message: 'Description cannot exceed 2000 characters' })
-      .optional(),
+      .nullish(),
 
     // Property Details (Optional)
     beds: z.coerce
       .number()
       .int('Beds must be an integer')
       .min(1, 'Beds must be at least 1')
-      .optional(),
+      .max(50, 'Beds cannot exceed 50')
+      .nullish(),
     bathrooms: z.coerce
       .number()
       .int('Bathrooms must be an integer')
       .min(1, 'Bathrooms must be at least 1')
-      .optional(),
-    sqft: z.coerce.number().positive('Sqft must be a positive number').optional(),
-    maxOccupancy: z.string().max(100, 'Max occupancy must not exceed 100 characters').optional(),
+      .max(50, 'Bathrooms cannot exceed 50')
+      .nullish(),
+    sqft: z.coerce.number().positive('Sqft must be a positive number').nullish(),
+    maxOccupancy: z.string().max(50, 'Max occupancy must not exceed 50 characters').nullish(),
 
     totalShares: z.coerce
       .number()
@@ -182,11 +185,11 @@ export const propertySchema = z
     currentPricePerShare: z.coerce
       .number()
       .positive({ message: 'Current price per share must be positive' })
-      .optional(),
+      .nullish(),
     wholeUnitPrice: z.coerce
       .number()
       .positive({ message: 'Whole unit price must be positive' })
-      .optional(),
+      .nullish(),
 
     // Financial Metrics (Optional)
     targetIRR: z.coerce
@@ -194,18 +197,18 @@ export const propertySchema = z
       .refine((n) => !Number.isNaN(n), { message: 'Target IRR must be a number' })
       .min(0, { message: 'Target IRR cannot be negative' })
       .max(100, { message: 'Target IRR must not exceed 100%' })
-      .optional(),
+      .nullish(),
     targetRentalYield: z
       .string()
       .max(50, 'Target rental yield must not exceed 50 characters')
-      .optional(),
+      .nullish(),
 
     appreciationRate: z.coerce
       .number()
       .refine((n) => !Number.isNaN(n), { message: 'Appreciation rate must be a number' })
       .min(0, { message: 'Appreciation rate must be ≥ 0' })
       .max(100, { message: 'Appreciation rate cannot exceed 100%' })
-      .optional(),
+      .nullish(),
 
     // Dates (Optional)
     possessionDate: z
@@ -213,11 +216,11 @@ export const propertySchema = z
       .refine((val) => !isNaN(Date.parse(val)), {
         message: 'Invalid date format for possession date',
       })
-      .optional(),
+      .nullish(),
     launchDate: z
       .string()
       .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format for launch date' })
-      .optional(),
+      .nullish(),
 
     maxBookingDays: z.coerce
       .number()
@@ -225,25 +228,25 @@ export const propertySchema = z
       .int({ message: 'Max booking days must be an integer' })
       .min(1, { message: 'Max booking days must be at least 1' })
       .max(365, { message: 'Max booking days cannot exceed 365' })
-      .optional(),
+      .nullish(),
 
     // Booking Configuration (Optional)
     bookingAmount: z.coerce
       .number()
-      .positive({ message: 'Booking amount must be positive' })
-      .optional(),
+      .min(0, { message: 'Booking amount cannot be negative' })
+      .nullish(),
     bookingAmountGST: z.coerce
       .number()
       .min(0, { message: 'Booking amount GST cannot be negative' })
-      .optional(),
+      .nullish(),
 
     isActive: z.boolean().default(true),
     isFeatured: z.boolean().default(false),
 
-    amenityNames: z.string().optional(),
-    documentNames: z.string().optional(),
-    certificateNames: z.string().optional(),
-    floorPlanNames: z.string().optional(),
+    amenityNames: z.string().nullish(),
+    documentNames: z.string().nullish(),
+    certificateNames: z.string().nullish(),
+    floorPlanNames: z.string().nullish(),
 
     propertyImages: z
       .array(z.string())

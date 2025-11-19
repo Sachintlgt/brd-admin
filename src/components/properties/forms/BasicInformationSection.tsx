@@ -1,17 +1,20 @@
-import { Controller } from 'react-hook-form';
 import FormInput from '../../ui/propertiesFormInput';
-import FreeLocationPicker from '@/components/common/FreeLocationPicker';
+import LocationSection from './LocationSection';
 
 interface BasicInformationSectionProps {
   register: any;
   errors: any;
   control: any;
+  setValue: any;
+  getValues: any;
 }
 
 export default function BasicInformationSection({
   register,
   errors,
   control,
+  setValue,
+  getValues,
 }: BasicInformationSectionProps) {
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
@@ -23,30 +26,6 @@ export default function BasicInformationSection({
           placeholder="Enter property name"
           inputProps={register('name')}
           error={errors.name}
-        />
-        <FormInput
-          id="location"
-          label="Location *"
-          placeholder="Enter property location"
-          inputProps={register('location')}
-          error={errors.location}
-        />
-      </div>
-
-      <div className="mt-6">
-        <Controller
-          name="googleLocation"
-          control={control}
-          render={({ field }) => (
-            <FreeLocationPicker
-              id="googleLocation"
-              label="Location *"
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.googleLocation}
-              placeholder="Search for property location..."
-            />
-          )}
         />
       </div>
 
@@ -61,6 +40,16 @@ export default function BasicInformationSection({
         {errors.description && (
           <p className="mt-2 text-sm text-red-600">{String(errors.description.message)}</p>
         )}
+      </div>
+
+      <div className="mt-6">
+        <LocationSection
+          register={register}
+          errors={errors}
+          control={control}
+          setValue={setValue}
+          getValues={getValues}
+        />
       </div>
 
       <div className="mt-6">

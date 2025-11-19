@@ -62,6 +62,8 @@ export default function AddProperty() {
           register={formProps.register}
           errors={formProps.errors}
           control={formProps.control}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
         />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
         <CertificatesSection

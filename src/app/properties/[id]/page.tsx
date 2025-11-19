@@ -307,7 +307,7 @@ export default function PropertyDetail() {
                   <dt className="text-sm font-medium text-gray-500">Initial Price Per Share</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {uiProperty.initialPricePerShare
-                      ? `$${uiProperty.initialPricePerShare.toLocaleString()}`
+                      ? `₹${uiProperty.initialPricePerShare.toLocaleString('en-IN')}`
                       : 'N/A'}
                   </dd>
                 </div>
@@ -315,7 +315,7 @@ export default function PropertyDetail() {
                   <dt className="text-sm font-medium text-gray-500">Current Price Per Share</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {uiProperty.currentPricePerShare
-                      ? `$${uiProperty.currentPricePerShare.toLocaleString()}`
+                      ? `₹${uiProperty.currentPricePerShare.toLocaleString('en-IN')}`
                       : 'N/A'}
                   </dd>
                 </div>
@@ -323,7 +323,7 @@ export default function PropertyDetail() {
                   <dt className="text-sm font-medium text-gray-500">Whole Unit Price</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {uiProperty.wholeUnitPrice
-                      ? `$${uiProperty.wholeUnitPrice.toLocaleString()}`
+                      ? `₹${uiProperty.wholeUnitPrice.toLocaleString('en-IN')}`
                       : 'N/A'}
                   </dd>
                 </div>
@@ -354,7 +354,7 @@ export default function PropertyDetail() {
                   <dt className="text-sm font-medium text-gray-500">Booking Amount</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {uiProperty.bookingAmount
-                      ? `$${uiProperty.bookingAmount.toLocaleString()}`
+                      ? `₹${uiProperty.bookingAmount.toLocaleString('en-IN')}`
                       : 'N/A'}
                   </dd>
                 </div>
@@ -362,7 +362,7 @@ export default function PropertyDetail() {
                   <dt className="text-sm font-medium text-gray-500">Booking Amount GST</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {uiProperty.bookingAmountGST
-                      ? `$${uiProperty.bookingAmountGST.toLocaleString()}`
+                      ? `₹${uiProperty.bookingAmountGST.toLocaleString('en-IN')}`
                       : 'N/A'}
                   </dd>
                 </div>
@@ -449,7 +449,7 @@ export default function PropertyDetail() {
                         </div>
                         <div className="text-right ml-4">
                           <div className="text-lg font-semibold text-gray-900">
-                            ${share.amount?.toLocaleString() || 'N/A'}
+                            ₹{share.amount?.toLocaleString('en-IN') || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-600">
                             {share.shareCount} share{share.shareCount !== 1 ? 's' : ''}
@@ -474,7 +474,7 @@ export default function PropertyDetail() {
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-600">One-Time Price</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      ${uiProperty.oneTimePricing.toLocaleString()}
+                      ₹{uiProperty.oneTimePricing.toLocaleString('en-IN')}
                     </p>
                   </div>
                 </div>
@@ -485,7 +485,7 @@ export default function PropertyDetail() {
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-600">Maintenance</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      ${uiProperty.maintenanceCharges.toLocaleString()}/mo
+                      ₹{uiProperty.maintenanceCharges.toLocaleString('en-IN')}/mo
                     </p>
                   </div>
                 </div>
@@ -516,7 +516,7 @@ export default function PropertyDetail() {
                         {phase.phaseName || phase.label}
                       </span>
                       <span className="text-lg font-semibold text-gray-900">
-                        ${phase.price.toLocaleString()}
+                        ₹{phase.price.toLocaleString('en-IN')}
                       </span>
                     </div>
                   ))}
@@ -540,7 +540,7 @@ export default function PropertyDetail() {
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-semibold text-gray-900">
-                            ${plan.amount?.toLocaleString() || 'N/A'}
+                            ₹{plan.amount?.toLocaleString('en-IN') || 'N/A'}
                           </div>
                           {plan.percentage && (
                             <div className="text-sm text-gray-600">{plan.percentage}% of total</div>
@@ -758,7 +758,7 @@ export default function PropertyDetail() {
                       <div>
                         <p className="font-medium text-gray-900">{tmpl.description}</p>
                         <p className="mt-1 text-sm text-gray-600">
-                          {tmpl.chargeType} • ${tmpl.amount.toLocaleString()} • Due Day:{' '}
+                          {tmpl.chargeType} • ₹{tmpl.amount.toLocaleString('en-IN')} • Due Day:{' '}
                           {tmpl.dueDay}
                         </p>
                         <p className="mt-1 text-xs text-gray-500">

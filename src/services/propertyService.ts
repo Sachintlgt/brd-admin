@@ -10,8 +10,24 @@ export interface PropertyResponse {
 export interface CreatePropertyPayload {
   name: string;
   location: string;
-  googleLocation: any;
   description?: string;
+  locationLat?: number;
+  locationLng?: number;
+  locationPlaceId?: number;
+  streetNumber?: string;
+  street?: string;
+  city: string;
+  state: string;
+  stateCode?: string;
+  country: string;
+  countryCode?: string;
+  postalCode: string;
+  postalCodeSuffix?: string;
+  viewportNortheastLat?: number;
+  viewportNortheastLng?: number;
+  viewportSouthwestLat?: number;
+  viewportSouthwestLng?: number;
+  zoom?: number;
   beds?: number;
   bathrooms?: number;
   sqft?: number;
@@ -49,9 +65,25 @@ export interface CreatePropertyPayload {
 
 export interface UpdatePropertyPayload {
   name?: string;
-  googleLocation?: any;
   location?: string;
   description?: string;
+  locationLat?: number;
+  locationLng?: number;
+  locationPlaceId?: number;
+  streetNumber?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  stateCode?: string;
+  country?: string;
+  countryCode?: string;
+  postalCode?: string;
+  postalCodeSuffix?: string;
+  viewportNortheastLat?: number;
+  viewportNortheastLng?: number;
+  viewportSouthwestLat?: number;
+  viewportSouthwestLng?: number;
+  zoom?: number;
   beds?: number;
   bathrooms?: number;
   sqft?: number;
@@ -106,7 +138,25 @@ export const propertyService = {
       formData.append('name', payload.name);
       formData.append('location', payload.location);
       if (payload.description) formData.append('description', payload.description);
-      if (payload.googleLocation) formData.append('googleLocation', payload.googleLocation);
+
+      // Location fields
+      if (payload.locationLat !== undefined) formData.append('locationLat', String(payload.locationLat));
+      if (payload.locationLng !== undefined) formData.append('locationLng', String(payload.locationLng));
+      if (payload.locationPlaceId !== undefined) formData.append('locationPlaceId', String(payload.locationPlaceId));
+      if (payload.streetNumber) formData.append('streetNumber', payload.streetNumber);
+      if (payload.street) formData.append('street', payload.street);
+      if (payload.city) formData.append('city', payload.city);
+      if (payload.state) formData.append('state', payload.state);
+      if (payload.stateCode) formData.append('stateCode', payload.stateCode);
+      if (payload.country) formData.append('country', payload.country);
+      if (payload.countryCode) formData.append('countryCode', payload.countryCode);
+      if (payload.postalCode) formData.append('postalCode', payload.postalCode);
+      if (payload.postalCodeSuffix) formData.append('postalCodeSuffix', payload.postalCodeSuffix);
+      if (payload.viewportNortheastLat !== undefined) formData.append('viewportNortheastLat', String(payload.viewportNortheastLat));
+      if (payload.viewportNortheastLng !== undefined) formData.append('viewportNortheastLng', String(payload.viewportNortheastLng));
+      if (payload.viewportSouthwestLat !== undefined) formData.append('viewportSouthwestLat', String(payload.viewportSouthwestLat));
+      if (payload.viewportSouthwestLng !== undefined) formData.append('viewportSouthwestLng', String(payload.viewportSouthwestLng));
+      if (payload.zoom !== undefined) formData.append('zoom', String(payload.zoom));
 
       // Property Details
       if (payload.beds !== undefined) formData.append('beds', String(payload.beds));
@@ -250,6 +300,25 @@ export const propertyService = {
       if (payload.name) formData.append('name', payload.name);
       if (payload.location) formData.append('location', payload.location);
       if (payload.description !== undefined) formData.append('description', payload.description);
+
+      // Location fields
+      if (payload.locationLat !== undefined) formData.append('locationLat', String(payload.locationLat));
+      if (payload.locationLng !== undefined) formData.append('locationLng', String(payload.locationLng));
+      if (payload.locationPlaceId !== undefined) formData.append('locationPlaceId', String(payload.locationPlaceId));
+      if (payload.streetNumber) formData.append('streetNumber', payload.streetNumber);
+      if (payload.street) formData.append('street', payload.street);
+      if (payload.city) formData.append('city', payload.city);
+      if (payload.state) formData.append('state', payload.state);
+      if (payload.stateCode) formData.append('stateCode', payload.stateCode);
+      if (payload.country) formData.append('country', payload.country);
+      if (payload.countryCode) formData.append('countryCode', payload.countryCode);
+      if (payload.postalCode) formData.append('postalCode', payload.postalCode);
+      if (payload.postalCodeSuffix) formData.append('postalCodeSuffix', payload.postalCodeSuffix);
+      if (payload.viewportNortheastLat !== undefined) formData.append('viewportNortheastLat', String(payload.viewportNortheastLat));
+      if (payload.viewportNortheastLng !== undefined) formData.append('viewportNortheastLng', String(payload.viewportNortheastLng));
+      if (payload.viewportSouthwestLat !== undefined) formData.append('viewportSouthwestLat', String(payload.viewportSouthwestLat));
+      if (payload.viewportSouthwestLng !== undefined) formData.append('viewportSouthwestLng', String(payload.viewportSouthwestLng));
+      if (payload.zoom !== undefined) formData.append('zoom', String(payload.zoom));
 
       // Numeric fields
       if (payload.beds !== undefined) formData.append('beds', String(payload.beds));

@@ -100,7 +100,7 @@ export default function FreeLocationPicker({
     const locationData: FreeLocationValue = {
       name: item.display_name.split(',')[0].trim(),
       formatted_address: item.display_name,
-      place_id: item.place_id || item.osm_id || item.lat + item.lon,
+      place_id: item.place_id || item.osm_id || `${item.lat}${item.lon}`,
       location: {
         type: 'Point',
         coordinates: [parseFloat(item.lon), parseFloat(item.lat)],
