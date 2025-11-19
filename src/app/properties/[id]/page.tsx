@@ -16,7 +16,13 @@ import {
   Users,
   TrendingUp,
   Clock,
-  History,
+  Home,
+  Bath,
+  Square,
+  User,
+  Target,
+  Percent,
+  Receipt,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { propertyService } from '@/services/propertyService';
@@ -95,17 +101,37 @@ export default function PropertyDetail() {
     description: property.description || 'No description provided',
     isActive: property.isActive,
     isFeatured: property.isFeatured,
+    // Property specs
+    beds: property.beds,
+    bathrooms: property.bathrooms,
+    sqft: property.sqft,
+    maxOccupancy: property.maxOccupancy,
+    // Pricing info
     totalShares: property.totalShares,
     availableShares: property.availableShares,
     soldShares: property.soldShares,
     occupancyRate: property.occupancyRate,
-    pricePerShare: property.pricePerShare,
+    initialPricePerShare: property.initialPricePerShare,
+    currentPricePerShare: property.currentPricePerShare,
+    wholeUnitPrice: property.wholeUnitPrice,
     appreciationRate: property.appreciationRate,
+    targetIRR: property.targetIRR,
+    targetRentalYield: property.targetRentalYield,
+    // Dates
+    possessionDate: property.possessionDate,
+    launchDate: property.launchDate,
+    createdAt: property.createdAt,
+    updatedAt: property.updatedAt,
+    // Booking
     maxBookingDays: property.maxBookingDays,
+    bookingAmount: property.bookingAmount,
+    bookingAmountGST: property.bookingAmountGST,
+    // Other data
     oneTimePricing: property.pricings?.find((p: any) => p.type === 'ONE_TIME')?.price || 0,
     maintenanceCharges: property.maintenanceTemplates?.find((t: any) => t.isActive)?.amount || 0,
     appreciationPrice: property.appreciationRate,
     phaseWisePricing: property.pricings?.filter((p: any) => p.phaseName) || [],
+    paymentPlans: property.paymentPlans || [],
     photos:
       property.images?.filter((i: any) => i.type === 'image').map((i: any) => BASE_URL + i.url) ||
       [],
@@ -113,17 +139,17 @@ export default function PropertyDetail() {
       property.images?.filter((i: any) => i.type === 'video').map((i: any) => BASE_URL + i.url) ||
       [],
     legalDocuments: property.documents || [],
+    certificates: property.certificates || [],
+    floorPlans: property.floorPlans || [],
+    highlights: property.highlights || [],
     amenities: property.amenities?.map((a: any) => a.name) || [],
-    purchasedSharesDetails:
-      property.shareDetails
-        ?.map((s: any) => `${s.title}: ${s.shareCount} shares @ $${s.amount}`)
-        .join(', ') || null,
+    shareDetails: property.shareDetails || [],
     maintenanceTemplates: property.maintenanceTemplates || [],
-    priceHistory: property.priceHistory || [],
-    maintenanceHistory: property.maintenanceHistory || [],
   };
 
-  const assignedStaff = staff.find((s: any) => s.id === property.assignedStaff);
+  const assignedStaff = property.assignedStaff?.map((staffId: string) =>
+    staff.find((s: any) => s.id === staffId)
+  ).filter(Boolean) || [];
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: FileText },
@@ -131,7 +157,6 @@ export default function PropertyDetail() {
     { id: 'media', name: 'Media', icon: ImageIcon },
     { id: 'documents', name: 'Documents', icon: File },
     { id: 'maintenance', name: 'Maintenance', icon: Clock },
-    { id: 'history', name: 'History', icon: History },
     { id: 'calendar', name: 'Calendar', icon: Calendar },
   ];
 
@@ -209,7 +234,7 @@ export default function PropertyDetail() {
             {/* Basic Info */}
             <div>
               <h3 className="mb-4 text-lg font-semibold text-gray-900">Property Information</h3>
-              <dl className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <dl className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Name</dt>
                   <dd className="mt-1 text-sm text-gray-900">{uiProperty.name}</dd>
@@ -225,8 +250,27 @@ export default function PropertyDetail() {
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Assigned Staff</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {assignedStaff?.name || 'Not assigned'}
+                    {assignedStaff.length > 0
+                      ? assignedStaff.map((s: any) => s.name).join(', ')
+                      : 'Not assigned'
+                    }
                   </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Beds</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.beds || 'N/A'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Bathrooms</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.bathrooms || 'N/A'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Square Feet</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.sqft ? uiProperty.sqft.toLocaleString() : 'N/A'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Max Occupancy</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.maxOccupancy || 'N/A'}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Total Shares</dt>
@@ -253,6 +297,97 @@ export default function PropertyDetail() {
               </dl>
             </div>
 
+            {/* Financial Information */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Financial Information</h3>
+              <dl className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Initial Price Per Share</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.initialPricePerShare ? `$${uiProperty.initialPricePerShare.toLocaleString()}` : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Current Price Per Share</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.currentPricePerShare ? `$${uiProperty.currentPricePerShare.toLocaleString()}` : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Whole Unit Price</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.wholeUnitPrice ? `$${uiProperty.wholeUnitPrice.toLocaleString()}` : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Appreciation Rate</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.appreciationRate}%</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Target IRR</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.targetIRR ? `${uiProperty.targetIRR}%` : 'N/A'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Target Rental Yield</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.targetRentalYield ? `${uiProperty.targetRentalYield}%` : 'N/A'}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Booking Information */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Booking Information</h3>
+              <dl className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Booking Amount</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.bookingAmount ? `$${uiProperty.bookingAmount.toLocaleString()}` : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Booking Amount GST</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.bookingAmountGST ? `$${uiProperty.bookingAmountGST.toLocaleString()}` : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Max Booking Days</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{uiProperty.maxBookingDays || 'N/A'}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Important Dates */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Important Dates</h3>
+              <dl className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Launch Date</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.launchDate ? format(new Date(uiProperty.launchDate), 'PPP') : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Possession Date</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.possessionDate ? format(new Date(uiProperty.possessionDate), 'PPP') : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Created At</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.createdAt ? format(new Date(uiProperty.createdAt), 'PPP') : 'N/A'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Updated At</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {uiProperty.updatedAt ? format(new Date(uiProperty.updatedAt), 'PPP') : 'N/A'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
             {/* Amenities */}
             {uiProperty.amenities.length > 0 && (
               <div>
@@ -271,12 +406,41 @@ export default function PropertyDetail() {
             )}
 
             {/* Purchased Shares */}
-            {uiProperty.purchasedSharesDetails && (
+            {uiProperty.shareDetails && uiProperty.shareDetails.length > 0 && (
               <div>
                 <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                  Purchased Shares Details
+                   Shares Details
                 </h3>
-                <p className="text-sm text-gray-700">{uiProperty.purchasedSharesDetails}</p>
+                <div className="space-y-3">
+                  {uiProperty.shareDetails.map((share: any, index: number) => (
+                    <div
+                      key={share.id || index}
+                      className="p-4 border border-gray-200 rounded-lg bg-linear-to-r from-blue-50 to-indigo-50"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 mb-1">{share.title}</h4>
+                          {share.description && (
+                            <p className="text-sm text-gray-600 mb-2">{share.description}</p>
+                          )}
+                          {share.benefits && (
+                            <p className="text-sm text-gray-500 mb-2">
+                              <span className="font-medium">Benefits:</span> {share.benefits}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="text-lg font-semibold text-gray-900">
+                            ${share.amount?.toLocaleString() || 'N/A'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {share.shareCount} share{share.shareCount !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -336,6 +500,70 @@ export default function PropertyDetail() {
                       <span className="text-lg font-semibold text-gray-900">
                         ${phase.price.toLocaleString()}
                       </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {uiProperty.paymentPlans.length > 0 && (
+              <div>
+                <h3 className="mb-4 text-lg font-semibold text-gray-900">Payment Plans</h3>
+                <div className="space-y-4">
+                  {uiProperty.paymentPlans.map((plan: any, i: number) => (
+                    <div key={plan.id || i} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{plan.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{plan.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-gray-900">
+                            ${plan.amount?.toLocaleString() || 'N/A'}
+                          </div>
+                          {plan.percentage && (
+                            <div className="text-sm text-gray-600">
+                              {plan.percentage}% of total
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-500">Type:</span>
+                          <div className="text-gray-900">{plan.planType}</div>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-500">Purchase Type:</span>
+                          <div className="text-gray-900">{plan.purchaseType}</div>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-500">Milestone:</span>
+                          <div className="text-gray-900">{plan.milestone}</div>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-500">Due Date:</span>
+                          <div className="text-gray-900">
+                            {plan.dueDate ? format(new Date(plan.dueDate), 'PP') : 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                      {(plan.isGSTIncluded || plan.gstPercentage) && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex items-center space-x-4 text-sm">
+                            {plan.isGSTIncluded && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                GST Included
+                              </span>
+                            )}
+                            {plan.gstPercentage && (
+                              <span className="text-gray-600">
+                                GST: {plan.gstPercentage}%
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -401,6 +629,62 @@ export default function PropertyDetail() {
                 <p className="text-gray-500">No videos uploaded</p>
               )}
             </div>
+
+            <div>
+              <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                <File className="w-5 h-5 mr-2" />
+                Certificates ({uiProperty.certificates.length})
+              </h3>
+              {uiProperty.certificates.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {uiProperty.certificates.map((cert: any, i: number) => (
+                    <div key={cert.id || i} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="aspect-square mb-3 overflow-hidden rounded-lg">
+                        <img
+                          src={BASE_URL + cert.imageUrl}
+                          alt={cert.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <h4 className="font-medium text-gray-900 mb-1">{cert.name}</h4>
+                      {cert.description && (
+                        <p className="text-sm text-gray-600">{cert.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No certificates uploaded</p>
+              )}
+            </div>
+
+            <div>
+              <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                <Home className="w-5 h-5 mr-2" />
+                Floor Plans ({uiProperty.floorPlans.length})
+              </h3>
+              {uiProperty.floorPlans.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {uiProperty.floorPlans.map((plan: any, i: number) => (
+                    <div key={plan.id || i} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="aspect-square mb-3 overflow-hidden rounded-lg">
+                        <img
+                          src={BASE_URL + plan.imageUrl}
+                          alt={plan.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <h4 className="font-medium text-gray-900 mb-1">{plan.name}</h4>
+                      {plan.description && (
+                        <p className="text-sm text-gray-600">{plan.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No floor plans uploaded</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -455,8 +739,14 @@ export default function PropertyDetail() {
                           {tmpl.dueDay}
                         </p>
                         <p className="mt-1 text-xs text-gray-500">
-                          {format(new Date(tmpl.startDate), 'PP')} –{' '}
-                          {tmpl.endDate ? format(new Date(tmpl.endDate), 'PP') : 'Ongoing'}
+                          {tmpl.startDate && !isNaN(new Date(tmpl.startDate).getTime())
+                            ? format(new Date(tmpl.startDate), 'PP')
+                            : 'Invalid start date'
+                          } –{' '}
+                          {tmpl.endDate && !isNaN(new Date(tmpl.endDate).getTime())
+                            ? format(new Date(tmpl.endDate), 'PP')
+                            : 'Ongoing'
+                          }
                         </p>
                       </div>
                       <span
@@ -478,56 +768,6 @@ export default function PropertyDetail() {
           </div>
         )}
 
-        {/* History */}
-        {activeTab === 'history' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="mb-4 text-lg font-semibold text-gray-900">Price History</h3>
-              {uiProperty.priceHistory.length > 0 ? (
-                <div className="space-y-3">
-                  {uiProperty.priceHistory.map((h: any) => (
-                    <div key={h.id} className="p-4 text-sm border border-gray-200 rounded-lg">
-                      <p className="font-medium text-gray-900">{h.changeReason}</p>
-                      <p className="text-gray-600">
-                        {h.previousPrice !== null && `Price: $${h.previousPrice} → $${h.newPrice}`}
-                        {h.previousAppreciation !== null &&
-                          ` | Appreciation: ${h.previousAppreciation}% → ${h.newAppreciation}%`}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {format(new Date(h.changedAt), 'PPp')}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No price history</p>
-              )}
-            </div>
-
-            <div>
-              <h3 className="mb-4 text-lg font-semibold text-gray-900">Maintenance History</h3>
-              {uiProperty.maintenanceHistory.length > 0 ? (
-                <div className="space-y-3">
-                  {uiProperty.maintenanceHistory.map((h: any) => (
-                    <div key={h.id} className="p-4 text-sm border border-gray-200 rounded-lg">
-                      <p className="font-medium text-gray-900">{h.changeReason}</p>
-                      <p className="text-gray-600">
-                        {h.previousAmount !== null
-                          ? `Amount: $${h.previousAmount} → $${h.newAmount}`
-                          : `New: $${h.newAmount} (${h.newChargeType})`}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {format(new Date(h.changedAt), 'PPp')}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No maintenance history</p>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Calendar */}
         {activeTab === 'calendar' && (

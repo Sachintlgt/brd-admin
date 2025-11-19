@@ -25,7 +25,7 @@ export default function PropertyActions({
   return (
     <div className="flex items-center space-x-2">
       {/* Toggle Active Button */}
-      <button
+      {/* <button
         onClick={onToggleActive}
         disabled={isLoading}
         className={`p-2 rounded-lg transition-colors duration-200 ${
@@ -34,10 +34,10 @@ export default function PropertyActions({
         title={isActive ? 'Deactivate' : 'Activate'}
       >
         <Power className="h-5 w-5" />
-      </button>
+      </button> */}
 
       {/* Toggle Featured Button */}
-      <button
+      {/* <button
         onClick={onToggleFeatured}
         disabled={isLoading}
         className={`p-2 rounded-lg transition-colors duration-200 ${
@@ -46,7 +46,7 @@ export default function PropertyActions({
         title={isFeatured ? 'Remove from featured' : 'Mark as featured'}
       >
         <Star className="h-5 w-5" />
-      </button>
+      </button> */}
 
       {/* View Button */}
       <Link
