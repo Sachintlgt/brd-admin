@@ -51,7 +51,6 @@ export const mapFormToProperty = (values: PropertyFormValues) => {
     pricingDetails: values.pricingDetails,
     shareDetails: values.shareDetails,
     maintenanceTemplates: values.maintenanceTemplates,
-    highlights: values.highlights,
     certificates: values.certificates,
     floorPlans: values.floorPlans,
     paymentPlans: values.paymentPlans,

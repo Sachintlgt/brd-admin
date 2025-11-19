@@ -30,7 +30,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [certificateIdsToDelete, setCertificateIdsToDelete] = useState<string[]>([]);
   const [floorPlanIdsToDelete, setFloorPlanIdsToDelete] = useState<string[]>([]);
   const [paymentPlanIdsToDelete, setPaymentPlanIdsToDelete] = useState<string[]>([]);
-  const [highlightIdsToDelete, setHighlightIdsToDelete] = useState<string[]>([]);
 
   // File states
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -49,7 +48,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [existingPricingDetails, setExistingPricingDetails] = useState<any[]>([]);
   const [existingShareDetails, setExistingShareDetails] = useState<any[]>([]);
   const [existingMaintenanceTemplates, setExistingMaintenanceTemplates] = useState<any[]>([]);
-  const [existingHighlights, setExistingHighlights] = useState<any[]>([]);
   const [existingPaymentPlans, setExistingPaymentPlans] = useState<any[]>([]);
 
   const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
@@ -108,7 +106,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       pricingDetails: [],
       shareDetails: [],
       maintenanceTemplates: [],
-      highlights: [],
       certificates: [],
       floorPlans: [],
       paymentPlans: [],
@@ -122,9 +119,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         {
           type: err.type,
           message: err.message,
-          ref: err.ref?.name
-        }
-      ])
+          ref: err.ref?.name,
+        },
+      ]),
     );
   };
 
@@ -136,7 +133,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setFormErrors(sanitizeErrors(errors));
   }, [errorsJson]);
 
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {
     forceUpdate();
@@ -149,7 +146,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...imageFiles, ...toAdd];
     setImageFiles(next);
-    setValue('propertyImages', [...(getValues('propertyImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue(
+      'propertyImages',
+      [...(getValues('propertyImages') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('imageFiles', next, { shouldValidate: true });
   };
 
@@ -159,10 +160,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...videoFiles, ...toAdd];
     setVideoFiles(next);
-    setValue('propertyVideos', [
-      ...(getValues('propertyVideos') || []),
-      ...toAdd.map((f) => f.name),
-    ], { shouldValidate: true });
+    setValue(
+      'propertyVideos',
+      [...(getValues('propertyVideos') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('videoFiles', next, { shouldValidate: true });
   };
 
@@ -172,7 +174,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...documentFiles, ...toAdd];
     setDocumentFiles(next);
-    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('documents', [...(getValues('documents') || []), ...toAdd.map((f) => f.name)], {
+      shouldValidate: true,
+    });
     setValue('documentFiles', next, { shouldValidate: true });
   };
 
@@ -182,7 +186,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...iconFiles, ...toAdd];
     setIconFiles(next);
-    setValue('amenityIcons', [...(getValues('amenityIcons') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue('amenityIcons', [...(getValues('amenityIcons') || []), ...toAdd.map((f) => f.name)], {
+      shouldValidate: true,
+    });
     setValue('iconFiles', next, { shouldValidate: true });
   };
 
@@ -192,7 +198,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...certificateImageFiles, ...toAdd];
     setCertificateImageFiles(next);
-    setValue('certificateImages', [...(getValues('certificateImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue(
+      'certificateImages',
+      [...(getValues('certificateImages') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('certificateImageFiles', next, { shouldValidate: true });
   };
 
@@ -202,7 +212,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     if (toAdd.length === 0) return;
     const next = [...floorPlanImageFiles, ...toAdd];
     setFloorPlanImageFiles(next);
-    setValue('floorPlanImages', [...(getValues('floorPlanImages') || []), ...toAdd.map((f) => f.name)], { shouldValidate: true });
+    setValue(
+      'floorPlanImages',
+      [...(getValues('floorPlanImages') || []), ...toAdd.map((f) => f.name)],
+      { shouldValidate: true },
+    );
     setValue('floorPlanImageFiles', next, { shouldValidate: true });
   };
 
@@ -399,19 +413,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     }, 0);
   };
 
-  const removeExistingHighlight = (id: string) => {
-    // Defer state updates to avoid calling setState during render
-    setTimeout(() => {
-      setHighlightIdsToDelete((prev) => [...prev, id]);
-      const currentHighlights = getValues('highlights') || [];
-      setValue(
-        'highlights',
-        currentHighlights.filter((h: any) => h.id !== id),
-      );
-      setExistingHighlights((prev) => prev.filter((highlight) => highlight.id !== id));
-    }, 0);
-  };
-
   // Mutations for create and update
   const createMutation = useMutation({
     mutationFn: async (payload: any) => {
@@ -425,8 +426,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       }, 1500);
     },
     onError: (error: any) => {
-      const message =
-        error?.message || 'Failed to create property. Please try again.';
+      const message = error?.message || 'Failed to create property. Please try again.';
       setSubmitError(message);
       toast.error(message);
     },
@@ -444,8 +444,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       }, 1500);
     },
     onError: (error: any) => {
-      const message =
-        error?.message || 'Failed to update property. Please try again.';
+      const message = error?.message || 'Failed to update property. Please try again.';
       setSubmitError(message);
       toast.error(message);
     },
@@ -461,13 +460,14 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           const property = response.data;
           setInitialData(property);
 
-
           // Prepare form array data
-          const pricings = (property.pricings || property.pricingDetails || []).map((pricing: any) => ({
-            ...pricing,
-            effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
-            effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
-          }));
+          const pricings = (property.pricings || property.pricingDetails || []).map(
+            (pricing: any) => ({
+              ...pricing,
+              effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
+              effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
+            }),
+          );
 
           const shares = property.shareDetails || [];
 
@@ -477,7 +477,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             endDate: convertToDateTimeLocal(template.endDate),
           }));
 
-          const highlights = property.highlights || [];
           const paymentPlans = property.paymentPlans || [];
 
           // Set basic fields and form arrays together
@@ -523,7 +522,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             pricingDetails: pricings,
             shareDetails: shares,
             maintenanceTemplates: templates,
-            highlights: highlights,
             certificates: [],
             floorPlans: [],
             paymentPlans: paymentPlans,
@@ -535,16 +533,15 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           setExistingImages(images);
           setExistingVideos(videos);
           setExistingDocuments(property.documents || []);
-          
+
           setExistingAmenities(property.amenities || []);
           setExistingCertificates(property.certificates || []);
           setExistingFloorPlans(property.floorPlans || []);
-          
+
           // Set existing data for state management (for deletion tracking)
           setExistingPricingDetails(pricings);
           setExistingShareDetails(shares);
           setExistingMaintenanceTemplates(templates);
-          setExistingHighlights(highlights);
           setExistingPaymentPlans(paymentPlans);
 
           // Trigger currency input re-render by triggering blur event
@@ -581,11 +578,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     }));
 
     // Find deleted pricing details (existing ones not in the form)
-    const currentPricingIds = processedPricingDetails.filter(p => p.id).map(p => p.id);
+    const currentPricingIds = processedPricingDetails.filter((p) => p.id).map((p) => p.id);
     const deletedPricingIds = existingPricingDetails
-      .filter(p => !currentPricingIds.includes(p.id))
-      .map(p => p.id);
-    deletedPricingIds.forEach(id => setPricingIdsToDelete(prev => [...prev, id]));
+      .filter((p) => !currentPricingIds.includes(p.id))
+      .map((p) => p.id);
+    deletedPricingIds.forEach((id) => setPricingIdsToDelete((prev) => [...prev, id]));
 
     // Process share details - all items come from form now (existing + new)
     const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
@@ -597,11 +594,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     }));
 
     // Find deleted share details (existing ones not in the form)
-    const currentShareIds = processedShareDetails.filter(s => s.id).map(s => s.id);
+    const currentShareIds = processedShareDetails.filter((s) => s.id).map((s) => s.id);
     const deletedShareIds = existingShareDetails
-      .filter(s => !currentShareIds.includes(s.id))
-      .map(s => s.id);
-    deletedShareIds.forEach(id => setShareDetailIdsToDelete(prev => [...prev, id]));
+      .filter((s) => !currentShareIds.includes(s.id))
+      .map((s) => s.id);
+    deletedShareIds.forEach((id) => setShareDetailIdsToDelete((prev) => [...prev, id]));
 
     // Process maintenance templates - all items come from form now (existing + new)
     const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
@@ -618,11 +615,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     );
 
     // Find deleted maintenance templates (existing ones not in the form)
-    const currentTemplateIds = processedMaintenanceTemplates.filter(t => t.id).map(t => t.id);
+    const currentTemplateIds = processedMaintenanceTemplates.filter((t) => t.id).map((t) => t.id);
     const deletedTemplateIds = existingMaintenanceTemplates
-      .filter(t => !currentTemplateIds.includes(t.id))
-      .map(t => t.id);
-    deletedTemplateIds.forEach(id => setMaintenanceTemplateIdsToDelete(prev => [...prev, id]));
+      .filter((t) => !currentTemplateIds.includes(t.id))
+      .map((t) => t.id);
+    deletedTemplateIds.forEach((id) => setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]));
 
     if (propertyId) {
       // UPDATE MODE - TARGETED DEBUG LOGS
@@ -663,10 +660,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           shareDetailIdsToDelete.length > 0 ? shareDetailIdsToDelete : undefined,
         maintenanceTemplateIdsToDelete:
           maintenanceTemplateIdsToDelete.length > 0 ? maintenanceTemplateIdsToDelete : undefined,
-        certificateIdsToDelete: certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
+        certificateIdsToDelete:
+          certificateIdsToDelete.length > 0 ? certificateIdsToDelete : undefined,
         floorPlanIdsToDelete: floorPlanIdsToDelete.length > 0 ? floorPlanIdsToDelete : undefined,
-        paymentPlanIdsToDelete: paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
-        highlightIdsToDelete: highlightIdsToDelete.length > 0 ? highlightIdsToDelete : undefined,
+        paymentPlanIdsToDelete:
+          paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
         propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
         propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
         amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
@@ -677,25 +675,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
-        highlights: (() => {
-          // Process highlights - all items come from form now (existing + new)
-          const processedHighlights = (data.highlights || []).map((highlight: any) => ({
-            id: highlight.id, // Include ID if exists
-            key: highlight.key,
-            label: highlight.label,
-            value: highlight.value,
-            displayOrder: highlight.displayOrder || 0,
-          }));
 
-          // Find deleted highlights (existing ones not in the form)
-          const currentHighlightIds = processedHighlights.filter(h => h.id).map(h => h.id);
-          const deletedHighlightIds = existingHighlights
-            .filter(h => !currentHighlightIds.includes(h.id))
-            .map(h => h.id);
-          deletedHighlightIds.forEach(id => setHighlightIdsToDelete(prev => [...prev, id]));
-
-          return processedHighlights.length > 0 ? processedHighlights : undefined;
-        })(),
         paymentPlans: (() => {
           // Process payment plans - all items come from form now (existing + new)
           const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
@@ -714,11 +694,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           }));
 
           // Find deleted payment plans (existing ones not in the form)
-          const currentPaymentPlanIds = processedPaymentPlans.filter(p => p.id).map(p => p.id);
+          const currentPaymentPlanIds = processedPaymentPlans.filter((p) => p.id).map((p) => p.id);
           const deletedPaymentPlanIds = existingPaymentPlans
-            .filter(p => !currentPaymentPlanIds.includes(p.id))
-            .map(p => p.id);
-          deletedPaymentPlanIds.forEach(id => setPaymentPlanIdsToDelete(prev => [...prev, id]));
+            .filter((p) => !currentPaymentPlanIds.includes(p.id))
+            .map((p) => p.id);
+          deletedPaymentPlanIds.forEach((id) => setPaymentPlanIdsToDelete((prev) => [...prev, id]));
 
           return processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined;
         })(),
@@ -767,15 +747,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         shareDetails: processedShareDetails.length > 0 ? processedShareDetails : undefined,
         maintenanceTemplates:
           processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
-        highlights: (() => {
-          const processedHighlights = (data.highlights || []).map((highlight: any) => ({
-            key: highlight.key,
-            label: highlight.label,
-            value: highlight.value,
-            displayOrder: highlight.displayOrder || 0,
-          }));
-          return processedHighlights.length > 0 ? processedHighlights : undefined;
-        })(),
+
         paymentPlans: (() => {
           const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
             planType: plan.planType,
@@ -842,7 +814,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     existingPricingDetails,
     existingShareDetails,
     existingMaintenanceTemplates,
-    existingHighlights,
     existingPaymentPlans,
     removeExistingImage,
     removeExistingVideo,
@@ -854,7 +825,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     removeExistingShareDetail,
     removeExistingMaintenanceTemplate,
     removeExistingPaymentPlan,
-    removeExistingHighlight,
     isEditMode: !!propertyId,
   };
 };

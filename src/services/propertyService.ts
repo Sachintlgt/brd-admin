@@ -41,7 +41,6 @@ export interface CreatePropertyPayload {
   pricingDetails?: any[];
   shareDetails?: any[];
   maintenanceTemplates?: any[];
-  highlights?: any[];
   certificates?: any[];
   floorPlans?: any[];
   paymentPlans?: any[];
@@ -81,7 +80,6 @@ export interface UpdatePropertyPayload {
   certificateIdsToDelete?: string[];
   floorPlanIdsToDelete?: string[];
   paymentPlanIdsToDelete?: string[];
-  highlightIdsToDelete?: string[];
   propertyImages?: File[];
   propertyVideos?: File[];
   amenityIcons?: File[];
@@ -91,7 +89,6 @@ export interface UpdatePropertyPayload {
   pricingDetails?: any[];
   shareDetails?: any[];
   maintenanceTemplates?: any[];
-  highlights?: any[];
   certificates?: any[];
   floorPlans?: any[];
   paymentPlans?: any[];
@@ -117,21 +114,28 @@ export const propertyService = {
       formData.append('totalShares', String(payload.totalShares));
       formData.append('availableShares', String(payload.availableShares));
       formData.append('initialPricePerShare', String(payload.initialPricePerShare));
-      if (payload.currentPricePerShare !== undefined) formData.append('currentPricePerShare', String(payload.currentPricePerShare));
-      if (payload.wholeUnitPrice !== undefined) formData.append('wholeUnitPrice', String(payload.wholeUnitPrice));
+      if (payload.currentPricePerShare !== undefined)
+        formData.append('currentPricePerShare', String(payload.currentPricePerShare));
+      if (payload.wholeUnitPrice !== undefined)
+        formData.append('wholeUnitPrice', String(payload.wholeUnitPrice));
 
       // Financial Metrics
       if (payload.targetIRR !== undefined) formData.append('targetIRR', String(payload.targetIRR));
-      if (payload.targetRentalYield) formData.append('targetRentalYield', payload.targetRentalYield);
-      if (payload.appreciationRate !== undefined) formData.append('appreciationRate', String(payload.appreciationRate));
+      if (payload.targetRentalYield)
+        formData.append('targetRentalYield', payload.targetRentalYield);
+      if (payload.appreciationRate !== undefined)
+        formData.append('appreciationRate', String(payload.appreciationRate));
 
       // Dates
       if (payload.possessionDate) formData.append('possessionDate', payload.possessionDate);
       if (payload.launchDate) formData.append('launchDate', payload.launchDate);
 
-      if (payload.maxBookingDays !== undefined) formData.append('maxBookingDays', String(payload.maxBookingDays));
-      if (payload.bookingAmount !== undefined) formData.append('bookingAmount', String(payload.bookingAmount));
-      if (payload.bookingAmountGST !== undefined) formData.append('bookingAmountGST', String(payload.bookingAmountGST));
+      if (payload.maxBookingDays !== undefined)
+        formData.append('maxBookingDays', String(payload.maxBookingDays));
+      if (payload.bookingAmount !== undefined)
+        formData.append('bookingAmount', String(payload.bookingAmount));
+      if (payload.bookingAmountGST !== undefined)
+        formData.append('bookingAmountGST', String(payload.bookingAmountGST));
 
       formData.append('isActive', String(payload.isActive));
       formData.append('isFeatured', String(payload.isFeatured));
@@ -167,9 +171,7 @@ export const propertyService = {
       if (payload.maintenanceTemplates?.length) {
         formData.append('maintenanceTemplates', JSON.stringify(payload.maintenanceTemplates));
       }
-      if (payload.highlights?.length) {
-        formData.append('highlights', JSON.stringify(payload.highlights));
-      }
+
       if (payload.certificates?.length) {
         formData.append('certificates', JSON.stringify(payload.certificates));
       }
@@ -252,24 +254,34 @@ export const propertyService = {
       if (payload.sqft !== undefined) formData.append('sqft', String(payload.sqft));
       if (payload.maxOccupancy) formData.append('maxOccupancy', payload.maxOccupancy);
 
-      if (payload.totalShares !== undefined) formData.append('totalShares', String(payload.totalShares));
-      if (payload.availableShares !== undefined) formData.append('availableShares', String(payload.availableShares));
-      if (payload.initialPricePerShare !== undefined) formData.append('initialPricePerShare', String(payload.initialPricePerShare));
-      if (payload.currentPricePerShare !== undefined) formData.append('currentPricePerShare', String(payload.currentPricePerShare));
-      if (payload.wholeUnitPrice !== undefined) formData.append('wholeUnitPrice', String(payload.wholeUnitPrice));
+      if (payload.totalShares !== undefined)
+        formData.append('totalShares', String(payload.totalShares));
+      if (payload.availableShares !== undefined)
+        formData.append('availableShares', String(payload.availableShares));
+      if (payload.initialPricePerShare !== undefined)
+        formData.append('initialPricePerShare', String(payload.initialPricePerShare));
+      if (payload.currentPricePerShare !== undefined)
+        formData.append('currentPricePerShare', String(payload.currentPricePerShare));
+      if (payload.wholeUnitPrice !== undefined)
+        formData.append('wholeUnitPrice', String(payload.wholeUnitPrice));
 
       // Financial Metrics
       if (payload.targetIRR !== undefined) formData.append('targetIRR', String(payload.targetIRR));
-      if (payload.targetRentalYield) formData.append('targetRentalYield', payload.targetRentalYield);
-      if (payload.appreciationRate !== undefined) formData.append('appreciationRate', String(payload.appreciationRate));
+      if (payload.targetRentalYield)
+        formData.append('targetRentalYield', payload.targetRentalYield);
+      if (payload.appreciationRate !== undefined)
+        formData.append('appreciationRate', String(payload.appreciationRate));
 
       // Dates
       if (payload.possessionDate) formData.append('possessionDate', payload.possessionDate);
       if (payload.launchDate) formData.append('launchDate', payload.launchDate);
 
-      if (payload.maxBookingDays !== undefined) formData.append('maxBookingDays', String(payload.maxBookingDays));
-      if (payload.bookingAmount !== undefined) formData.append('bookingAmount', String(payload.bookingAmount));
-      if (payload.bookingAmountGST !== undefined) formData.append('bookingAmountGST', String(payload.bookingAmountGST));
+      if (payload.maxBookingDays !== undefined)
+        formData.append('maxBookingDays', String(payload.maxBookingDays));
+      if (payload.bookingAmount !== undefined)
+        formData.append('bookingAmount', String(payload.bookingAmount));
+      if (payload.bookingAmountGST !== undefined)
+        formData.append('bookingAmountGST', String(payload.bookingAmountGST));
 
       // Boolean fields
       if (payload.isActive !== undefined) formData.append('isActive', String(payload.isActive));
@@ -311,9 +323,6 @@ export const propertyService = {
       if (payload.paymentPlanIdsToDelete?.length) {
         formData.append('paymentPlanIdsToDelete', payload.paymentPlanIdsToDelete.join(','));
       }
-      if (payload.highlightIdsToDelete?.length) {
-        formData.append('highlightIdsToDelete', payload.highlightIdsToDelete.join(','));
-      }
 
       // Structured data
       if (payload.pricingDetails?.length) {
@@ -325,9 +334,7 @@ export const propertyService = {
       if (payload.maintenanceTemplates?.length) {
         formData.append('maintenanceTemplates', JSON.stringify(payload.maintenanceTemplates));
       }
-      if (payload.highlights?.length) {
-        formData.append('highlights', JSON.stringify(payload.highlights));
-      }
+
       if (payload.certificates?.length) {
         formData.append('certificates', JSON.stringify(payload.certificates));
       }

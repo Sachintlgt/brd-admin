@@ -14,7 +14,6 @@ import StatusSection from '@/components/properties/forms/StatusSection';
 import PricingDetailsSection from '@/components/properties/forms/PricingDetailsSection';
 import ShareDetailsSection from '@/components/properties/forms/ShareDetailsSection';
 import MaintenanceTemplatesSection from '@/components/properties/forms/MaintenanceTemplatesSection';
-import HighlightsSection from '@/components/properties/forms/HighlightsSection';
 import CertificatesSection from '@/components/properties/forms/CertificatesSection';
 import FloorPlansSection from '@/components/properties/forms/FloorPlansSection';
 import PaymentPlansSection from '@/components/properties/forms/PaymentPlansSection';
@@ -72,11 +71,7 @@ export default function EditProperty() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <BasicInformationSection register={formProps.register} errors={formProps.errors} />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
-        <HighlightsSection
-          register={formProps.register}
-          errors={formProps.errors}
-          control={formProps.control}
-        />
+
         <CertificatesSection
           register={formProps.register}
           errors={formProps.errors}

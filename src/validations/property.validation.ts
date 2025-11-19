@@ -71,14 +71,6 @@ const maintenanceTemplateSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-// Highlight Schema
-const highlightSchema = z.object({
-  key: z.string().min(1, 'Key is required'),
-  label: z.string().min(1, 'Label is required'),
-  value: z.string().min(1, 'Value is required'),
-  displayOrder: z.coerce.number().int().min(0).optional(),
-});
-
 // Certificate Schema
 const certificateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -94,28 +86,30 @@ const floorPlanSchema = z.object({
 });
 
 // Payment Plan Schema
-const paymentPlanSchema = z.object({
-  planType: z.enum(['INSTALMENT', 'BIFURCATION']),
-  purchaseType: z.enum(['WHOLE_UNIT', 'FRACTIONAL']),
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
-  amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
-  percentage: z.coerce.number().min(0).max(100).optional(),
-  milestone: z.string().optional(),
-  dueDate: z.string().optional(),
-  displayOrder: z.coerce.number().int().min(0).optional(),
-  isGSTIncluded: z.boolean().default(false),
-  gstPercentage: z.coerce.number().min(0).max(100).optional(),
-}).superRefine((data, ctx) => {
-  // If isGSTIncluded is true, gstPercentage is required
-  if (data.isGSTIncluded && (data.gstPercentage === undefined || data.gstPercentage === null)) {
-    ctx.addIssue({
-      path: ['gstPercentage'],
-      code: z.ZodIssueCode.custom,
-      message: 'GST percentage is required when GST is included',
-    });
-  }
-});
+const paymentPlanSchema = z
+  .object({
+    planType: z.enum(['INSTALMENT', 'BIFURCATION']),
+    purchaseType: z.enum(['WHOLE_UNIT', 'FRACTIONAL']),
+    name: z.string().min(1, 'Name is required'),
+    description: z.string().optional(),
+    amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
+    percentage: z.coerce.number().min(0).max(100).optional(),
+    milestone: z.string().optional(),
+    dueDate: z.string().optional(),
+    displayOrder: z.coerce.number().int().min(0).optional(),
+    isGSTIncluded: z.boolean().default(false),
+    gstPercentage: z.coerce.number().min(0).max(100).optional(),
+  })
+  .superRefine((data, ctx) => {
+    // If isGSTIncluded is true, gstPercentage is required
+    if (data.isGSTIncluded && (data.gstPercentage === undefined || data.gstPercentage === null)) {
+      ctx.addIssue({
+        path: ['gstPercentage'],
+        code: z.ZodIssueCode.custom,
+        message: 'GST percentage is required when GST is included',
+      });
+    }
+  });
 
 export const propertySchema = z
   .object({
@@ -143,14 +137,8 @@ export const propertySchema = z
       .int('Bathrooms must be an integer')
       .min(1, 'Bathrooms must be at least 1')
       .optional(),
-    sqft: z.coerce
-      .number()
-      .positive('Sqft must be a positive number')
-      .optional(),
-    maxOccupancy: z
-      .string()
-      .max(100, 'Max occupancy must not exceed 100 characters')
-      .optional(),
+    sqft: z.coerce.number().positive('Sqft must be a positive number').optional(),
+    maxOccupancy: z.string().max(100, 'Max occupancy must not exceed 100 characters').optional(),
 
     totalShares: z.coerce
       .number()
@@ -203,7 +191,9 @@ export const propertySchema = z
     // Dates (Optional)
     possessionDate: z
       .string()
-      .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format for possession date' })
+      .refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Invalid date format for possession date',
+      })
       .optional(),
     launchDate: z
       .string()
@@ -241,10 +231,19 @@ export const propertySchema = z
       .max(20, { message: 'Maximum 20 images allowed' })
       .optional(),
     propertyVideos: z.array(z.string()).max(5, { message: 'Maximum 5 videos allowed' }).optional(),
-    amenityIcons: z.array(z.string()).max(50, { message: 'Maximum 50 amenity icons allowed' }).optional(),
+    amenityIcons: z
+      .array(z.string())
+      .max(50, { message: 'Maximum 50 amenity icons allowed' })
+      .optional(),
     documents: z.array(z.string()).max(10, { message: 'Maximum 10 documents allowed' }).optional(),
-    certificateImages: z.array(z.string()).max(10, { message: 'Maximum 10 certificate images allowed' }).optional(),
-    floorPlanImages: z.array(z.string()).max(10, { message: 'Maximum 10 floor plan images allowed' }).optional(),
+    certificateImages: z
+      .array(z.string())
+      .max(10, { message: 'Maximum 10 certificate images allowed' })
+      .optional(),
+    floorPlanImages: z
+      .array(z.string())
+      .max(10, { message: 'Maximum 10 floor plan images allowed' })
+      .optional(),
 
     // File objects for validation
     imageFiles: z.array(z.instanceof(File)).optional(),
@@ -257,7 +256,6 @@ export const propertySchema = z
     pricingDetails: z.array(pricingDetailSchema).optional().default([]),
     shareDetails: z.array(shareDetailSchema).optional().default([]),
     maintenanceTemplates: z.array(maintenanceTemplateSchema).optional().default([]),
-    highlights: z.array(highlightSchema).optional().default([]),
     certificates: z.array(certificateSchema).optional().default([]),
     floorPlans: z.array(floorPlanSchema).optional().default([]),
     paymentPlans: z.array(paymentPlanSchema).optional().default([]),
@@ -281,14 +279,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['imageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
             path: ['imageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 10 MB limit`
+            message: `File size exceeds 10 MB limit`,
           });
         }
       });
@@ -301,14 +299,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['videoFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: MP4, MPEG, MOV, AVI, WebM`
+            message: `Invalid file type. Allowed: MP4, MPEG, MOV, AVI, WebM`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.video) {
           ctx.addIssue({
             path: ['videoFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 100 MB limit`
+            message: `File size exceeds 100 MB limit`,
           });
         }
       });
@@ -321,14 +319,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['documentFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, Images`
+            message: `Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, Images`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.document) {
           ctx.addIssue({
             path: ['documentFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 20 MB limit`
+            message: `File size exceeds 20 MB limit`,
           });
         }
       });
@@ -341,14 +339,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['iconFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, SVG, WebP`
+            message: `Invalid file type. Allowed: JPG, PNG, SVG, WebP`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.icon) {
           ctx.addIssue({
             path: ['iconFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 2 MB limit`
+            message: `File size exceeds 2 MB limit`,
           });
         }
       });
@@ -361,14 +359,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['certificateImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
             path: ['certificateImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 10 MB limit`
+            message: `File size exceeds 10 MB limit`,
           });
         }
       });
@@ -381,14 +379,14 @@ export const propertySchema = z
           ctx.addIssue({
             path: ['floorPlanImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`
+            message: `Invalid file type. Allowed: JPG, PNG, WebP, GIF`,
           });
         }
         if (file.size > FILE_SIZE_LIMITS.image) {
           ctx.addIssue({
             path: ['floorPlanImageFiles', idx],
             code: z.ZodIssueCode.custom,
-            message: `File size exceeds 10 MB limit`
+            message: `File size exceeds 10 MB limit`,
           });
         }
       });
@@ -565,31 +563,6 @@ export const propertySchema = z
           code: z.ZodIssueCode.custom,
           message: maintErrors.join('\n'),
           path: ['maintenanceTemplates'],
-        });
-      }
-    }
-
-    /* ────────────────────────  HIGHLIGHTS  ──────────────────────── */
-    if (data.highlights && data.highlights.length > 0) {
-      const highlightErrors: string[] = [];
-
-      data.highlights.forEach((highlight, idx) => {
-        if (!highlight.key?.trim()) {
-          highlightErrors.push(`Highlight #${idx + 1}: Key is required`);
-        }
-        if (!highlight.label?.trim()) {
-          highlightErrors.push(`Highlight #${idx + 1}: Label is required`);
-        }
-        if (!highlight.value?.trim()) {
-          highlightErrors.push(`Highlight #${idx + 1}: Value is required`);
-        }
-      });
-
-      if (highlightErrors.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: highlightErrors.join('\n'),
-          path: ['highlights'],
         });
       }
     }

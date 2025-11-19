@@ -44,87 +44,81 @@ interface FloorPlanItemRowProps {
   isSubmitting: boolean;
 }
 
-const FloorPlanItemRow = memo(({ item, index, onUpdate, onRemove, isSubmitting }: FloorPlanItemRowProps) => (
-  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-    <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center space-x-3">
-        <div className="shrink-0">
-          {item.isExisting ? (
-            <ImageIcon className="w-5 h-5 text-orange-600" />
-          ) : (
-            <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
-              <Plus className="w-3 h-3 text-green-600" />
-            </div>
-          )}
+const FloorPlanItemRow = memo(
+  ({ item, index, onUpdate, onRemove, isSubmitting }: FloorPlanItemRowProps) => (
+    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <div className="shrink-0">
+            {item.isExisting ? (
+              <ImageIcon className="w-5 h-5 text-orange-600" />
+            ) : (
+              <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+                <Plus className="w-3 h-3 text-green-600" />
+              </div>
+            )}
+          </div>
+          <h4 className="text-sm font-medium text-gray-700">Floor Plan #{index + 1}</h4>
         </div>
-        <h4 className="text-sm font-medium text-gray-700">
-          Floor Plan #{index + 1}
-        </h4>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="shrink-0 text-red-600 hover:text-red-700 transition-colors"
+          title="Remove floor plan"
+          disabled={isSubmitting}
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={() => onRemove(index)}
-        className="shrink-0 text-red-600 hover:text-red-700 transition-colors"
-        title="Remove floor plan"
-        disabled={isSubmitting}
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Name *
-        </label>
-        <input
-          type="text"
-          value={item.name}
-          onChange={(e) => onUpdate(index, 'name', e.target.value)}
-          placeholder="Enter floor plan name (e.g., 3 BHK Layout)"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+          <input
+            type="text"
+            value={item.name}
+            onChange={(e) => onUpdate(index, 'name', e.target.value)}
+            placeholder="Enter floor plan name (e.g., 3 BHK Layout)"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+          <input
+            type="number"
+            min="0"
+            value={item.displayOrder || ''}
+            onChange={(e) => onUpdate(index, 'displayOrder', parseInt(e.target.value) || 0)}
+            placeholder="0"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={isSubmitting}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <textarea
+          value={item.description || ''}
+          onChange={(e) => onUpdate(index, 'description', e.target.value)}
+          placeholder="Optional description..."
+          rows={2}
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           disabled={isSubmitting}
+          maxLength={500}
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Display Order
-        </label>
-        <input
-          type="number"
-          min="0"
-          value={item.displayOrder || ''}
-          onChange={(e) => onUpdate(index, 'displayOrder', parseInt(e.target.value) || 0)}
-          placeholder="0"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          disabled={isSubmitting}
-        />
-      </div>
+      {item.file && (
+        <p className="text-xs text-gray-500 mt-2">
+          File: {item.file.name} ({formatFileSize(item.file.size)})
+        </p>
+      )}
     </div>
-
-    <div className="mt-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Description
-      </label>
-      <textarea
-        value={item.description || ''}
-        onChange={(e) => onUpdate(index, 'description', e.target.value)}
-        placeholder="Optional description..."
-        rows={2}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        disabled={isSubmitting}
-        maxLength={500}
-      />
-    </div>
-
-    {item.file && (
-      <p className="text-xs text-gray-500 mt-2">
-        File: {item.file.name} ({formatFileSize(item.file.size)})
-      </p>
-    )}
-  </div>
-));
+  ),
+);
 
 FloorPlanItemRow.displayName = 'FloorPlanItemRow';
 
@@ -145,9 +139,9 @@ export default function FloorPlansSection({
 
   // Initialize floor plan items when component mounts or existing floor plans change
   useEffect(() => {
-    setFloorPlanItems(prev => {
+    setFloorPlanItems((prev) => {
       const updatedItems: FloorPlanItem[] = [];
-      const previousMap = new Map(prev.map(item => [item.uniqueId, item]));
+      const previousMap = new Map(prev.map((item) => [item.uniqueId, item]));
 
       // Add existing floor plans
       existingFloorPlans.forEach((floorPlan) => {
@@ -182,8 +176,8 @@ export default function FloorPlansSection({
   // Update floorPlanNames whenever floorPlanItems change
   useEffect(() => {
     const names = floorPlanItems
-      .filter(item => item.name.trim() !== '')
-      .map(item => item.name.trim());
+      .filter((item) => item.name.trim() !== '')
+      .map((item) => item.name.trim());
     const commaSeparatedNames = names.join(', ');
     setValue?.('floorPlanNames', commaSeparatedNames);
   }, [floorPlanItems, setValue]);
@@ -193,40 +187,46 @@ export default function FloorPlansSection({
   // Existing floor plans are already in the database and should not be included
   useEffect(() => {
     const floorPlans = floorPlanItems
-      .filter(item => item.name.trim() !== '' && !item.isExisting)
+      .filter((item) => item.name.trim() !== '' && !item.isExisting)
       .map((item) => ({
         name: item.name.trim(),
         description: item.description?.trim() || undefined,
-        displayOrder: item.displayOrder || 0
+        displayOrder: item.displayOrder || 0,
       }));
     setValue?.('floorPlans', floorPlans);
   }, [floorPlanItems, setValue]);
 
-  const updateFloorPlanItem = useCallback((index: number, field: string, value: string | number) => {
-    setFloorPlanItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, [field]: value } : item
-    ));
-  }, []);
+  const updateFloorPlanItem = useCallback(
+    (index: number, field: string, value: string | number) => {
+      setFloorPlanItems((prev) =>
+        prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
+      );
+    },
+    [],
+  );
 
-  const removeFloorPlanItem = useCallback((index: number) => {
-    setFloorPlanItems(prev => {
-      const item = prev[index];
+  const removeFloorPlanItem = useCallback(
+    (index: number) => {
+      setFloorPlanItems((prev) => {
+        const item = prev[index];
 
-      if (item.isExisting && item.id) {
-        // Remove existing floor plan
-        onRemoveExisting?.(item.id);
-      } else if (item.file) {
-        // Remove new uploaded file
-        const fileIndex = floorPlanImageFiles.findIndex(f => f === item.file);
-        if (fileIndex !== -1) {
-          removeAt(fileIndex, floorPlanImageFiles, setFloorPlanImageFiles, 'floorPlanImages');
+        if (item.isExisting && item.id) {
+          // Remove existing floor plan
+          onRemoveExisting?.(item.id);
+        } else if (item.file) {
+          // Remove new uploaded file
+          const fileIndex = floorPlanImageFiles.findIndex((f) => f === item.file);
+          if (fileIndex !== -1) {
+            removeAt(fileIndex, floorPlanImageFiles, setFloorPlanImageFiles, 'floorPlanImages');
+          }
         }
-      }
 
-      // Remove from local state
-      return prev.filter((_, i) => i !== index);
-    });
-  }, [floorPlanImageFiles, removeAt, setFloorPlanImageFiles, onRemoveExisting]);
+        // Remove from local state
+        return prev.filter((_, i) => i !== index);
+      });
+    },
+    [floorPlanImageFiles, removeAt, setFloorPlanImageFiles, onRemoveExisting],
+  );
 
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
@@ -261,7 +261,8 @@ export default function FloorPlansSection({
 
         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-xs text-blue-800">
-            <strong>Tip:</strong> Upload floor plan images first, then enter the floor plan names below for each one.
+            <strong>Tip:</strong> Upload floor plan images first, then enter the floor plan names
+            below for each one.
           </p>
         </div>
       </div>

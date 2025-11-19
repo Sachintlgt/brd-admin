@@ -7,7 +7,12 @@ import DashboardLayout from '../../components/DashboardLayout';
 import PropertyFilters from '../../components/properties/list/PropertyFilters';
 import PropertyListContent from '../../components/properties/list/PropertyListContent';
 import PropertyPagination from '../../components/properties/list/PropertyPagination';
-import {usePropertiesList,useDeleteProperty,useToggleActive,useToggleFeatured} from '../../hooks/usePropertiesList';
+import {
+  usePropertiesList,
+  useDeleteProperty,
+  useToggleActive,
+  useToggleFeatured,
+} from '../../hooks/usePropertiesList';
 import { useDebouncedFilters } from '../../hooks/useDebouncedFilters';
 import { PropertyFilterState } from '../../types/property-list';
 

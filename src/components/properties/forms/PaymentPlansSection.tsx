@@ -32,14 +32,13 @@ export default function PaymentPlansSection({
       dueDate: '',
       displayOrder: 0,
       isGSTIncluded: false,
-      gstPercentage: ''
+      gstPercentage: '',
     });
   };
 
   const removePaymentPlan = (index: number) => {
     remove(index);
   };
-
 
   return (
     <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
@@ -94,7 +93,9 @@ export default function PaymentPlansSection({
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">Purchase Type *</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Purchase Type *
+                </label>
                 <select
                   {...register(`paymentPlans.${index}.purchaseType`)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -138,7 +139,9 @@ export default function PaymentPlansSection({
             {/* Additional Details */}
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">Percentage (%)</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Percentage (%)
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -156,7 +159,9 @@ export default function PaymentPlansSection({
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">Display Order</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Display Order
+                </label>
                 <input
                   type="number"
                   min="0"
