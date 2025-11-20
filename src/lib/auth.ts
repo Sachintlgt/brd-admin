@@ -47,6 +47,7 @@ export function isAuthenticated(): boolean {
  */
 export function clearAuthCookies() {
   if (typeof document === 'undefined') return;
+  console.log('--------------------------------3');
 
   const isProduction = process.env.NODE_ENV === 'production';
 
