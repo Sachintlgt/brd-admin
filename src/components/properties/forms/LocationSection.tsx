@@ -61,7 +61,7 @@ export default function LocationSection({
     if (locationData) {
       // Fetch detailed address information from Nominatim
       fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${locationData.location.coordinates[1]}&lon=${locationData.location.coordinates[0]}&addressdetails=1&accept-language=en`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${locationData.location.coordinates[1]}&lon=${locationData.location.coordinates[0]}&addressdetails=1&accept-language=en`,
       )
         .then((res) => res.json())
         .then((details) => {
@@ -299,22 +299,22 @@ export default function LocationSection({
         <div className="border-t pt-6">
           <h3 className="mb-4 text-lg font-medium text-gray-900">Map Viewport (Optional)</h3>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <FormInput
-            id="viewportNortheastLat"
-            label="Northeast Latitude"
-            type="number"
-            placeholder="e.g., 40.7831"
-            inputProps={{ ...register('viewportNortheastLat'), step: 'any' }}
-            error={errors.viewportNortheastLat}
-          />
-          <FormInput
-            id="viewportNortheastLng"
-            label="Northeast Longitude"
-            type="number"
-            placeholder="e.g., -73.9712"
-            inputProps={{ ...register('viewportNortheastLng'), step: 'any' }}
-            error={errors.viewportNortheastLng}
-          />
+            <FormInput
+              id="viewportNortheastLat"
+              label="Northeast Latitude"
+              type="number"
+              placeholder="e.g., 40.7831"
+              inputProps={{ ...register('viewportNortheastLat'), step: 'any' }}
+              error={errors.viewportNortheastLat}
+            />
+            <FormInput
+              id="viewportNortheastLng"
+              label="Northeast Longitude"
+              type="number"
+              placeholder="e.g., -73.9712"
+              inputProps={{ ...register('viewportNortheastLng'), step: 'any' }}
+              error={errors.viewportNortheastLng}
+            />
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-4">
             <FormInput

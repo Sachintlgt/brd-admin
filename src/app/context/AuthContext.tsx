@@ -4,7 +4,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService, User } from '@/services/authService';
-import { getUserFromCookie, clearAuthStorage, AUTH_KEYS } from '@/lib/auth';
+import { getUserFromCookie, clearAuthStorage, AUTH_KEYS, clearAuthCookies } from '@/lib/auth';
+import toast from 'react-hot-toast';
 
 type AuthContextType = {
   user: User | null;
@@ -142,8 +143,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Update user state with fresh data
           setUser(newUser);
         } catch (err) {
+          clearAuthCookies();
+          toast.error('Unauthorized user');
           console.error('❌ Token refresh failed', err);
           await logout(); // logout if refresh failed
+          // Redirect
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
         }
       },
       30 * 60 * 1000,

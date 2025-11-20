@@ -688,10 +688,12 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           bookingAmountGST: data.bookingAmountGST || undefined,
           isActive: data.isActive,
           isFeatured: data.isFeatured,
-          amenityNames: iconFiles.length > 0 ? (data.amenityNames || undefined) : undefined,
-          documentNames: documentFiles.length > 0 ? (data.documentNames || undefined) : undefined,
-          certificateNames: certificateImageFiles.length > 0 ? (data.certificateNames || undefined) : undefined,
-          floorPlanNames: floorPlanImageFiles.length > 0 ? (data.floorPlanNames || undefined) : undefined,
+          amenityNames: iconFiles.length > 0 ? data.amenityNames || undefined : undefined,
+          documentNames: documentFiles.length > 0 ? data.documentNames || undefined : undefined,
+          certificateNames:
+            certificateImageFiles.length > 0 ? data.certificateNames || undefined : undefined,
+          floorPlanNames:
+            floorPlanImageFiles.length > 0 ? data.floorPlanNames || undefined : undefined,
           imageIdsToDelete: imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined,
           amenityIdsToDelete: amenityIdsToDelete.length > 0 ? amenityIdsToDelete : undefined,
           documentIdsToDelete: documentIdsToDelete.length > 0 ? documentIdsToDelete : undefined,

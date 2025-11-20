@@ -140,9 +140,12 @@ export const propertyService = {
       if (payload.description) formData.append('description', payload.description);
 
       // Location fields
-      if (payload.locationLat !== undefined) formData.append('locationLat', String(payload.locationLat));
-      if (payload.locationLng !== undefined) formData.append('locationLng', String(payload.locationLng));
-      if (payload.locationPlaceId !== undefined) formData.append('locationPlaceId', String(payload.locationPlaceId));
+      if (payload.locationLat !== undefined)
+        formData.append('locationLat', String(payload.locationLat));
+      if (payload.locationLng !== undefined)
+        formData.append('locationLng', String(payload.locationLng));
+      if (payload.locationPlaceId !== undefined)
+        formData.append('locationPlaceId', String(payload.locationPlaceId));
       if (payload.streetNumber) formData.append('streetNumber', payload.streetNumber);
       if (payload.street) formData.append('street', payload.street);
       if (payload.city) formData.append('city', payload.city);
@@ -152,10 +155,14 @@ export const propertyService = {
       if (payload.countryCode) formData.append('countryCode', payload.countryCode);
       if (payload.postalCode) formData.append('postalCode', payload.postalCode);
       if (payload.postalCodeSuffix) formData.append('postalCodeSuffix', payload.postalCodeSuffix);
-      if (payload.viewportNortheastLat !== undefined) formData.append('viewportNortheastLat', String(payload.viewportNortheastLat));
-      if (payload.viewportNortheastLng !== undefined) formData.append('viewportNortheastLng', String(payload.viewportNortheastLng));
-      if (payload.viewportSouthwestLat !== undefined) formData.append('viewportSouthwestLat', String(payload.viewportSouthwestLat));
-      if (payload.viewportSouthwestLng !== undefined) formData.append('viewportSouthwestLng', String(payload.viewportSouthwestLng));
+      if (payload.viewportNortheastLat !== undefined)
+        formData.append('viewportNortheastLat', String(payload.viewportNortheastLat));
+      if (payload.viewportNortheastLng !== undefined)
+        formData.append('viewportNortheastLng', String(payload.viewportNortheastLng));
+      if (payload.viewportSouthwestLat !== undefined)
+        formData.append('viewportSouthwestLat', String(payload.viewportSouthwestLat));
+      if (payload.viewportSouthwestLng !== undefined)
+        formData.append('viewportSouthwestLng', String(payload.viewportSouthwestLng));
       if (payload.zoom !== undefined) formData.append('zoom', String(payload.zoom));
 
       // Property Details
@@ -302,9 +309,12 @@ export const propertyService = {
       if (payload.description !== undefined) formData.append('description', payload.description);
 
       // Location fields
-      if (payload.locationLat !== undefined) formData.append('locationLat', String(payload.locationLat));
-      if (payload.locationLng !== undefined) formData.append('locationLng', String(payload.locationLng));
-      if (payload.locationPlaceId !== undefined) formData.append('locationPlaceId', String(payload.locationPlaceId));
+      if (payload.locationLat !== undefined)
+        formData.append('locationLat', String(payload.locationLat));
+      if (payload.locationLng !== undefined)
+        formData.append('locationLng', String(payload.locationLng));
+      if (payload.locationPlaceId !== undefined)
+        formData.append('locationPlaceId', String(payload.locationPlaceId));
       if (payload.streetNumber) formData.append('streetNumber', payload.streetNumber);
       if (payload.street) formData.append('street', payload.street);
       if (payload.city) formData.append('city', payload.city);
@@ -314,10 +324,14 @@ export const propertyService = {
       if (payload.countryCode) formData.append('countryCode', payload.countryCode);
       if (payload.postalCode) formData.append('postalCode', payload.postalCode);
       if (payload.postalCodeSuffix) formData.append('postalCodeSuffix', payload.postalCodeSuffix);
-      if (payload.viewportNortheastLat !== undefined) formData.append('viewportNortheastLat', String(payload.viewportNortheastLat));
-      if (payload.viewportNortheastLng !== undefined) formData.append('viewportNortheastLng', String(payload.viewportNortheastLng));
-      if (payload.viewportSouthwestLat !== undefined) formData.append('viewportSouthwestLat', String(payload.viewportSouthwestLat));
-      if (payload.viewportSouthwestLng !== undefined) formData.append('viewportSouthwestLng', String(payload.viewportSouthwestLng));
+      if (payload.viewportNortheastLat !== undefined)
+        formData.append('viewportNortheastLat', String(payload.viewportNortheastLat));
+      if (payload.viewportNortheastLng !== undefined)
+        formData.append('viewportNortheastLng', String(payload.viewportNortheastLng));
+      if (payload.viewportSouthwestLat !== undefined)
+        formData.append('viewportSouthwestLat', String(payload.viewportSouthwestLat));
+      if (payload.viewportSouthwestLng !== undefined)
+        formData.append('viewportSouthwestLng', String(payload.viewportSouthwestLng));
       if (payload.zoom !== undefined) formData.append('zoom', String(payload.zoom));
 
       // Numeric fields

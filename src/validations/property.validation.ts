@@ -111,7 +111,6 @@ const paymentPlanSchema = z
     }
   });
 
-
 export const propertySchema = z
   .object({
     name: z
@@ -129,12 +128,24 @@ export const propertySchema = z
     locationPlaceId: z.coerce.number().nullish(),
     streetNumber: z.string().max(50).nullish(),
     street: z.string().max(200).nullish(),
-    city: z.string().min(1, { message: 'City is required' }).max(100, { message: 'City cannot exceed 100 characters' }),
-    state: z.string().min(1, { message: 'State is required' }).max(100, { message: 'State cannot exceed 100 characters' }),
+    city: z
+      .string()
+      .min(1, { message: 'City is required' })
+      .max(100, { message: 'City cannot exceed 100 characters' }),
+    state: z
+      .string()
+      .min(1, { message: 'State is required' })
+      .max(100, { message: 'State cannot exceed 100 characters' }),
     stateCode: z.string().max(10).nullish(),
-    country: z.string().min(1, { message: 'Country is required' }).max(100, { message: 'Country cannot exceed 100 characters' }),
+    country: z
+      .string()
+      .min(1, { message: 'Country is required' })
+      .max(100, { message: 'Country cannot exceed 100 characters' }),
     countryCode: z.string().max(2).nullish(),
-    postalCode: z.string().min(1, { message: 'Postal code is required' }).max(20, { message: 'Postal code cannot exceed 20 characters' }),
+    postalCode: z
+      .string()
+      .min(1, { message: 'Postal code is required' })
+      .max(20, { message: 'Postal code cannot exceed 20 characters' }),
     postalCodeSuffix: z.string().max(10).nullish(),
     viewportNortheastLat: z.coerce.number().nullish(),
     viewportNortheastLng: z.coerce.number().nullish(),

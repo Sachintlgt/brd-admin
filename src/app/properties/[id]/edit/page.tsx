@@ -69,7 +69,13 @@ export default function EditProperty() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <BasicInformationSection register={formProps.register} errors={formProps.errors} control={formProps.control} setValue={formProps.setValue} getValues={formProps.getValues} />
+        <BasicInformationSection
+          register={formProps.register}
+          errors={formProps.errors}
+          control={formProps.control}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
+        />
         <SharesPricingSection register={formProps.register} errors={formProps.errors} />
 
         <CertificatesSection
