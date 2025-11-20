@@ -43,14 +43,15 @@ export function isAuthenticated(): boolean {
 
 /**
  * Clear auth cookies by setting them to expire
- * Note: The backend /auth/logout endpoint should also clear these
+ * Fixed SameSite attribute to match backend
  */
 export function clearAuthCookies() {
   if (typeof document === 'undefined') return;
 
   const isProduction = process.env.NODE_ENV === 'production';
 
-  const sameSite = isProduction ? 'None' : 'Strict';
+  // Match backend: 'none' for production, 'lax' for development
+  const sameSite = isProduction ? 'None' : 'Lax';
   const secure = isProduction ? 'Secure;' : '';
 
   // Clear accessToken cookie
@@ -68,7 +69,6 @@ export function clearAuthCookies() {
 
 /**
  * Legacy support - kept for backwards compatibility
- * But these are no longer used with cookie-based auth
  */
 export const AUTH_KEYS = {
   ACCESS_TOKEN: 'accessToken',
@@ -78,7 +78,6 @@ export const AUTH_KEYS = {
 
 /**
  * Clear auth storage (legacy localStorage + cookies)
- * Use this during migration period if you still have localStorage data
  */
 export function clearAuthStorage() {
   // Clear cookies
