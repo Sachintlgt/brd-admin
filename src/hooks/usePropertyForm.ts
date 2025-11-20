@@ -145,7 +145,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const [formErrors, setFormErrors] = useState({});
 
-  console.log('🎯 usePropertyForm - formErrors:', formErrors);
 
   useEffect(() => {
     setFormErrors(sanitizeErrors(errors));
@@ -338,13 +337,19 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingImage = (id: string) => {
-    setImageIdsToDelete((prev) => [...prev, id]);
-    setExistingImages((prev) => prev.filter((img) => img.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setImageIdsToDelete((prev) => [...prev, id]);
+      setExistingImages((prev) => prev.filter((img) => img.id !== id));
+    }, 0);
   };
 
   const removeExistingVideo = (id: string) => {
-    setExistingImages((prev) => [...prev, id]); // Videos are in images table
-    setExistingVideos((prev) => prev.filter((vid) => vid.id !== id));
+    // Defer state updates to avoid calling setState during render
+    setTimeout(() => {
+      setImageIdsToDelete((prev) => [...prev, id]); // Videos are in images table
+      setExistingVideos((prev) => prev.filter((vid) => vid.id !== id));
+    }, 0);
   };
 
   const removeExistingDocument = (id: string) => {
@@ -377,9 +382,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   };
 
   const removeExistingShareDetail = (id: string) => {
-    // Defer state updates to avoid calling setState during render
     setTimeout(() => {
-      setShareDetailIdsToDelete((prev) => [...prev, id]);
+      setShareDetailIdsToDelete((prev) => {
+        const newArray = [...prev, id];
+        return newArray;
+      });
       setExistingShareDetails((prev) => prev.filter((share) => share.id !== id));
       const currentShareDetails = getValues('shareDetails') || [];
       setValue(
@@ -392,7 +399,10 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const removeExistingMaintenanceTemplate = (id: string) => {
     // Defer state updates to avoid calling setState during render
     setTimeout(() => {
-      setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]);
+      setMaintenanceTemplateIdsToDelete((prev) => {
+        const newArray = [...prev, id];
+        return newArray;
+      });
       setExistingMaintenanceTemplates((prev) => prev.filter((template) => template.id !== id));
       const currentTemplates = getValues('maintenanceTemplates') || [];
       setValue(
@@ -421,7 +431,10 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const removeExistingPaymentPlan = (id: string) => {
     // Defer state updates to avoid calling setState during render
     setTimeout(() => {
-      setPaymentPlanIdsToDelete((prev) => [...prev, id]);
+      setPaymentPlanIdsToDelete((prev) => {
+        const newArray = [...prev, id];
+        return newArray;
+      });
       const currentPaymentPlans = getValues('paymentPlans') || [];
       setValue(
         'paymentPlans',
@@ -459,6 +472,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           }));
 
           const paymentPlans = property.paymentPlans || [];
+
 
           // Set basic fields and form arrays together
           reset({
@@ -560,6 +574,13 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   }, [propertyId, reset]);
 
   const onSubmit = async (data: PropertyFormValues) => {
+
+    // Log detailed info about each payment plan
+    if (data.paymentPlans) {
+      data.paymentPlans.forEach((plan, index) => {
+      });
+    }
+
     setSubmitError(null);
     setSubmitSuccess(null);
     setIsSubmitting(true);
@@ -577,12 +598,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         effectiveTo: convertToISO(pricing.effectiveTo),
       }));
 
-      // Find deleted pricing details (existing ones not in the form)
-      const currentPricingIds = processedPricingDetails.filter((p) => p.id).map((p) => p.id);
-      const deletedPricingIds = existingPricingDetails
-        .filter((p) => !currentPricingIds.includes(p.id))
-        .map((p) => p.id);
-      deletedPricingIds.forEach((id) => setPricingIdsToDelete((prev) => [...prev, id]));
+      // Note: Deletions are handled by manual removeExistingPricing calls
 
       // Process share details - all items come from form now (existing + new)
       const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
@@ -593,12 +609,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         amount: detail.amount ? Number(detail.amount) : undefined,
       }));
 
-      // Find deleted share details (existing ones not in the form)
-      const currentShareIds = processedShareDetails.filter((s) => s.id).map((s) => s.id);
-      const deletedShareIds = existingShareDetails
-        .filter((s) => !currentShareIds.includes(s.id))
-        .map((s) => s.id);
-      deletedShareIds.forEach((id) => setShareDetailIdsToDelete((prev) => [...prev, id]));
+      // Note: Deletions are handled by manual removeExistingShareDetail calls
 
       // Process maintenance templates - all items come from form now (existing + new)
       const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
@@ -614,14 +625,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         }),
       );
 
-      // Find deleted maintenance templates (existing ones not in the form)
-      const currentTemplateIds = processedMaintenanceTemplates.filter((t) => t.id).map((t) => t.id);
-      const deletedTemplateIds = existingMaintenanceTemplates
-        .filter((t) => !currentTemplateIds.includes(t.id))
-        .map((t) => t.id);
-      deletedTemplateIds.forEach((id) =>
-        setMaintenanceTemplateIdsToDelete((prev) => [...prev, id]),
-      );
+      // Note: Deletions are handled by manual removeExistingMaintenanceTemplate calls
 
       // Process payment plans
       const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
@@ -639,12 +643,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
       }));
 
-      // Find deleted payment plans (existing ones not in the form)
-      const currentPaymentPlanIds = processedPaymentPlans.filter((p) => p.id).map((p) => p.id);
-      const deletedPaymentPlanIds = existingPaymentPlans
-        .filter((p) => !currentPaymentPlanIds.includes(p.id))
-        .map((p) => p.id);
-      deletedPaymentPlanIds.forEach((id) => setPaymentPlanIdsToDelete((prev) => [...prev, id]));
+      // Note: Deletions are handled by manual removeExistingPaymentPlan calls
 
       if (propertyId) {
         // UPDATE MODE
@@ -688,7 +687,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           bookingAmountGST: data.bookingAmountGST || undefined,
           isActive: data.isActive,
           isFeatured: data.isFeatured,
-          amenityNames: iconFiles.length > 0 ? data.amenityNames || undefined : undefined,
+          amenityNames: data.amenityNames || undefined,
           documentNames: documentFiles.length > 0 ? data.documentNames || undefined : undefined,
           certificateNames:
             certificateImageFiles.length > 0 ? data.certificateNames || undefined : undefined,

@@ -4,6 +4,9 @@ import FileUploadZone from '../FileUploadZone';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import { useEffect, useState, memo, useCallback } from 'react';
 
+// Helper to build full URLs
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+
 interface FloorPlansSectionProps {
   register: any;
   errors: any;
@@ -42,34 +45,55 @@ interface FloorPlanItemRowProps {
   onUpdate: (index: number, field: string, value: string | number) => void;
   onRemove: (index: number) => void;
   isSubmitting: boolean;
+  existingFloorPlans?: any[];
 }
 
 const FloorPlanItemRow = memo(
-  ({ item, index, onUpdate, onRemove, isSubmitting }: FloorPlanItemRowProps) => (
-    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-3">
-          <div className="shrink-0">
-            {item.isExisting ? (
-              <ImageIcon className="w-5 h-5 text-orange-600" />
-            ) : (
-              <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
-                <Plus className="w-3 h-3 text-green-600" />
-              </div>
-            )}
+  ({ item, index, onUpdate, onRemove, isSubmitting, existingFloorPlans = [] }: FloorPlanItemRowProps) => {
+    // Find the corresponding existing floor plan to get the image URL
+    const existingPlan = item.isExisting && existingFloorPlans.find((plan: any) => plan.id === item.id);
+
+    return (
+      <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-3">
+            <div className="shrink-0">
+              {item.isExisting ? (
+                <ImageIcon className="w-5 h-5 text-orange-600" />
+              ) : (
+                <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+                  <Plus className="w-3 h-3 text-green-600" />
+                </div>
+              )}
+            </div>
+            <h4 className="text-sm font-medium text-gray-700">Floor Plan #{index + 1}</h4>
           </div>
-          <h4 className="text-sm font-medium text-gray-700">Floor Plan #{index + 1}</h4>
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="shrink-0 text-red-600 hover:text-red-700 transition-colors"
+            title="Remove floor plan"
+            disabled={isSubmitting}
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => onRemove(index)}
-          className="shrink-0 text-red-600 hover:text-red-700 transition-colors"
-          title="Remove floor plan"
-          disabled={isSubmitting}
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+
+        {/* Show floor plan image preview for existing floor plans */}
+        {item.isExisting && existingPlan?.imageUrl && (
+          <div className="mb-4">
+            <div className="aspect-square max-w-32 mx-auto border border-gray-200 rounded-lg overflow-hidden">
+              <img
+                src={BASE_URL + existingPlan.imageUrl}
+                alt={item.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder-image.png'; // Fallback
+                }}
+              />
+            </div>
+          </div>
+        )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -117,8 +141,8 @@ const FloorPlanItemRow = memo(
         </p>
       )}
     </div>
-  ),
-);
+  );
+});
 
 FloorPlanItemRow.displayName = 'FloorPlanItemRow';
 
@@ -289,6 +313,7 @@ export default function FloorPlansSection({
                 onUpdate={updateFloorPlanItem}
                 onRemove={removeFloorPlanItem}
                 isSubmitting={isSubmitting}
+                existingFloorPlans={existingFloorPlans}
               />
             ))}
           </div>

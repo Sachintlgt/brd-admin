@@ -35,54 +35,54 @@ const pricingDetailSchema = z.object({
   label: z.string().min(1, 'Label is required'),
   price: z.coerce.number().gt(0, 'Price must be greater than 0'),
   type: z.enum(['ONE_TIME', 'PHASE']),
-  phaseName: z.string().optional(),
-  description: z.string().optional(),
-  effectiveFrom: z.string().optional(),
-  effectiveTo: z.string().optional(),
+  phaseName: z.string().nullish(),
+  description: z.string().nullish(),
+  effectiveFrom: z.string().nullish(),
+  effectiveTo: z.string().nullish(),
 });
 
 // Share Detail Schema
 const shareDetailSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
+  description: z.string().nullish(),
   shareCount: z.coerce
     .number()
     .int('Share count must be an integer')
     .min(1, 'Share count must be at least 1')
-    .optional()
+    .nullish()
     .or(z.literal('')),
-  amount: z.coerce.number().gt(0, 'Amount must be greater than 0').optional().or(z.literal('')),
+  amount: z.coerce.number().gt(0, 'Amount must be greater than 0').nullish().or(z.literal('')),
 });
 
 // Maintenance Template Schema
 const maintenanceTemplateSchema = z.object({
   chargeType: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY', 'ONE_TIME']),
   amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
-  description: z.string().optional(),
+  description: z.string().nullish(),
   dueDay: z.coerce
     .number()
     .int('Due day must be an integer')
     .min(1, 'Due day must be between 1-31')
     .max(31, 'Due day must be between 1-31')
-    .optional()
+    .nullish()
     .or(z.literal('')),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startDate: z.string().nullish(),
+  endDate: z.string().nullish(),
   isActive: z.boolean().default(true),
 });
 
 // Certificate Schema
 const certificateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  description: z.string().max(500, 'Description cannot exceed 500 characters').optional(),
-  displayOrder: z.coerce.number().int().min(0).optional(),
+  description: z.string().max(500, 'Description cannot exceed 500 characters').nullish(),
+  displayOrder: z.coerce.number().int().min(0).nullish(),
 });
 
 // Floor Plan Schema
 const floorPlanSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  description: z.string().max(500, 'Description cannot exceed 500 characters').optional(),
-  displayOrder: z.coerce.number().int().min(0).optional(),
+  description: z.string().max(500, 'Description cannot exceed 500 characters').nullish(),
+  displayOrder: z.coerce.number().int().min(0).nullish(),
 });
 
 // Payment Plan Schema
@@ -91,14 +91,14 @@ const paymentPlanSchema = z
     planType: z.enum(['INSTALMENT', 'BIFURCATION']),
     purchaseType: z.enum(['WHOLE_UNIT', 'FRACTIONAL']),
     name: z.string().min(1, 'Name is required'),
-    description: z.string().optional(),
+    description: z.string().nullish(),
     amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
-    percentage: z.coerce.number().min(0).max(100).optional(),
-    milestone: z.string().optional(),
-    dueDate: z.string().optional(),
-    displayOrder: z.coerce.number().int().min(0).optional(),
+    percentage: z.coerce.number().min(0).max(100).nullish(),
+    milestone: z.string().nullish(),
+    dueDate: z.string().nullish(),
+    displayOrder: z.coerce.number().int().min(0).nullish(),
     isGSTIncluded: z.boolean().default(false),
-    gstPercentage: z.coerce.number().min(0).max(100).optional(),
+    gstPercentage: z.coerce.number().min(0).max(100).nullish(),
   })
   .superRefine((data, ctx) => {
     // If isGSTIncluded is true, gstPercentage is required
@@ -440,18 +440,33 @@ export const propertySchema = z
       }
     }
 
-    // amenityIcons must match amenityNames count when icons are provided (only for NEW icons)
-    if (data.iconFiles && data.iconFiles.length > 0) {
-      const namesCount = (data.amenityNames ?? '')
+    // Validate amenity names format if provided
+    if (data.amenityNames) {
+      const names = data.amenityNames
         .split(',')
         .map((s) => s.trim())
-        .filter(Boolean).length;
-      if (namesCount === 0 || namesCount !== data.iconFiles.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Amenity names count must match the number of uploaded icons',
-          path: ['amenityNames'],
-        });
+        .filter(Boolean);
+
+      // If amenity names are provided, they should be valid
+      if (names.length > 0) {
+        // Check for empty names after trimming
+        const hasEmptyNames = names.some(name => name === '');
+        if (hasEmptyNames) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Amenity names cannot be empty',
+            path: ['amenityNames'],
+          });
+        }
+
+        // Check for maximum amenities limit
+        if (names.length > 50) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Maximum 50 amenities allowed',
+            path: ['amenityNames'],
+          });
+        }
       }
     }
     // Validate Pricing Details

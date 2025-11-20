@@ -1,8 +1,11 @@
 import FileUploadZone from '../FileUploadZone';
 import FormInput from '../../ui/propertiesFormInput';
-import { X, Image, Video, FileText, AlertCircle, CheckCircle, Plus } from 'lucide-react';
+import { X, Image, Video, FileText, AlertCircle, CheckCircle, Plus, Download } from 'lucide-react';
 import { formatFileSize } from '@/utils/fileValidation';
 import { useEffect, useState, memo, useCallback } from 'react';
+
+// Helper to build full URLs
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
 interface MediaDocumentsSectionProps {
   register: any;
@@ -52,48 +55,75 @@ interface DocumentItemRowProps {
   onUpdate: (index: number, name: string) => void;
   onRemove: (index: number) => void;
   isSubmitting?: boolean;
+  existingDocuments?: any[];
 }
 
 const DocumentItemRow = memo(
-  ({ item, index, onUpdate, onRemove, isSubmitting }: DocumentItemRowProps) => (
-    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-      <div className="shrink-0">
-        {item.isExisting ? (
-          <FileText className="w-5 h-5 text-green-600" />
-        ) : (
-          <div className="w-5 h-5 bg-blue-100 rounded flex items-center justify-center">
-            <Plus className="w-3 h-3 text-blue-600" />
-          </div>
-        )}
-      </div>
+  ({ item, index, onUpdate, onRemove, isSubmitting, existingDocuments = [] }: DocumentItemRowProps) => {
+    // Find the corresponding existing document to get the URL
+    const existingDoc = item.isExisting && existingDocuments.find((doc: any) => doc.id === item.id);
 
-      <div className="flex-1">
-        <input
-          type="text"
-          value={item.name}
-          onChange={(e) => onUpdate(index, e.target.value)}
-          placeholder="Enter document name (e.g., Sale Deed)"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
-          disabled={isSubmitting}
-        />
-        {item.file && (
-          <p className="text-xs text-gray-500 mt-1">
-            {item.file.name} ({formatFileSize(item.file.size)})
-          </p>
-        )}
-      </div>
+    const handleDownload = () => {
+      if (existingDoc?.url) {
+        const downloadUrl = BASE_URL + existingDoc.url;
+        window.open(downloadUrl, '_blank');
+      }
+    };
 
-      <button
-        type="button"
-        onClick={() => onRemove(index)}
-        className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-        title="Remove document"
-        disabled={isSubmitting}
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
-  ),
+    return (
+      <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+        <div className="shrink-0">
+          {item.isExisting ? (
+            <FileText className="w-5 h-5 text-green-600" />
+          ) : (
+            <div className="w-5 h-5 bg-blue-100 rounded flex items-center justify-center">
+              <Plus className="w-3 h-3 text-blue-600" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1">
+          <input
+            type="text"
+            value={item.name}
+            onChange={(e) => onUpdate(index, e.target.value)}
+            placeholder="Enter document name (e.g., Sale Deed)"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            disabled={isSubmitting}
+          />
+          {item.file && (
+            <p className="text-xs text-gray-500 mt-1">
+              {item.file.name} ({formatFileSize(item.file.size)})
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {item.isExisting && existingDoc?.url && (
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="shrink-0 p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+              title="Download document"
+              disabled={isSubmitting}
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+            title="Remove document"
+            disabled={isSubmitting}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  },
 );
 
 DocumentItemRow.displayName = 'DocumentItemRow';
@@ -250,14 +280,34 @@ export default function MediaDocumentsSection({
             {existingImages.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-gray-600 font-medium">Existing Images:</p>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-60 overflow-y-auto">
                   {existingImages.map((img, index) => (
-                    <ExistingItem
+                    <div
                       key={img.id || `img-${index}`}
-                      item={img}
-                      onRemove={onRemoveExistingImage || (() => {})}
-                      type="image"
-                    />
+                      className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
+                    >
+                      <div className="aspect-square">
+                        <img
+                          src={BASE_URL + img.url}
+                          alt={`Existing image ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder-image.png'; // Fallback
+                          }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onRemoveExistingImage?.(img.id)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        title="Remove image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                        {img.url.split('/').pop()}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -289,14 +339,57 @@ export default function MediaDocumentsSection({
             {existingVideos.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-gray-600 font-medium">Existing Videos:</p>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-60 overflow-y-auto">
                   {existingVideos.map((vid, index) => (
-                    <ExistingItem
+                    <div
                       key={vid.id || `vid-${index}`}
-                      item={vid}
-                      onRemove={onRemoveExistingVideo || (() => {})}
-                      type="video"
-                    />
+                      className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
+                    >
+                      <div className="aspect-square bg-gray-100 flex items-center justify-center relative">
+                        <Video className="w-8 h-8 text-gray-400" />
+                        {/* Play button overlay */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const videoUrl = BASE_URL + vid.url;
+                            window.open(videoUrl, '_blank');
+                          }}
+                          className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Play video"
+                        >
+                          <div className="bg-white bg-opacity-90 rounded-full p-2">
+                            <Video className="w-4 h-4 text-gray-800" />
+                          </div>
+                        </button>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="absolute top-2 right-2 flex space-x-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const downloadUrl = BASE_URL + vid.url;
+                            window.open(downloadUrl, '_blank');
+                          }}
+                          className="bg-blue-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-600"
+                          title="Download video"
+                        >
+                          <Download className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onRemoveExistingVideo?.(vid.id)}
+                          className="bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          title="Remove video"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                        {vid.url.split('/').pop()}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -372,6 +465,7 @@ export default function MediaDocumentsSection({
                   onUpdate={updateDocumentName}
                   onRemove={removeDocumentItem}
                   isSubmitting={isSubmitting}
+                  existingDocuments={existingDocuments}
                 />
               ))}
             </div>

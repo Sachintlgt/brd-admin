@@ -68,7 +68,12 @@ export default function EditProperty() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={(e) => {
+        console.log('📝 FORM SUBMIT EVENT TRIGGERED');
+        console.log('Form errors at submit time:', formProps.errors);
+        console.log('Is form valid?', Object.keys(formProps.errors).length === 0);
+        handleSubmit(onSubmit)(e);
+      }} className="space-y-8">
         <BasicInformationSection
           register={formProps.register}
           errors={formProps.errors}
@@ -162,6 +167,8 @@ export default function EditProperty() {
         <AmenitiesSection
           register={formProps.register}
           errors={formProps.errors}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
           iconDropzone={formProps.iconDropzone}
           iconFiles={formProps.iconFiles}
           setIconFiles={formProps.setIconFiles}
