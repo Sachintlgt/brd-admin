@@ -100,6 +100,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Process queued requests with error
         processQueue(refreshError, null);
+        console.log('--------------------------------2');
 
         // Refresh failed, clear auth and redirect to login
         clearAuthCookies();

@@ -73,61 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Listen for cross-tab logout events
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const onStorage = (e: StorageEvent) => {
-      const key = e.key;
-      if (!key) return;
-
-      try {
-        // Handle cross-tab logout
-        if (key === AUTH_KEYS.LOGOUT_SIGNAL) {
-          setUser(null);
-          router.replace('/login');
-        }
-      } catch (err) {
-        console.error('onStorage handler error', err);
-      }
-    };
-
-    const onInTabLogout = () => {
-      setUser(null);
-      router.replace('/login');
-    };
-
-    // Listen for cookie changes (when login happens in another tab)
-    const checkCookieChanges = () => {
-      const cookieUser = getUserFromCookie();
-
-      // If cookie user exists but state user doesn't, update state
-      if (cookieUser && !user) {
-        setUser(cookieUser);
-      }
-      // If cookie user doesn't exist but state user does, clear state
-      else if (!cookieUser && user) {
-        setUser(null);
-      }
-      // If both exist but are different, update state
-      else if (cookieUser && user && cookieUser.id !== user.id) {
-        setUser(cookieUser);
-      }
-    };
-
-    // Check for cookie changes periodically (for cross-tab sync)
-    const cookieCheckInterval = setInterval(checkCookieChanges, 1000);
-
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('app:logout', onInTabLogout);
-
-    return () => {
-      clearInterval(cookieCheckInterval);
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('app:logout', onInTabLogout);
-    };
-  }, [router, user]);
-
   /**
    * AUTO REFRESH TOKEN EVERY 30 MINUTES
    * Backend will update the cookie automatically
@@ -143,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Update user state with fresh data
           setUser(newUser);
         } catch (err) {
+          console.log('--------------------------------1');
           clearAuthCookies();
           toast.error('Unauthorized user');
           console.error('❌ Token refresh failed', err);
