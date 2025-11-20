@@ -34,7 +34,7 @@ export const useLogin = () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Force refresh to ensure cookie is read
-      auth.refreshUser();
+      // auth.refreshUser();
 
       // Navigate to dashboard
       router.push('/dashboard');

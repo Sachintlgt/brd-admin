@@ -51,7 +51,7 @@ export function clearAuthCookies() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   // Match backend: 'none' for production, 'lax' for development
-  const sameSite = isProduction ? 'None' : 'Lax';
+  const sameSite = isProduction ? 'None' : 'Strict';
   const secure = isProduction ? 'Secure;' : '';
 
   // Clear accessToken cookie
