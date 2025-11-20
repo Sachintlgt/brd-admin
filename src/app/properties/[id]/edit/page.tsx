@@ -68,10 +68,28 @@ export default function EditProperty() {
         </div>
       )}
 
+      {/* Display form validation errors */}
+      {Object.keys(formProps.errors).length > 0 && (
+        <div
+          data-validation-errors
+          className="flex items-start gap-3 p-4 mb-6 border border-orange-200 rounded-lg bg-orange-50"
+        >
+          <AlertCircle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
+          <div className="text-sm text-orange-800">
+            <div className="font-medium mb-2">Please fix the following errors:</div>
+            <ul className="list-disc list-inside space-y-1">
+              {Object.entries(formProps.errors).map(([field, error]: [string, any]) => (
+                <li key={field}>
+                  <span className="font-medium capitalize">{field.replace(/([A-Z])/g, ' $1')}:</span>{' '}
+                  {error?.message || 'Invalid value'}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={(e) => {
-        console.log('📝 FORM SUBMIT EVENT TRIGGERED');
-        console.log('Form errors at submit time:', formProps.errors);
-        console.log('Is form valid?', Object.keys(formProps.errors).length === 0);
         handleSubmit(onSubmit)(e);
       }} className="space-y-8">
         <BasicInformationSection
@@ -187,6 +205,13 @@ export default function EditProperty() {
           >
             Cancel
           </Link>
+          <button
+            type="button"
+            onClick={() => formProps.validateForm()}
+            className="px-6 py-3 font-medium text-orange-700 transition-colors duration-200 border border-orange-300 rounded-lg hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Validate Form
+          </button>
           <button
             type="submit"
             disabled={isSubmitting}

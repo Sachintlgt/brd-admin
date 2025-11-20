@@ -59,6 +59,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     reset,
     watch,
     control,
+    trigger,
     formState: { errors },
   } = useForm<PropertyFormValues>({
     resolver: typedResolver,
@@ -129,16 +130,31 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   });
 
   const sanitizeErrors = (errors: any) => {
-    return Object.fromEntries(
-      Object.entries(errors).map(([key, err]: [string, any]) => [
-        key,
-        {
-          type: err.type,
-          message: err.message,
-          ref: err.ref?.name,
-        },
-      ]),
-    );
+    const sanitized: any = {};
+
+    Object.entries(errors).forEach(([key, err]: [string, any]) => {
+      // Handle Zod validation errors
+      if (err && typeof err === 'object') {
+        // Check if it's a Zod error (has issues array)
+        if (err.issues && Array.isArray(err.issues)) {
+          // Combine all error messages for this field
+          const messages = err.issues.map((issue: any) => issue.message).join(', ');
+          sanitized[key] = {
+            message: messages,
+            type: 'validation',
+            issues: err.issues
+          };
+        } else {
+          // Fallback for other error types
+          sanitized[key] = {
+            message: err.message || 'Invalid value',
+            type: err.type || 'error'
+          };
+        }
+      }
+    });
+
+    return sanitized;
   };
 
   const errorsJson = JSON.stringify(sanitizeErrors(errors));
@@ -147,8 +163,22 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
 
   useEffect(() => {
-    setFormErrors(sanitizeErrors(errors));
-  }, [errorsJson]);
+    const sanitized = sanitizeErrors(errors);
+    setFormErrors(sanitized);
+
+    // Log validation errors for debugging
+    if (Object.keys(errors).length > 0) {
+      console.log('🔴 FORM VALIDATION ERRORS:', {
+        rawErrors: errors,
+        sanitizedErrors: sanitized,
+        formData: {
+          paymentPlans: getValues('paymentPlans'),
+          shareDetails: getValues('shareDetails'),
+          maintenanceTemplates: getValues('maintenanceTemplates')
+        }
+      });
+    }
+  }, [errorsJson, errors, getValues]);
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -864,5 +894,24 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     removeExistingMaintenanceTemplate,
     removeExistingPaymentPlan,
     isEditMode: !!propertyId,
+    // Validate form and provide user feedback
+    validateForm: async () => {
+      const result = await trigger();
+
+      if (result) {
+        // Form is valid
+        toast.success('Form validation passed! Ready to submit.');
+      } else {
+        // Form has errors - scroll to validation errors
+        setTimeout(() => {
+          const errorAlert = document.querySelector('[data-validation-errors]');
+          if (errorAlert) {
+            errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
+
+      return result;
+    },
   };
 };
