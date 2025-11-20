@@ -48,9 +48,16 @@ export function isAuthenticated(): boolean {
 export function clearAuthCookies() {
   if (typeof document === 'undefined') return;
 
-  // Set cookies to expire in the past
-  document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
-  document.cookie = 'userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  const sameSite = isProduction ? 'None' : 'Strict';
+  const secure = isProduction ? 'Secure;' : '';
+
+  // Clear accessToken cookie
+  document.cookie = `accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=${sameSite}; ${secure}`;
+
+  // Clear userData cookie
+  document.cookie = `userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=${sameSite}; ${secure}`;
 
   // Trigger logout event for cross-tab sync
   if (typeof window !== 'undefined') {
