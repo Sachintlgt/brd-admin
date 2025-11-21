@@ -108,18 +108,6 @@ const CertificateItemRow = memo(
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-          <input
-            type="number"
-            min="0"
-            value={item.displayOrder || ''}
-            onChange={(e) => onUpdate(index, 'displayOrder', parseInt(e.target.value) || 0)}
-            placeholder="0"
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            disabled={isSubmitting}
-          />
-        </div>
       </div>
 
       <div className="mt-4">
@@ -186,7 +174,6 @@ export default function CertificatesSection({
         updatedItems.push({
           name: previousItem?.name || '',
           description: previousItem?.description || '',
-          displayOrder: previousItem?.displayOrder || 0,
           file,
           isExisting: false,
           uniqueId,
@@ -209,13 +196,13 @@ export default function CertificatesSection({
   // Update certificates array whenever certificateItems change
   // IMPORTANT: Only include NEW certificates (without id) that need images uploaded
   // Existing certificates are already in the database and should not be included
+  // displayOrder will be assigned automatically in usePropertyForm when sending to backend
   useEffect(() => {
     const certificates = certificateItems
       .filter((item) => item.name.trim() !== '' && !item.isExisting)
       .map((item) => ({
         name: item.name.trim(),
         description: item.description?.trim() || undefined,
-        displayOrder: item.displayOrder || 0,
       }));
     setValue?.('certificates', certificates);
   }, [certificateItems, setValue]);

@@ -43,16 +43,26 @@ export default function LocationSection({
   const extractAddressComponents = (item: any) => {
     const address = item.address || {};
 
+    // Extract state code from ISO3166-2-lvl4 format (e.g., "IN-CG" -> "CG")
+    let stateCode = address.state_code || address.province_code || '';
+    if (!stateCode && address['ISO3166-2-lvl4']) {
+      // Extract state code from ISO3166-2-lvl4 (format: "IN-XX" where XX is state code)
+      const isoParts = address['ISO3166-2-lvl4'].split('-');
+      if (isoParts.length > 1) {
+        stateCode = isoParts[1]; // Get the state code part
+      }
+    }
+
     return {
       streetNumber: address.house_number || '',
       street: address.road || address.pedestrian || address.path || '',
       city: address.city || address.town || address.village || address.municipality || '',
       state: address.state || address.province || address.region || '',
-      stateCode: address.state_code || address.province_code || '',
+      stateCode: stateCode,
       country: address.country || '',
       countryCode: address.country_code || '',
       postalCode: address.postcode || '',
-      postalCodeSuffix: '',
+      postalCodeSuffix: '', // Not available in Nominatim API response
     };
   };
 
@@ -82,13 +92,23 @@ export default function LocationSection({
           setValue('postalCode', addressComponents.postalCode);
           setValue('postalCodeSuffix', addressComponents.postalCodeSuffix);
 
-          if (locationData.viewport) {
+          // Set viewport from Nominatim boundingbox if available
+          // boundingbox format: [south_lat, north_lat, west_lng, east_lng]
+          if (details.boundingbox && Array.isArray(details.boundingbox) && details.boundingbox.length === 4) {
+            const [southLat, northLat, westLng, eastLng] = details.boundingbox.map(parseFloat);
+            setValue('viewportSouthwestLat', southLat);
+            setValue('viewportNortheastLat', northLat);
+            setValue('viewportSouthwestLng', westLng);
+            setValue('viewportNortheastLng', eastLng);
+          } else if (locationData.viewport) {
+            // Fallback to Google viewport if Nominatim boundingbox not available
             setValue('viewportNortheastLat', locationData.viewport.northeast.lat);
             setValue('viewportNortheastLng', locationData.viewport.northeast.lng);
             setValue('viewportSouthwestLat', locationData.viewport.southwest.lat);
             setValue('viewportSouthwestLng', locationData.viewport.southwest.lng);
           }
 
+          // Set zoom level if available (from Google location picker, not Nominatim)
           if (locationData.zoom) {
             setValue('zoom', locationData.zoom);
           }

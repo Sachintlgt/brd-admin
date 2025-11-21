@@ -8,6 +8,7 @@ interface MaintenanceTemplatesSectionProps {
   setValue: any;
   getValues: any;
   control: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function MaintenanceTemplatesSection({
@@ -16,6 +17,7 @@ export default function MaintenanceTemplatesSection({
   setValue,
   getValues,
   control,
+  onRemoveExisting,
 }: MaintenanceTemplatesSectionProps) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -41,7 +43,16 @@ export default function MaintenanceTemplatesSection({
   };
 
   const removeTemplate = (index: number) => {
-    remove(index);
+    const currentValues = getValues('maintenanceTemplates') || [];
+    const item = currentValues[index];
+
+    if (item?.isExisting && item?.id && onRemoveExisting) {
+      // This is an existing item - use the removeExisting function
+      onRemoveExisting(item.id);
+    } else {
+      // This is a new item - just remove from form
+      remove(index);
+    }
   };
 
   const isRecurring = (type: string) => {
@@ -81,6 +92,7 @@ export default function MaintenanceTemplatesSection({
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
+
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>

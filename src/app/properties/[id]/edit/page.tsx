@@ -132,6 +132,7 @@ export default function EditProperty() {
           errors={formProps.errors}
           control={formProps.control}
           getValues={formProps.getValues}
+          onRemoveExisting={formProps.removeExistingPaymentPlan}
         />
 
         <PricingDetailsSection
@@ -140,6 +141,7 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           control={formProps.control}
+          onRemoveExisting={formProps.removeExistingPricing}
         />
 
         <ShareDetailsSection
@@ -148,6 +150,7 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           control={formProps.control}
+          onRemoveExisting={formProps.removeExistingShareDetail}
         />
 
         <MaintenanceTemplatesSection
@@ -156,6 +159,7 @@ export default function EditProperty() {
           setValue={formProps.setValue}
           getValues={formProps.getValues}
           control={formProps.control}
+          onRemoveExisting={formProps.removeExistingMaintenanceTemplate}
         />
 
         <MediaDocumentsSection

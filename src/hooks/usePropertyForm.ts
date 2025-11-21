@@ -484,28 +484,49 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           const property = response.data;
           setInitialData(property);
 
-          // Prepare form array data
+          // Reset deletion arrays when loading new data
+          setImageIdsToDelete([]);
+          setAmenityIdsToDelete([]);
+          setDocumentIdsToDelete([]);
+          setPricingIdsToDelete([]);
+          setShareDetailIdsToDelete([]);
+          setMaintenanceTemplateIdsToDelete([]);
+          setCertificateIdsToDelete([]);
+          setFloorPlanIdsToDelete([]);
+          setPaymentPlanIdsToDelete([]);
+
+          // Prepare form array data - mark existing items with isExisting flag
           const pricings = (property.pricings || property.pricingDetails || []).map(
             (pricing: any) => ({
               ...pricing,
               effectiveFrom: convertToDateTimeLocal(pricing.effectiveFrom),
               effectiveTo: convertToDateTimeLocal(pricing.effectiveTo),
+              isExisting: true, // Mark as existing so deletion tracking works
             }),
           );
 
-          const shares = property.shareDetails || [];
+          const shares = (property.shareDetails || []).map((share: any) => ({
+            ...share,
+            isExisting: true, // Mark as existing so deletion tracking works
+          }));
 
           const templates = (property.maintenanceTemplates || []).map((template: any) => ({
             ...template,
             startDate: convertToDateTimeLocal(template.startDate),
             endDate: convertToDateTimeLocal(template.endDate),
+            isExisting: true, // Mark as existing so deletion tracking works
           }));
 
-          const paymentPlans = property.paymentPlans || [];
+          const paymentPlans = (property.paymentPlans || []).map((plan: any) => ({
+            ...plan,
+            isExisting: true, // Mark as existing so deletion tracking works
+          }));
+
+
 
 
           // Set basic fields and form arrays together
-          reset({
+          const formData = {
             name: property.name,
             location: property.location,
             locationLat: property.locationLat,
@@ -567,7 +588,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             certificates: [],
             floorPlans: [],
             paymentPlans: paymentPlans,
-          });
+          };
+
+          reset(formData);
 
           // Set existing media
           const images = property.images?.filter((img: any) => img.type === 'image') || [];
@@ -605,9 +628,11 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
   const onSubmit = async (data: PropertyFormValues) => {
 
+
     // Log detailed info about each payment plan
     if (data.paymentPlans) {
       data.paymentPlans.forEach((plan, index) => {
+        console.log(`Payment Plan ${index}:`, plan);
       });
     }
 
@@ -616,64 +641,184 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     setIsSubmitting(true);
 
     try {
-      // Process pricing details - all items come from form now (existing + new)
-      const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => ({
-        id: pricing.id, // Include ID if exists (for existing records)
-        label: pricing.label,
-        price: Number(pricing.price),
-        type: pricing.type,
-        phaseName: pricing.phaseName || undefined,
-        description: pricing.description || undefined,
-        effectiveFrom: convertToISO(pricing.effectiveFrom),
-        effectiveTo: convertToISO(pricing.effectiveTo),
-      }));
+      // Process pricing details - preserve IDs
+      const processedPricingDetails = (data.pricingDetails || []).map((pricing: any) => {
+        // First, check if pricing already has an ID (from existing data)
+        if (pricing.id) {
+          return {
+            id: pricing.id,
+            label: pricing.label,
+            price: Number(pricing.price),
+            type: pricing.type,
+            phaseName: pricing.phaseName || undefined,
+            description: pricing.description || undefined,
+            effectiveFrom: convertToISO(pricing.effectiveFrom),
+            effectiveTo: convertToISO(pricing.effectiveTo),
+          };
+        }
+
+        // If no ID, try to find matching existing item by content
+        const existingItem = existingPricingDetails.find(
+          (existing: any) =>
+            existing.label === pricing.label &&
+            Number(existing.price) === Number(pricing.price) &&
+            existing.type === pricing.type &&
+            existing.phaseName === pricing.phaseName &&
+            existing.description === pricing.description
+        );
+
+        return {
+          id: existingItem?.id || undefined,
+          label: pricing.label,
+          price: Number(pricing.price),
+          type: pricing.type,
+          phaseName: pricing.phaseName || undefined,
+          description: pricing.description || undefined,
+          effectiveFrom: convertToISO(pricing.effectiveFrom),
+          effectiveTo: convertToISO(pricing.effectiveTo),
+        };
+      });
 
       // Note: Deletions are handled by manual removeExistingPricing calls
 
-      // Process share details - all items come from form now (existing + new)
-      const processedShareDetails = (data.shareDetails || []).map((detail: any) => ({
-        id: detail.id, // Include ID if exists
-        title: detail.title,
-        description: detail.description || undefined,
-        shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
-        amount: detail.amount ? Number(detail.amount) : undefined,
-      }));
+      // Process share details - preserve IDs
+      const processedShareDetails = (data.shareDetails || []).map((detail: any) => {
+        // First, check if detail already has an ID (from existing data)
+        if (detail.id) {
+          return {
+            id: detail.id,
+            title: detail.title,
+            description: detail.description || undefined,
+            shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
+            amount: detail.amount ? Number(detail.amount) : undefined,
+          };
+        }
+
+        // If no ID, try to find matching existing item by content
+        const existingItem = existingShareDetails.find(
+          (existing: any) =>
+            existing.title === detail.title &&
+            existing.description === detail.description &&
+            Number(existing.shareCount) === Number(detail.shareCount) &&
+            Number(existing.amount) === Number(detail.amount)
+        );
+
+        return {
+          id: existingItem?.id || undefined,
+          title: detail.title,
+          description: detail.description || undefined,
+          shareCount: detail.shareCount ? Number(detail.shareCount) : undefined,
+          amount: detail.amount ? Number(detail.amount) : undefined,
+        };
+      });
 
       // Note: Deletions are handled by manual removeExistingShareDetail calls
 
-      // Process maintenance templates - all items come from form now (existing + new)
+      // Process maintenance templates - preserve IDs
       const processedMaintenanceTemplates = (data.maintenanceTemplates || []).map(
-        (template: any) => ({
-          id: template.id, // Include ID if exists
-          chargeType: template.chargeType,
-          amount: Number(template.amount),
-          description: template.description || undefined,
-          dueDay: template.dueDay ? Number(template.dueDay) : undefined,
-          startDate: convertToISO(template.startDate),
-          endDate: convertToISO(template.endDate),
-          isActive: template.isActive ?? true,
-        }),
+        (template: any) => {
+          // First, check if template already has an ID (from existing data)
+          if (template.id) {
+            return {
+              id: template.id,
+              chargeType: template.chargeType,
+              amount: Number(template.amount),
+              description: template.description || undefined,
+              dueDay: template.dueDay ? Number(template.dueDay) : undefined,
+              startDate: convertToISO(template.startDate),
+              endDate: convertToISO(template.endDate),
+              isActive: template.isActive ?? true,
+            };
+          }
+
+          // If no ID, try to find matching existing item by content
+          // Convert dates to ISO for comparison
+          const templateStartDateISO = convertToISO(template.startDate);
+          const templateEndDateISO = convertToISO(template.endDate);
+          
+          const existingItem = existingMaintenanceTemplates.find((existing: any) => {
+            // Convert existing dates to ISO for comparison
+            const existingStartDateISO = convertToISO(existing.startDate);
+            const existingEndDateISO = convertToISO(existing.endDate);
+
+            return (
+              existing.chargeType === template.chargeType &&
+              Number(existing.amount) === Number(template.amount) &&
+              existing.description === template.description &&
+              Number(existing.dueDay) === Number(template.dueDay) &&
+              existingStartDateISO === templateStartDateISO &&
+              existingEndDateISO === templateEndDateISO
+            );
+          });
+
+          return {
+            id: existingItem?.id || undefined,
+            chargeType: template.chargeType,
+            amount: Number(template.amount),
+            description: template.description || undefined,
+            dueDay: template.dueDay ? Number(template.dueDay) : undefined,
+            startDate: templateStartDateISO,
+            endDate: templateEndDateISO,
+            isActive: template.isActive ?? true,
+          };
+        },
       );
 
       // Note: Deletions are handled by manual removeExistingMaintenanceTemplate calls
 
-      // Process payment plans
-      const processedPaymentPlans = (data.paymentPlans || []).map((plan: any) => ({
-        id: plan.id, // Include ID if exists
-        planType: plan.planType,
-        purchaseType: plan.purchaseType,
-        name: plan.name,
-        description: plan.description || undefined,
-        amount: plan.amount ? Number(plan.amount) : undefined,
-        percentage: plan.percentage ? Number(plan.percentage) : undefined,
-        milestone: plan.milestone || undefined,
-        dueDate: plan.dueDate || undefined,
-        displayOrder: plan.displayOrder || 0,
-        isGSTIncluded: plan.isGSTIncluded ?? false,
-        gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
-      }));
+      // Process payment plans - preserve IDs and assign displayOrder automatically (starting from 1)
+      const processedPaymentPlans = (data.paymentPlans || []).map((plan: any, index: number) => {
+        // First, check if plan already has an ID (from existing data)
+        if (plan.id) {
+          return {
+            id: plan.id,
+            planType: plan.planType,
+            purchaseType: plan.purchaseType,
+            name: plan.name,
+            description: plan.description || undefined,
+            amount: plan.amount ? Number(plan.amount) : undefined,
+            percentage: plan.percentage ? Number(plan.percentage) : undefined,
+            milestone: plan.milestone || undefined,
+            dueDate: plan.dueDate || undefined,
+            displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+            isGSTIncluded: plan.isGSTIncluded ?? false,
+            gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
+          };
+        }
+
+        // If no ID, try to find matching existing item by content
+        const existingItem = existingPaymentPlans.find(
+          (existing: any) =>
+            existing.planType === plan.planType &&
+            existing.purchaseType === plan.purchaseType &&
+            existing.name === plan.name &&
+            existing.description === plan.description &&
+            Number(existing.amount) === Number(plan.amount) &&
+            Number(existing.percentage) === Number(plan.percentage) &&
+            existing.milestone === plan.milestone &&
+            existing.dueDate === plan.dueDate &&
+            existing.isGSTIncluded === (plan.isGSTIncluded ?? false) &&
+            Number(existing.gstPercentage) === Number(plan.gstPercentage)
+        );
+
+        return {
+          id: existingItem?.id || undefined,
+          planType: plan.planType,
+          purchaseType: plan.purchaseType,
+          name: plan.name,
+          description: plan.description || undefined,
+          amount: plan.amount ? Number(plan.amount) : undefined,
+          percentage: plan.percentage ? Number(plan.percentage) : undefined,
+          milestone: plan.milestone || undefined,
+          dueDate: plan.dueDate || undefined,
+          displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+          isGSTIncluded: plan.isGSTIncluded ?? false,
+          gstPercentage: plan.gstPercentage ? Number(plan.gstPercentage) : undefined,
+        };
+      });
 
       // Note: Deletions are handled by manual removeExistingPaymentPlan calls
+
 
       if (propertyId) {
         // UPDATE MODE
@@ -747,8 +892,18 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           maintenanceTemplates:
             processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
           paymentPlans: processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined,
-          certificates: data.certificates?.length ? data.certificates : undefined,
-          floorPlans: data.floorPlans?.length ? data.floorPlans : undefined,
+          certificates: data.certificates?.length
+            ? data.certificates.map((cert: any, index: number) => ({
+                ...cert,
+                displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+              }))
+            : undefined,
+          floorPlans: data.floorPlans?.length
+            ? data.floorPlans.map((plan: any, index: number) => ({
+                ...plan,
+                displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+              }))
+            : undefined,
         };
 
         const response = await propertyService.updateProperty(propertyId, payload);
@@ -816,8 +971,18 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           maintenanceTemplates:
             processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
           paymentPlans: processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined,
-          certificates: data.certificates?.length > 0 ? data.certificates : undefined,
-          floorPlans: data.floorPlans?.length > 0 ? data.floorPlans : undefined,
+          certificates: data.certificates?.length > 0
+            ? data.certificates.map((cert: any, index: number) => ({
+                ...cert,
+                displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+              }))
+            : undefined,
+          floorPlans: data.floorPlans?.length > 0
+            ? data.floorPlans.map((plan: any, index: number) => ({
+                ...plan,
+                displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+              }))
+            : undefined,
         };
 
         const response = await propertyService.createProperty(payload);

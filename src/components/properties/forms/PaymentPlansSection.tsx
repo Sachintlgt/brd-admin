@@ -7,6 +7,7 @@ interface PaymentPlansSectionProps {
   errors: any;
   control: any;
   getValues?: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function PaymentPlansSection({
@@ -14,6 +15,7 @@ export default function PaymentPlansSection({
   errors,
   control,
   getValues,
+  onRemoveExisting,
 }: PaymentPlansSectionProps) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -30,14 +32,22 @@ export default function PaymentPlansSection({
       percentage: '',
       milestone: '',
       dueDate: '',
-      displayOrder: 0,
       isGSTIncluded: false,
       gstPercentage: '',
     });
   };
 
   const removePaymentPlan = (index: number) => {
-    remove(index);
+    const currentValues = getValues?.('paymentPlans') || [];
+    const item = currentValues[index];
+
+    if (item?.isExisting && item?.id && onRemoveExisting) {
+      // This is an existing item - use the removeExisting function
+      onRemoveExisting(item.id);
+    } else {
+      // This is a new item - just remove from form
+      remove(index);
+    }
   };
 
   return (
@@ -73,6 +83,7 @@ export default function PaymentPlansSection({
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
+
 
             {/* Basic Information */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -158,23 +169,6 @@ export default function PaymentPlansSection({
                 )}
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  {...register(`paymentPlans.${index}.displayOrder`)}
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                {errors.paymentPlans?.[index]?.displayOrder && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.paymentPlans[index].displayOrder.message}
-                  </p>
-                )}
-              </div>
 
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">Milestone</label>

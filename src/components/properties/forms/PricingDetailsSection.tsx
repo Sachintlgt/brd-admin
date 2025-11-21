@@ -8,6 +8,7 @@ interface PricingDetailsSectionProps {
   setValue: any;
   getValues: any;
   control: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function PricingDetailsSection({
@@ -16,11 +17,13 @@ export default function PricingDetailsSection({
   setValue,
   getValues,
   control,
+  onRemoveExisting,
 }: PricingDetailsSectionProps) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'pricingDetails',
   });
+
 
   // Watch the pricing details to get current values for conditional rendering
   const watchedPricingDetails = useWatch({
@@ -41,7 +44,16 @@ export default function PricingDetailsSection({
   };
 
   const removePricing = (index: number) => {
-    remove(index);
+    const currentValues = getValues('pricingDetails') || [];
+    const item = currentValues[index];
+
+    if (item?.isExisting && item?.id && onRemoveExisting) {
+      // This is an existing item - use the removeExisting function
+      onRemoveExisting(item.id);
+    } else {
+      // This is a new item - just remove from form
+      remove(index);
+    }
   };
 
   return (
@@ -77,6 +89,7 @@ export default function PricingDetailsSection({
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
+
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>

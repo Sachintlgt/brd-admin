@@ -8,6 +8,7 @@ interface ShareDetailsSectionProps {
   setValue: any;
   getValues: any;
   control: any;
+  onRemoveExisting?: (id: string) => void;
 }
 
 export default function ShareDetailsSection({
@@ -16,6 +17,7 @@ export default function ShareDetailsSection({
   setValue,
   getValues,
   control,
+  onRemoveExisting,
 }: ShareDetailsSectionProps) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -38,7 +40,16 @@ export default function ShareDetailsSection({
   };
 
   const removeShareDetail = (index: number) => {
-    remove(index);
+    const currentValues = getValues('shareDetails') || [];
+    const item = currentValues[index];
+
+    if (item?.isExisting && item?.id && onRemoveExisting) {
+      // This is an existing item - use the removeExisting function
+      onRemoveExisting(item.id);
+    } else {
+      // This is a new item - just remove from form
+      remove(index);
+    }
   };
 
   return (
@@ -74,6 +85,7 @@ export default function ShareDetailsSection({
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
+
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>

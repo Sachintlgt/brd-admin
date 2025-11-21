@@ -32,6 +32,7 @@ const FILE_SIZE_LIMITS = {
 
 // Pricing Detail Schema
 const pricingDetailSchema = z.object({
+  id: z.string().uuid().optional(),
   label: z.string().min(1, 'Label is required'),
   price: z.coerce.number().gt(0, 'Price must be greater than 0'),
   type: z.enum(['ONE_TIME', 'PHASE']),
@@ -43,6 +44,7 @@ const pricingDetailSchema = z.object({
 
 // Share Detail Schema
 const shareDetailSchema = z.object({
+  id: z.string().uuid().optional(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().nullish(),
   shareCount: z.coerce
@@ -56,6 +58,7 @@ const shareDetailSchema = z.object({
 
 // Maintenance Template Schema
 const maintenanceTemplateSchema = z.object({
+  id: z.string().uuid().optional(),
   chargeType: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY', 'ONE_TIME']),
   amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
   description: z.string().nullish(),
@@ -73,6 +76,7 @@ const maintenanceTemplateSchema = z.object({
 
 // Certificate Schema
 const certificateSchema = z.object({
+  id: z.string().uuid().optional(),
   name: z.string().min(1, 'Name is required'),
   description: z.string().max(500, 'Description cannot exceed 500 characters').nullish(),
   displayOrder: z.coerce.number().int().min(0).nullish(),
@@ -80,6 +84,7 @@ const certificateSchema = z.object({
 
 // Floor Plan Schema
 const floorPlanSchema = z.object({
+  id: z.string().uuid().optional(),
   name: z.string().min(1, 'Name is required'),
   description: z.string().max(500, 'Description cannot exceed 500 characters').nullish(),
   displayOrder: z.coerce.number().int().min(0).nullish(),
@@ -88,6 +93,7 @@ const floorPlanSchema = z.object({
 // Payment Plan Schema
 const paymentPlanSchema = z
   .object({
+    id: z.string().uuid().optional(),
     planType: z.enum(['INSTALMENT', 'BIFURCATION']),
     purchaseType: z.enum(['WHOLE_UNIT', 'FRACTIONAL']),
     name: z.string().min(1, 'Name is required'),
