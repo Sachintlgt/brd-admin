@@ -128,12 +128,16 @@ export default function AmenitiesSection({
 }: AmenitiesSectionProps) {
   const [amenityItems, setAmenityItems] = useState<AmenityItem[]>([]);
   const prevMetadataRef = useRef<string>('');
+  const isInitializedRef = useRef(false);
 
   // Build amenity items from existing amenities and new uploads
+  // ONLY run this on initial mount or when existingAmenities change (edit mode load)
   useEffect(() => {
+    if (isInitializedRef.current) return;
+
     const items: AmenityItem[] = [];
 
-    // Add existing amenities
+    // Add existing amenities (from edit mode)
     existingAmenities.forEach((amenity) => {
       items.push({
         id: amenity.id,
@@ -144,22 +148,44 @@ export default function AmenitiesSection({
       });
     });
 
-    // Add new uploaded files
-    iconFiles.forEach((file, index) => {
-      items.push({
-        name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
-        file,
-        fileIndex: index,
-        isExisting: false,
-        uniqueId: `new-${file.name}-${file.size}-${index}`,
-      });
-    });
-
     setAmenityItems(items);
-  }, [existingAmenities, iconFiles]);
+    isInitializedRef.current = true;
+  }, [existingAmenities]);
+
+  // Separate effect to handle new icon file uploads
+  // This merges new uploads with existing items instead of replacing them
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    setAmenityItems((prevItems) => {
+      // Keep all existing items (both from DB and text-only)
+      const existingItems = prevItems.filter((item) => !item.file || item.isExisting);
+
+      // Track which file indices are already in the list
+      const existingFileIndices = new Set(
+        prevItems.filter((item) => item.file && !item.isExisting).map((item) => item.fileIndex),
+      );
+
+      // Add only NEW uploaded files that aren't already in the list
+      const newFileItems: AmenityItem[] = [];
+      iconFiles.forEach((file, index) => {
+        if (!existingFileIndices.has(index)) {
+          newFileItems.push({
+            name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
+            file,
+            fileIndex: index,
+            isExisting: false,
+            uniqueId: `new-${file.name}-${file.size}-${index}`,
+          });
+        }
+      });
+
+      // Merge: existing items + new file items
+      return [...existingItems, ...newFileItems];
+    });
+  }, [iconFiles]);
 
   // Sync with parent hook whenever amenityItems change
-  // Use ref to prevent infinite loops by comparing stringified metadata
   useEffect(() => {
     const metadata = amenityItems.map((item) => ({
       id: item.id,
@@ -168,7 +194,6 @@ export default function AmenitiesSection({
       iconFile: item.file,
     }));
 
-    // Create a stable comparison key (excluding File objects which can't be compared)
     const metadataKey = JSON.stringify(
       metadata.map((m) => ({
         id: m.id,
@@ -179,7 +204,6 @@ export default function AmenitiesSection({
       })),
     );
 
-    // Only sync if metadata actually changed
     if (metadataKey !== prevMetadataRef.current) {
       prevMetadataRef.current = metadataKey;
 
@@ -187,11 +211,10 @@ export default function AmenitiesSection({
         syncAmenityItems(metadata);
       }
 
-      // Update the hidden field for backward compatibility
       const names = amenityItems.map((item) => item.name.trim()).filter((n) => n);
       setValue?.('amenityNames', names.join(', '), { shouldValidate: false });
     }
-  }, [amenityItems]); // Only depend on amenityItems, not syncAmenityItems or setValue
+  }, [amenityItems, syncAmenityItems, setValue]);
 
   const addNewAmenity = useCallback(() => {
     const newItem: AmenityItem = {
@@ -212,14 +235,11 @@ export default function AmenitiesSection({
       const item = amenityItems[index];
 
       if (item.isExisting && item.id) {
-        // Mark existing amenity for deletion
         onRemoveExisting?.(item.id);
       } else if (item.file && item.fileIndex !== undefined) {
-        // Remove the uploaded file
         removeAt(item.fileIndex, iconFiles, setIconFiles, 'amenityIcons');
       }
 
-      // Remove from local state
       setAmenityItems((prev) => prev.filter((_, i) => i !== index));
     },
     [amenityItems, iconFiles, removeAt, setIconFiles, onRemoveExisting],
@@ -305,7 +325,6 @@ export default function AmenitiesSection({
           </div>
         )}
 
-        {/* Hidden field for backward compatibility */}
         <input type="hidden" {...register('amenityNames')} />
 
         {errors.amenityNames && (
