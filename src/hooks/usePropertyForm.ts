@@ -142,13 +142,13 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           sanitized[key] = {
             message: messages,
             type: 'validation',
-            issues: err.issues
+            issues: err.issues,
           };
         } else {
           // Fallback for other error types
           sanitized[key] = {
             message: err.message || 'Invalid value',
-            type: err.type || 'error'
+            type: err.type || 'error',
           };
         }
       }
@@ -160,7 +160,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const errorsJson = JSON.stringify(sanitizeErrors(errors));
 
   const [formErrors, setFormErrors] = useState({});
-
 
   useEffect(() => {
     const sanitized = sanitizeErrors(errors);
@@ -174,8 +173,8 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
         formData: {
           paymentPlans: getValues('paymentPlans'),
           shareDetails: getValues('shareDetails'),
-          maintenanceTemplates: getValues('maintenanceTemplates')
-        }
+          maintenanceTemplates: getValues('maintenanceTemplates'),
+        },
       });
     }
   }, [errorsJson, errors, getValues]);
@@ -503,7 +502,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
 
           const paymentPlans = property.paymentPlans || [];
 
-
           // Set basic fields and form arrays together
           reset({
             name: property.name,
@@ -604,11 +602,9 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   }, [propertyId, reset]);
 
   const onSubmit = async (data: PropertyFormValues) => {
-
     // Log detailed info about each payment plan
     if (data.paymentPlans) {
-      data.paymentPlans.forEach((plan, index) => {
-      });
+      data.paymentPlans.forEach((plan, index) => {});
     }
 
     setSubmitError(null);

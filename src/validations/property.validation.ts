@@ -450,7 +450,7 @@ export const propertySchema = z
       // If amenity names are provided, they should be valid
       if (names.length > 0) {
         // Check for empty names after trimming
-        const hasEmptyNames = names.some(name => name === '');
+        const hasEmptyNames = names.some((name) => name === '');
         if (hasEmptyNames) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

@@ -49,9 +49,17 @@ interface CertificateItemRowProps {
 }
 
 const CertificateItemRow = memo(
-  ({ item, index, onUpdate, onRemove, isSubmitting, existingCertificates = [] }: CertificateItemRowProps) => {
+  ({
+    item,
+    index,
+    onUpdate,
+    onRemove,
+    isSubmitting,
+    existingCertificates = [],
+  }: CertificateItemRowProps) => {
     // Find the corresponding existing certificate to get the image URL
-    const existingCert = item.isExisting && existingCertificates.find((cert: any) => cert.id === item.id);
+    const existingCert =
+      item.isExisting && existingCertificates.find((cert: any) => cert.id === item.id);
 
     return (
       <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
@@ -95,54 +103,55 @@ const CertificateItemRow = memo(
           </div>
         )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-          <input
-            type="text"
-            value={item.name}
-            onChange={(e) => onUpdate(index, 'name', e.target.value)}
-            placeholder="Enter certificate name (e.g., RERA Certificate)"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <input
+              type="text"
+              value={item.name}
+              onChange={(e) => onUpdate(index, 'name', e.target.value)}
+              placeholder="Enter certificate name (e.g., RERA Certificate)"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+            <input
+              type="number"
+              min="0"
+              value={item.displayOrder || ''}
+              onChange={(e) => onUpdate(index, 'displayOrder', parseInt(e.target.value) || 0)}
+              placeholder="0"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isSubmitting}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea
+            value={item.description || ''}
+            onChange={(e) => onUpdate(index, 'description', e.target.value)}
+            placeholder="Optional description..."
+            rows={2}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={isSubmitting}
+            maxLength={500}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-          <input
-            type="number"
-            min="0"
-            value={item.displayOrder || ''}
-            onChange={(e) => onUpdate(index, 'displayOrder', parseInt(e.target.value) || 0)}
-            placeholder="0"
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            disabled={isSubmitting}
-          />
-        </div>
+        {item.file && (
+          <p className="text-xs text-gray-500 mt-2">
+            File: {item.file.name} ({formatFileSize(item.file.size)})
+          </p>
+        )}
       </div>
-
-      <div className="mt-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-        <textarea
-          value={item.description || ''}
-          onChange={(e) => onUpdate(index, 'description', e.target.value)}
-          placeholder="Optional description..."
-          rows={2}
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          disabled={isSubmitting}
-          maxLength={500}
-        />
-      </div>
-
-      {item.file && (
-        <p className="text-xs text-gray-500 mt-2">
-          File: {item.file.name} ({formatFileSize(item.file.size)})
-        </p>
-      )}
-    </div>
-  );
-});
+    );
+  },
+);
 
 CertificateItemRow.displayName = 'CertificateItemRow';
 
