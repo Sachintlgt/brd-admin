@@ -32,7 +32,7 @@ import { useProperties } from '@/app/context/PropertiesContext';
 import DashboardLayout from '@/components/DashboardLayout';
 
 // Helper to build full URLs
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export default function PropertyDetail() {
   const { id } = useParams();

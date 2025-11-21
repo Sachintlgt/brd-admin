@@ -4,7 +4,7 @@ import FileUploadZone from '../FileUploadZone';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import { useEffect, useState, memo, useCallback } from 'react';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 interface AmenitiesSectionProps {
   register: any;

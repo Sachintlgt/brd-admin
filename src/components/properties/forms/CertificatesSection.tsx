@@ -5,7 +5,7 @@ import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import { useEffect, useState, memo, useCallback } from 'react';
 
 // Helper to build full URLs
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 interface CertificatesSectionProps {
   register: any;
