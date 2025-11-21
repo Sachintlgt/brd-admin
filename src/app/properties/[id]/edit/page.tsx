@@ -80,7 +80,9 @@ export default function EditProperty() {
             <ul className="list-disc list-inside space-y-1">
               {Object.entries(formProps.errors).map(([field, error]: [string, any]) => (
                 <li key={field}>
-                  <span className="font-medium capitalize">{field.replace(/([A-Z])/g, ' $1')}:</span>{' '}
+                  <span className="font-medium capitalize">
+                    {field.replace(/([A-Z])/g, ' $1')}:
+                  </span>{' '}
                   {error?.message || 'Invalid value'}
                 </li>
               ))}
@@ -89,9 +91,12 @@ export default function EditProperty() {
         </div>
       )}
 
-      <form onSubmit={(e) => {
-        handleSubmit(onSubmit)(e);
-      }} className="space-y-8">
+      <form
+        onSubmit={(e) => {
+          handleSubmit(onSubmit)(e);
+        }}
+        className="space-y-8"
+      >
         <BasicInformationSection
           register={formProps.register}
           errors={formProps.errors}

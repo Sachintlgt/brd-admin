@@ -59,7 +59,14 @@ interface DocumentItemRowProps {
 }
 
 const DocumentItemRow = memo(
-  ({ item, index, onUpdate, onRemove, isSubmitting, existingDocuments = [] }: DocumentItemRowProps) => {
+  ({
+    item,
+    index,
+    onUpdate,
+    onRemove,
+    isSubmitting,
+    existingDocuments = [],
+  }: DocumentItemRowProps) => {
     // Find the corresponding existing document to get the URL
     const existingDoc = item.isExisting && existingDocuments.find((doc: any) => doc.id === item.id);
 

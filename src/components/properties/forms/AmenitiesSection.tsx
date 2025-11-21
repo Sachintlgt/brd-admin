@@ -47,9 +47,17 @@ interface AmenityItemRowProps {
 }
 
 const AmenityItemRow = memo(
-  ({ item, index, onUpdate, onRemove, isSubmitting, existingAmenities = [] }: AmenityItemRowProps) => {
+  ({
+    item,
+    index,
+    onUpdate,
+    onRemove,
+    isSubmitting,
+    existingAmenities = [],
+  }: AmenityItemRowProps) => {
     // Find the corresponding existing amenity to get the icon URL
-    const existingAmenity = item.isExisting && existingAmenities.find((amenity: any) => amenity.id === item.id);
+    const existingAmenity =
+      item.isExisting && existingAmenities.find((amenity: any) => amenity.id === item.id);
 
     return (
       <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
@@ -94,16 +102,8 @@ const AmenityItemRow = memo(
               {item.file.name} ({formatFileSize(item.file.size)})
             </p>
           )}
-          {item.isNameOnly && (
-            <p className="text-xs text-orange-600 mt-1">
-              Name only (no image)
-            </p>
-          )}
-          {item.isExisting && (
-            <p className="text-xs text-blue-600 mt-1">
-              Existing amenity
-            </p>
-          )}
+          {item.isNameOnly && <p className="text-xs text-orange-600 mt-1">Name only (no image)</p>}
+          {item.isExisting && <p className="text-xs text-blue-600 mt-1">Existing amenity</p>}
         </div>
 
         <button
@@ -142,8 +142,8 @@ export default function AmenitiesSection({
     if (!amenityNamesStr) return [];
     return amenityNamesStr
       .split(',')
-      .map(name => name.trim())
-      .filter(name => name.length > 0);
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
   };
 
   // Initialize amenity items when component mounts or existing amenities change
@@ -178,7 +178,7 @@ export default function AmenitiesSection({
       });
 
       // Add name-only amenities (from the amenityNames field, excluding existing amenities)
-      const existingNamesSet = new Set(updatedItems.map(item => item.name));
+      const existingNamesSet = new Set(updatedItems.map((item) => item.name));
       amenityNames.forEach((name) => {
         if (name.trim() && !existingNamesSet.has(name)) {
           const uniqueId = `name-only-${name}`;
@@ -213,7 +213,7 @@ export default function AmenitiesSection({
       isNameOnly: true,
       uniqueId: `name-only-new-${Date.now()}-${Math.random()}`,
     };
-    setAmenityItems(prev => [...prev, newItem]);
+    setAmenityItems((prev) => [...prev, newItem]);
   }, []);
 
   const updateAmenityName = useCallback((index: number, name: string) => {
@@ -277,7 +277,8 @@ export default function AmenitiesSection({
 
         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-xs text-blue-800">
-            <strong>Tip:</strong> Upload icon images if you want to associate them with amenities, or just add amenity names manually below. You can mix amenities with and without images.
+            <strong>Tip:</strong> Upload icon images if you want to associate them with amenities,
+            or just add amenity names manually below. You can mix amenities with and without images.
           </p>
         </div>
       </div>

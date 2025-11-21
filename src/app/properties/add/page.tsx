@@ -69,7 +69,9 @@ export default function AddProperty() {
             <ul className="list-disc list-inside space-y-1">
               {Object.entries(formProps.errors).map(([field, error]: [string, any]) => (
                 <li key={field}>
-                  <span className="font-medium capitalize">{field.replace(/([A-Z])/g, ' $1')}:</span>{' '}
+                  <span className="font-medium capitalize">
+                    {field.replace(/([A-Z])/g, ' $1')}:
+                  </span>{' '}
                   {error?.message || 'Invalid value'}
                 </li>
               ))}
