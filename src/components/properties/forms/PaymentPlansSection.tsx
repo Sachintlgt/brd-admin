@@ -84,7 +84,6 @@ export default function PaymentPlansSection({
               </button>
             </div>
 
-
             {/* Basic Information */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
@@ -168,7 +167,6 @@ export default function PaymentPlansSection({
                   </p>
                 )}
               </div>
-
 
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">Milestone</label>

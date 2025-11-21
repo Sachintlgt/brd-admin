@@ -7,6 +7,12 @@ export interface PropertyResponse {
   data: any;
 }
 
+export interface AmenityPayload {
+  id?: string; // For existing amenities in update mode
+  name: string;
+  imageUrl: string | null; // 'will-be-uploaded', 'existing-url', or null
+}
+
 export interface CreatePropertyPayload {
   name: string;
   location: string;
@@ -47,7 +53,7 @@ export interface CreatePropertyPayload {
   bookingAmountGST?: number;
   isActive: boolean;
   isFeatured: boolean;
-  amenityNames?: string;
+  amenities?: AmenityPayload[];
   documentNames?: string;
   propertyImages: File[];
   propertyVideos?: File[];
@@ -103,7 +109,7 @@ export interface UpdatePropertyPayload {
   bookingAmountGST?: number;
   isActive?: boolean;
   isFeatured?: boolean;
-  amenityNames?: string;
+  amenities?: AmenityPayload[];
   documentNames?: string;
   imageIdsToDelete?: string[];
   amenityIdsToDelete?: string[];
@@ -200,7 +206,9 @@ export const propertyService = {
       formData.append('isActive', String(payload.isActive));
       formData.append('isFeatured', String(payload.isFeatured));
 
-      if (payload.amenityNames) formData.append('amenityNames', payload.amenityNames);
+      if (payload.amenities) {
+        formData.append('amenities', JSON.stringify(payload.amenities));
+      }
       if (payload.documentNames) formData.append('documentNames', payload.documentNames);
 
       if (payload.propertyImages?.length) {
@@ -375,7 +383,9 @@ export const propertyService = {
         formData.append('isFeatured', String(payload.isFeatured));
 
       // Text fields
-      if (payload.amenityNames) formData.append('amenityNames', payload.amenityNames);
+      if (payload.amenities) {
+        formData.append('amenities', JSON.stringify(payload.amenities));
+      }
       if (payload.documentNames) formData.append('documentNames', payload.documentNames);
 
       // Delete IDs arrays (comma-separated UUIDs as per API spec)
@@ -441,6 +451,7 @@ export const propertyService = {
       if (payload.amenityIcons?.length) {
         payload.amenityIcons.forEach((file) => formData.append('amenityIcons', file));
       }
+
       if (payload.documents?.length) {
         payload.documents.forEach((file) => formData.append('documents', file));
       }

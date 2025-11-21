@@ -94,7 +94,11 @@ export default function LocationSection({
 
           // Set viewport from Nominatim boundingbox if available
           // boundingbox format: [south_lat, north_lat, west_lng, east_lng]
-          if (details.boundingbox && Array.isArray(details.boundingbox) && details.boundingbox.length === 4) {
+          if (
+            details.boundingbox &&
+            Array.isArray(details.boundingbox) &&
+            details.boundingbox.length === 4
+          ) {
             const [southLat, northLat, westLng, eastLng] = details.boundingbox.map(parseFloat);
             setValue('viewportSouthwestLat', southLat);
             setValue('viewportNortheastLat', northLat);

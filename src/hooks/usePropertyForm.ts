@@ -50,6 +50,14 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   const [existingPaymentPlans, setExistingPaymentPlans] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const typedResolver = zodResolver(propertySchema) as unknown as Resolver<PropertyFormValues>;
+  const [amenityItemsMetadata, setAmenityItemsMetadata] = useState<
+    {
+      id?: string;
+      name: string;
+      hasIcon: boolean;
+      iconFile?: File;
+    }[]
+  >([]);
 
   const {
     register,
@@ -521,8 +529,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             isExisting: true, // Mark as existing so deletion tracking works
           }));
 
-
-
           // Set basic fields and form arrays together
           const formData = {
             name: property.name,
@@ -625,7 +631,6 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
   }, [propertyId, reset]);
 
   const onSubmit = async (data: PropertyFormValues) => {
-
     setSubmitError(null);
     setSubmitSuccess(null);
     setIsSubmitting(true);
@@ -654,7 +659,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             Number(existing.price) === Number(pricing.price) &&
             existing.type === pricing.type &&
             existing.phaseName === pricing.phaseName &&
-            existing.description === pricing.description
+            existing.description === pricing.description,
         );
 
         return {
@@ -690,7 +695,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             existing.title === detail.title &&
             existing.description === detail.description &&
             Number(existing.shareCount) === Number(detail.shareCount) &&
-            Number(existing.amount) === Number(detail.amount)
+            Number(existing.amount) === Number(detail.amount),
         );
 
         return {
@@ -725,7 +730,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           // Convert dates to ISO for comparison
           const templateStartDateISO = convertToISO(template.startDate);
           const templateEndDateISO = convertToISO(template.endDate);
-          
+
           const existingItem = existingMaintenanceTemplates.find((existing: any) => {
             // Convert existing dates to ISO for comparison
             const existingStartDateISO = convertToISO(existing.startDate);
@@ -788,7 +793,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             existing.milestone === plan.milestone &&
             existing.dueDate === plan.dueDate &&
             existing.isGSTIncluded === (plan.isGSTIncluded ?? false) &&
-            Number(existing.gstPercentage) === Number(plan.gstPercentage)
+            Number(existing.gstPercentage) === Number(plan.gstPercentage),
         );
 
         return {
@@ -808,7 +813,51 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
       });
 
       // Note: Deletions are handled by manual removeExistingPaymentPlan calls
+      // ============================================
+      // AMENITIES PROCESSING
+      // ============================================
+      const processedAmenities: any[] = [];
+      const amenityIconsToUpload: File[] = [];
+      let iconUploadIndex = 0; // Track position for icon uploads
 
+      if (propertyId) {
+        // UPDATE MODE: Handle existing amenities
+        existingAmenities.forEach((existingAmenity: any) => {
+          // Skip amenities marked for deletion
+          if (!amenityIdsToDelete.includes(existingAmenity.id)) {
+            // Find if this amenity was updated in metadata
+            const metadata = amenityItemsMetadata.find((m) => m.id === existingAmenity.id);
+
+            processedAmenities.push({
+              id: existingAmenity.id,
+              name: metadata?.name || existingAmenity.name,
+              imageUrl: existingAmenity.iconUrl || null, // Keep existing icon
+            });
+          }
+        });
+      }
+
+      // Process new amenities from metadata
+      amenityItemsMetadata.forEach((item) => {
+        // Skip existing amenities (already processed above)
+        if (item.id) return;
+
+        if (item.hasIcon && item.iconFile) {
+          // New amenity with icon upload
+          processedAmenities.push({
+            name: item.name,
+            imageUrl: 'will-be-uploaded',
+          });
+          amenityIconsToUpload.push(item.iconFile);
+          iconUploadIndex++;
+        } else {
+          // Text-only amenity
+          processedAmenities.push({
+            name: item.name,
+            imageUrl: null,
+          });
+        }
+      });
 
       if (propertyId) {
         // UPDATE MODE
@@ -852,7 +901,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           bookingAmountGST: data.bookingAmountGST || undefined,
           isActive: data.isActive,
           isFeatured: data.isFeatured,
-          amenityNames: data.amenityNames || undefined,
+          amenities: processedAmenities.length > 0 ? processedAmenities : undefined,
           documentNames: documentFiles.length > 0 ? data.documentNames || undefined : undefined,
           certificateNames:
             certificateImageFiles.length > 0 ? data.certificateNames || undefined : undefined,
@@ -873,7 +922,7 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
             paymentPlanIdsToDelete.length > 0 ? paymentPlanIdsToDelete : undefined,
           propertyImages: imageFiles.length > 0 ? imageFiles : undefined,
           propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
-          amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
+          amenityIcons: amenityIconsToUpload.length > 0 ? amenityIconsToUpload : undefined,
           documents: documentFiles.length > 0 ? documentFiles : undefined,
           certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
           floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
@@ -946,13 +995,13 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           bookingAmountGST: data.bookingAmountGST || undefined,
           isActive: data.isActive,
           isFeatured: data.isFeatured,
-          amenityNames: data.amenityNames || undefined,
+          amenities: processedAmenities.length > 0 ? processedAmenities : undefined,
           documentNames: data.documentNames || undefined,
           certificateNames: data.certificateNames || undefined,
           floorPlanNames: data.floorPlanNames || undefined,
           propertyImages: imageFiles,
           propertyVideos: videoFiles.length > 0 ? videoFiles : undefined,
-          amenityIcons: iconFiles.length > 0 ? iconFiles : undefined,
+          amenityIcons: amenityIconsToUpload.length > 0 ? amenityIconsToUpload : undefined,
           documents: documentFiles.length > 0 ? documentFiles : undefined,
           certificateImages: certificateImageFiles.length > 0 ? certificateImageFiles : undefined,
           floorPlanImages: floorPlanImageFiles.length > 0 ? floorPlanImageFiles : undefined,
@@ -961,18 +1010,20 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
           maintenanceTemplates:
             processedMaintenanceTemplates.length > 0 ? processedMaintenanceTemplates : undefined,
           paymentPlans: processedPaymentPlans.length > 0 ? processedPaymentPlans : undefined,
-          certificates: data.certificates?.length > 0
-            ? data.certificates.map((cert: any, index: number) => ({
-                ...cert,
-                displayOrder: index + 1, // Automatically assign displayOrder starting from 1
-              }))
-            : undefined,
-          floorPlans: data.floorPlans?.length > 0
-            ? data.floorPlans.map((plan: any, index: number) => ({
-                ...plan,
-                displayOrder: index + 1, // Automatically assign displayOrder starting from 1
-              }))
-            : undefined,
+          certificates:
+            data.certificates?.length > 0
+              ? data.certificates.map((cert: any, index: number) => ({
+                  ...cert,
+                  displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+                }))
+              : undefined,
+          floorPlans:
+            data.floorPlans?.length > 0
+              ? data.floorPlans.map((plan: any, index: number) => ({
+                  ...plan,
+                  displayOrder: index + 1, // Automatically assign displayOrder starting from 1
+                }))
+              : undefined,
         };
 
         const response = await propertyService.createProperty(payload);
@@ -993,6 +1044,10 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const syncAmenityItems = (items: any[]) => {
+    setAmenityItemsMetadata(items);
   };
 
   return {
@@ -1049,6 +1104,8 @@ export const usePropertyForm = (routerParam?: any, propertyId?: string) => {
     removeExistingMaintenanceTemplate,
     removeExistingPaymentPlan,
     isEditMode: !!propertyId,
+    amenityItemsMetadata,
+    syncAmenityItems,
     // Validate form and provide user feedback
     validateForm: async () => {
       const result = await trigger();

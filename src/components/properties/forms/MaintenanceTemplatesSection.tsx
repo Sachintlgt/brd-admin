@@ -93,7 +93,6 @@ export default function MaintenanceTemplatesSection({
               </button>
             </div>
 
-
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">

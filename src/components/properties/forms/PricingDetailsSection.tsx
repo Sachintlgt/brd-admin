@@ -24,7 +24,6 @@ export default function PricingDetailsSection({
     name: 'pricingDetails',
   });
 
-
   // Watch the pricing details to get current values for conditional rendering
   const watchedPricingDetails = useWatch({
     control,
@@ -89,7 +88,6 @@ export default function PricingDetailsSection({
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>

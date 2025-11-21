@@ -23,7 +23,15 @@ export default function AddProperty() {
   const router = useRouter();
   const formProps = usePropertyForm(router);
 
-  const { handleSubmit, onSubmit, isSubmitting, submitError, submitSuccess } = formProps;
+  const {
+    handleSubmit,
+    onSubmit,
+    isSubmitting,
+    submitError,
+    submitSuccess,
+    amenityItemsMetadata,
+    syncAmenityItems,
+  } = formProps;
 
   return (
     <DashboardLayout>
@@ -65,8 +73,8 @@ export default function AddProperty() {
         >
           <AlertCircle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
           <div className="text-sm text-orange-800">
-            <div className="font-medium mb-2">Please fix the following errors:</div>
-            <ul className="list-disc list-inside space-y-1">
+            <div className="mb-2 font-medium">Please fix the following errors:</div>
+            <ul className="space-y-1 list-disc list-inside">
               {Object.entries(formProps.errors).map(([field, error]: [string, any]) => (
                 <li key={field}>
                   <span className="font-medium capitalize">
@@ -163,13 +171,14 @@ export default function AddProperty() {
         <AmenitiesSection
           register={formProps.register}
           errors={formProps.errors}
+          setValue={formProps.setValue}
+          getValues={formProps.getValues}
           iconDropzone={formProps.iconDropzone}
           iconFiles={formProps.iconFiles}
           setIconFiles={formProps.setIconFiles}
-          setValue={formProps.setValue}
-          getValues={formProps.getValues}
           removeAt={formProps.removeAt}
           isSubmitting={isSubmitting}
+          syncAmenityItems={syncAmenityItems}
         />
         <StatusSection register={formProps.register} errors={formProps.errors} />
 

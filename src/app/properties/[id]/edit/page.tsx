@@ -25,7 +25,16 @@ export default function EditProperty() {
 
   const formProps = usePropertyForm(router, propertyId);
 
-  const { handleSubmit, onSubmit, isSubmitting, submitError, submitSuccess, isLoading } = formProps;
+  const {
+    handleSubmit,
+    onSubmit,
+    isSubmitting,
+    submitError,
+    submitSuccess,
+    isLoading,
+    amenityItemsMetadata,
+    syncAmenityItems,
+  } = formProps;
 
   if (isLoading) {
     return (
@@ -76,8 +85,8 @@ export default function EditProperty() {
         >
           <AlertCircle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
           <div className="text-sm text-orange-800">
-            <div className="font-medium mb-2">Please fix the following errors:</div>
-            <ul className="list-disc list-inside space-y-1">
+            <div className="mb-2 font-medium">Please fix the following errors:</div>
+            <ul className="space-y-1 list-disc list-inside">
               {Object.entries(formProps.errors).map(([field, error]: [string, any]) => (
                 <li key={field}>
                   <span className="font-medium capitalize">
@@ -203,6 +212,7 @@ export default function EditProperty() {
           existingAmenities={formProps.existingAmenities}
           onRemoveExisting={formProps.removeExistingAmenity}
           isSubmitting={isSubmitting}
+          syncAmenityItems={syncAmenityItems}
         />
 
         <StatusSection register={formProps.register} errors={formProps.errors} />
